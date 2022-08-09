@@ -35,10 +35,9 @@ class Parser {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
 			throw new SyntaxException(ex.getMessage());
+		} catch (LookaheadSuccess err) {
+			throw new SyntaxException("syntax error");
 		}
-		//catch (LookaheadSuccess err) {
-		//	throw new SyntaxException("syntax error");
-		//}
 	}
 
 	static final public String SOURCE_ENCODING = "UTF-8";
@@ -87,8 +86,12 @@ long expr():
 	Token x, y;
 }
 {
-	x=<INTEGER> "+" y=<INTEGER> <EOF>
+	LOOKAHEAD(2) x=<INTEGER> "+" y=<INTEGER> <EOF>
 		{
 			return Long.parseLong(x.image) + Long.parseLong(y.image);
+		}
+	| x=<INTEGER> "-" y=<INTEGER> <EOF>
+		{
+			return Long.parseLong(x.image) - Long.parseLong(y.image);
 		}
 }
