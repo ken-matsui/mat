@@ -4,10 +4,10 @@ options {
 	UNICODE_INPUT = true;
 }
 
-PARSER_BEGIN(Adder)
+PARSER_BEGIN(Parser)
 import java.io.*;
 
-class Adder {
+class Parser {
 	static public void main(String[] args) {
 		for (String arg : args) {
 			try {
@@ -21,10 +21,10 @@ class Adder {
 
 	static public long evaluate(String src) throws ParseException {
 		Reader reader = new StringReader(src);
-		return new Adder(reader).expr();
+		return new Parser(reader).expr();
 	}
 }
-PARSER_END(Adder)
+PARSER_END(Parser)
 
 SKIP: { <[" ", "\t", "\r", "\n"]> }
 
