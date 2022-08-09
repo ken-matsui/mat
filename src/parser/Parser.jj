@@ -102,6 +102,7 @@ long expr1():
 {
 	l=primary() ( "*" r=primary() { l = l * r; }
 			    | "/" r=primary() { l = l / r; }
+				| "%" r=primary() { l = l % r; }
 			    )*
 			{
 				return l;
