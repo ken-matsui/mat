@@ -5,23 +5,73 @@ options {
 }
 
 PARSER_BEGIN(Parser)
+
+package mat.parser;
+
+import mat.exception.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.io.*;
 
 class Parser {
-	static public void main(String[] args) {
-		for (String arg : args) {
-			try {
-				System.out.println(evaluate(arg));
-			}
-			catch (ParseException ex) {
-				System.err.println(ex.getMessage());
-			}
+	private String sourceName;
+	private Set<String> knownTypedefs;
+
+	public Parser(Reader s, String name, boolean debug) {
+		this(s);
+		this.sourceName = name;
+		this.knownTypedefs = new HashSet<String>();
+		if (debug) {
+			enable_tracing();
+		} else {
+			disable_tracing();
 		}
 	}
 
-	static public long evaluate(String src) throws ParseException {
-		Reader reader = new StringReader(src);
-		return new Parser(reader).expr();
+	public long parse() throws SyntaxException {
+		try {
+			return expr();
+		} catch (TokenMgrError err) {
+			throw new SyntaxException(err.getMessage());
+		} catch (ParseException ex) {
+			throw new SyntaxException(ex.getMessage());
+		}
+		//catch (LookaheadSuccess err) {
+		//	throw new SyntaxException("syntax error");
+		//}
+	}
+
+	static final public String SOURCE_ENCODING = "UTF-8";
+
+	static public Parser newFileParser(File file, boolean debug)
+									   throws FileException {
+		try {
+			BufferedReader r = new BufferedReader(
+				new InputStreamReader(new FileInputStream(file), SOURCE_ENCODING)
+			);
+			return new Parser(r, file.getPath(), debug);
+		} catch (FileNotFoundException ex) {
+			throw new FileException(ex.getMessage());
+		} catch (UnsupportedEncodingException ex) {
+			throw new Error("UTF-8 is not supported?: " + ex.getMessage());
+		}
+	}
+
+	static public long parseFile(File file, boolean debug)
+								 throws SyntaxException, FileException {
+		return newFileParser(file, debug).parse();
+	}
+
+	static public void main(String[] srcs) {
+		for (String src : srcs) {
+			try {
+				System.out.println(parseFile(new File(src), false));
+			} catch (SyntaxException ex) {
+				System.err.println(ex.getMessage());
+			} catch (FileException ex) {
+				System.err.println(ex.getMessage());
+			}
+		}
 	}
 }
 PARSER_END(Parser)
@@ -42,4 +92,3 @@ long expr():
 			return Long.parseLong(x.image) + Long.parseLong(y.image);
 		}
 }
-
