@@ -1,1 +1,3 @@
-10 % 3
+// here we have 10
+10 % 3 /*
+super cool comments are discarded */

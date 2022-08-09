@@ -76,7 +76,16 @@ class Parser {
 }
 PARSER_END(Parser)
 
-SKIP: { <[" ", "\t", "\r", "\n"]> }
+// Ignore spaces
+SKIP: { <SPACE: ([" ", "\t", "\r", "\n", "\f"])> }
+
+// Keep two types of comments
+SPECIAL_TOKEN: {
+    <LINE_COMMENT: "//" (~["\n", "\r"])* ("\n" | "\r\n" | "\r")?>
+}
+MORE: { <"/*"> : IN_BLOCK_COMMENT }
+<IN_BLOCK_COMMENT> MORE: { <~[]> }
+<IN_BLOCK_COMMENT> SPECIAL_TOKEN: { <BLOCK_COMMENT: "*/"> : DEFAULT }
 
 TOKEN: {
 	<INTEGER: (["0"-"9"])+>
