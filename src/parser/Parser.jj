@@ -28,9 +28,9 @@ class Parser {
 		}
 	}
 
-	public long parse() throws SyntaxException {
+	public void parse() throws SyntaxException {
 		try {
-			return expr2();
+			compilation_unit();
 		} catch (TokenMgrError err) {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
@@ -57,15 +57,15 @@ class Parser {
 		}
 	}
 
-	static public long parseFile(File file, boolean debug)
+	static public void parseFile(File file, boolean debug)
 								 throws SyntaxException, FileException {
-		return newFileParser(file, debug).parse();
+		newFileParser(file, debug).parse();
 	}
 
 	static public void main(String[] srcs) {
 		for (String src : srcs) {
 			try {
-				System.out.println(parseFile(new File(src), false));
+				parseFile(new File(src), false);
 			} catch (SyntaxException ex) {
 				System.err.println(ex.getMessage());
 			} catch (FileException ex) {
@@ -147,6 +147,11 @@ MORE: { <"\""> : IN_STRING }                           // rule1
 }
 <IN_STRING> TOKEN: { <STRING: "\""> : DEFAULT }        // rule5
 
+void compilation_unit(): {}
+{
+    expr2() <EOF>
+}
+
 long expr2():
 {
 	long l, r;
@@ -154,7 +159,7 @@ long expr2():
 {
 	l=expr1() ( "+" r=expr1() { l = l + r; }
 	          | "-" r=expr1() { l = l - r; }
-			  )* <EOF>
+			  )*
 			{
 				return l;
 			}
