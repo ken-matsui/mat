@@ -22,6 +22,14 @@
 
     <target name="recompile" depends="clean, compile" />
 
+    <!-- ant -Dfile=examples/add.mat run -->
+    <target name="run" depends="compile">
+        <property name="file" value="File path to parse" />
+        <java classpath="${build.jar}" classname="mat.parser.Parser" fork="true">
+            <arg value="${file}"/>
+        </java>
+    </target>
+
     <target name="clean" depends="init, clean-build">
         <delete file="${build.jar}" />
     </target>
