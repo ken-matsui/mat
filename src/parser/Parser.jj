@@ -87,9 +87,65 @@ MORE: { <"/*"> : IN_BLOCK_COMMENT }
 <IN_BLOCK_COMMENT> MORE: { <~[]> }
 <IN_BLOCK_COMMENT> SPECIAL_TOKEN: { <BLOCK_COMMENT: "*/"> : DEFAULT }
 
+// Reserved keywords
 TOKEN: {
-	<INTEGER: (["0"-"9"])+>
+      <VOID     : "void">
+    | <CHAR     : "char">
+    | <SHORT    : "short">
+    | <INT      : "int">
+    | <LONG     : "long">
+    | <STRUCT   : "struct">
+    | <UNION    : "union">
+    | <ENUM     : "enum">
+    | <STATIC   : "static">
+    | <EXTERN   : "extern">
+    | <CONST    : "const">
+    | <SIGNED   : "signed">
+    | <UNSIGNED : "unsigned">
+    | <IF       : "if">
+    | <ELSE     : "else">
+    | <SWITCH   : "switch">
+    | <CASE     : "case">
+    | <DEFAULT_ : "default">
+    | <WHILE    : "while">
+    | <DO       : "do">
+    | <FOR      : "for">
+    | <RETURN   : "return">
+    | <BREAK    : "break">
+    | <CONTINUE : "continue">
+    | <TYPEDEF  : "typedef">
+    | <IMPORT   : "import">
+    | <SIZEOF   : "sizeof">
 }
+
+TOKEN: {
+    <IDENTIFIER: ["a"-"z", "A"-"Z", "_"] (["a"-"z", "A"-"Z", "_", "0"-"9"])*>
+}
+
+TOKEN: {
+    <INTEGER: ["1"-"9"] (["0"-"9"])* ("U")? ("L")?
+            | "0" ["x", "X"] (["0"-"9", "a"-"f", "A"-"F"])+ ("U")? ("L")?
+            | "0" (["0"-"7"])* ("U")? ("L")?
+            >
+}
+
+// character literal
+MORE: { <"'"> : IN_CHARACTER }                         // rule1
+<IN_CHARACTER> MORE: {
+      <~["'", "\\", "\n", "\r"]> : CHARACTER_TERM      // rule2
+    | <"\\" (["0"-"7"]){3}>      : CHARACTER_TERM      // rule3
+    | <"\\" ~[]>                 : CHARACTER_TERM      // rule4
+}
+<CHARACTER_TERM> TOKEN: { <CHARACTER: "'"> : DEFAULT } // rule5
+
+// string literal
+MORE: { <"\""> : IN_STRING }                           // rule1
+<IN_STRING> MORE: {
+      <(~["\"", "\\", "\n", "\r"])+>                   // rule2
+    | <"\\" (["0"-"7"]){3}>                            // rule3
+    | <"\\" ~[]>                                       // rule4
+}
+<IN_STRING> TOKEN: { <STRING: "\""> : DEFAULT }        // rule5
 
 long expr2():
 {
