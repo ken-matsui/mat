@@ -28,9 +28,9 @@ class Parser {
 		}
 	}
 
-	public void parse() throws SyntaxException {
+	public long parse() throws SyntaxException {
 		try {
-			compilation_unit();
+			return compilation_unit();
 		} catch (TokenMgrError err) {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
@@ -57,15 +57,15 @@ class Parser {
 		}
 	}
 
-	static public void parseFile(File file, boolean debug)
+	static public long parseFile(File file, boolean debug)
 								 throws SyntaxException, FileException {
-		newFileParser(file, debug).parse();
+		return newFileParser(file, debug).parse();
 	}
 
 	static public void main(String[] srcs) {
 		for (String src : srcs) {
 			try {
-				parseFile(new File(src), false);
+				System.out.println(parseFile(new File(src), false));
 			} catch (SyntaxException ex) {
 				System.err.println(ex.getMessage());
 			} catch (FileException ex) {
@@ -167,9 +167,15 @@ String name():
 	t=<IDENTIFIER> { return t.image; }
 }
 
-void compilation_unit(): {}
+long compilation_unit():
 {
-    import_stmts() expr2() <EOF>
+	long ret;
+}
+{
+    import_stmts() "int" "main()" "{" "return" ret=expr2() ";" "}" <EOF>
+		{
+			return ret;
+		}
 }
 
 void import_stmts(): {}
