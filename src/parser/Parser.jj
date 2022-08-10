@@ -76,6 +76,10 @@ class Parser {
 }
 PARSER_END(Parser)
 
+//
+// Skip tokens
+//
+
 // Ignore spaces
 SKIP: { <SPACE: ([" ", "\t", "\r", "\n", "\f"])> }
 
@@ -86,6 +90,10 @@ SPECIAL_TOKEN: {
 MORE: { <"/*"> : IN_BLOCK_COMMENT }
 <IN_BLOCK_COMMENT> MORE: { <~[]> }
 <IN_BLOCK_COMMENT> SPECIAL_TOKEN: { <BLOCK_COMMENT: "*/"> : DEFAULT }
+
+//
+// Tokens
+//
 
 // Reserved keywords
 TOKEN: {
@@ -147,9 +155,31 @@ MORE: { <"\""> : IN_STRING }                           // rule1
 }
 <IN_STRING> TOKEN: { <STRING: "\""> : DEFAULT }        // rule5
 
+//
+// Rules
+//
+
+String name():
+{
+	Token t;
+}
+{
+	t=<IDENTIFIER> { return t.image; }
+}
+
 void compilation_unit(): {}
 {
-    expr2() <EOF>
+    import_stmts() expr2() <EOF>
+}
+
+void import_stmts(): {}
+{
+    (import_stmt())*
+}
+
+void import_stmt(): {}
+{
+	<IMPORT> name() ("." name())* ";"
 }
 
 long expr2():
