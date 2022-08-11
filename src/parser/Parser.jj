@@ -22,7 +22,7 @@ public class Parser {
 	public Parser(Reader s, String name, boolean debug) {
 		this(s);
 		this.sourceName = name;
-		this.knownTypedefs = new HashSet<>();
+		this.knownTypedefs = new HashSet<String>();
 		if (debug) {
 			enable_tracing();
 		} else {
@@ -77,7 +77,7 @@ SKIP: { <SPACE: ([" ", "\t", "\r", "\n", "\f"])> }
 SPECIAL_TOKEN: {
     <LINE_COMMENT: "//" (~["\n", "\r"])* ("\n" | "\r\n" | "\r")?>
 }
-MORE: { "/*" : IN_BLOCK_COMMENT }
+MORE: { <"/*"> : IN_BLOCK_COMMENT }
 <IN_BLOCK_COMMENT> MORE: { <~[]> }
 <IN_BLOCK_COMMENT> SPECIAL_TOKEN: { <BLOCK_COMMENT: "*/"> : DEFAULT }
 
@@ -128,7 +128,7 @@ TOKEN: {
 }
 
 // character literal
-MORE: { "'" : IN_CHARACTER }                           // rule1
+MORE: { <"'"> : IN_CHARACTER }                         // rule1
 <IN_CHARACTER> MORE: {
       <~["'", "\\", "\n", "\r"]> : CHARACTER_TERM      // rule2
     | <"\\" (["0"-"7"]){3}>      : CHARACTER_TERM      // rule3
@@ -137,7 +137,7 @@ MORE: { "'" : IN_CHARACTER }                           // rule1
 <CHARACTER_TERM> TOKEN: { <CHARACTER: "'"> : DEFAULT } // rule5
 
 // string literal
-MORE: { "\"" : IN_STRING }                             // rule1
+MORE: { <"\""> : IN_STRING }                           // rule1
 <IN_STRING> MORE: {
       <(~["\"", "\\", "\n", "\r"])+>                   // rule2
     | <"\\" (["0"-"7"]){3}>                            // rule3
