@@ -15,7 +15,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 
-class Parser {
+public class Parser {
 	private String sourceName;
 	private Set<String> knownTypedefs;
 
@@ -62,18 +62,6 @@ class Parser {
 	static public void parseFile(File file, boolean debug)
 								 throws SyntaxException, FileException {
 		newFileParser(file, debug).parse();
-	}
-
-	static public void main(String[] srcs) {
-		for (String src : srcs) {
-			try {
-				parseFile(new File(src), false);
-			} catch (SyntaxException ex) {
-				System.err.println(ex.getMessage());
-			} catch (FileException ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
 	}
 }
 PARSER_END(Parser)
