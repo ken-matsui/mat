@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="MatCompiler" default="compile" basedir=".">
+    <condition property="javacc.dir" value="/opt/homebrew/opt/javacc/libexec" else="/usr/share/java">
+        <os family="mac" />
+    </condition>
+
     <target name="init">
         <property file="build.properties" />
     </target>
