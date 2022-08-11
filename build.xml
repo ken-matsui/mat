@@ -21,14 +21,6 @@
 
     <target name="recompile" depends="clean, compile" />
 
-    <!-- ant -Dfile=examples/add.mat run -->
-    <target name="run" depends="compile">
-        <property name="file" value="File path to parse" />
-        <java classpath="${build.jar}" classname="mat.parser.Parser" fork="true">
-            <arg value="${file}"/>
-        </java>
-    </target>
-
     <target name="clean" depends="init, clean-build">
         <delete file="${build.jar}" />
     </target>
@@ -42,11 +34,5 @@
         <delete file="${build.parser.dir}/Token.java" />
         <delete file="${build.parser.dir}/TokenMgrError.java" />
         <delete file="${build.parser.dir}/SimpleCharStream.java" />
-    </target>
-
-    <target name="dist">
-        <antcall target="clean" />
-        <antcall target="compile" />
-        <antcall target="clean-build" />
     </target>
 </project>
