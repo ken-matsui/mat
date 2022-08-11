@@ -1,5 +1,6 @@
 package mat.compiler;
 
+import mat.ast.AST;
 import mat.exception.FileException;
 import mat.exception.SyntaxException;
 import mat.parser.Parser;
@@ -14,7 +15,7 @@ public class Compiler {
     private void compile(String[] srcs) {
         for (String src : srcs) {
             try {
-                Parser.parseFile(new File(src), false);
+                AST ast = Parser.parseFile(new File(src), false);
             } catch (SyntaxException ex) {
                 System.err.println(ex.getMessage());
             } catch (FileException ex) {

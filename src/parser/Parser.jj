@@ -30,9 +30,9 @@ public class Parser {
 		}
 	}
 
-	public void parse() throws SyntaxException {
+	public AST parse() throws SyntaxException {
 		try {
-			compilation_unit();
+			return compilation_unit();
 		} catch (TokenMgrError err) {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
@@ -59,9 +59,9 @@ public class Parser {
 		}
 	}
 
-	static public void parseFile(File file, boolean debug)
+	static public AST parseFile(File file, boolean debug)
 								 throws SyntaxException, FileException {
-		newFileParser(file, debug).parse();
+		return newFileParser(file, debug).parse();
 	}
 }
 PARSER_END(Parser)
@@ -157,14 +157,14 @@ String name():
 	t=<IDENTIFIER> { return t.image; }
 }
 
-ExprNode compilation_unit():
+AST compilation_unit():
 {
 	ExprNode ret;
 }
 {
     import_stmts() "int" "main()" "{" "return" ret=expr2() ";" "}" <EOF>
 		{
-			return ret;
+			return new AST(ret);
 		}
 }
 
