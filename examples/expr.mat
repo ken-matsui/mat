@@ -5,6 +5,13 @@ let fuga: i32 = 1;
 
 type newint = i32;
 
+struct User {
+    active: u8,
+    username: char,
+    email: char,
+    sign_in_count: u64,
+}
+
 fn main() -> i32 {
     let mut hoge: i64 = 12;
     if (hoge) {

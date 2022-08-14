@@ -13,21 +13,10 @@ public class Declarations {
     Set<DefinedVariable> defvars = new LinkedHashSet<>();
     Set<DefinedFunction> defns = new LinkedHashSet<>();
     Set<Constant> constants = new LinkedHashSet<>();
-    Set<TypedefNode> typedefs = new LinkedHashSet<TypedefNode>();
+    Set<StructNode> defstructs = new LinkedHashSet<>();
+    Set<TypedefNode> typedefs = new LinkedHashSet<>();
 
     ArrayList<String> imports = new ArrayList<>();
-
-    public List<DefinedVariable> defvars() {
-        return new ArrayList<>(defvars);
-    }
-
-    public List<DefinedFunction> defns() {
-        return new ArrayList<>(defns);
-    }
-
-    public List<Constant> constants() {
-        return new ArrayList<>(constants);
-    }
 
     public void addImports(ArrayList<String> imports) {
         this.imports = imports;
@@ -37,12 +26,32 @@ public class Declarations {
         defvars.add(var);
     }
 
+    public List<DefinedVariable> defvars() {
+        return new ArrayList<>(defvars);
+    }
+
     public void addDefn(DefinedFunction func) {
         defns.add(func);
     }
 
+    public List<DefinedFunction> defns() {
+        return new ArrayList<>(defns);
+    }
+
     public void addConstant(Constant c) {
         constants.add(c);
+    }
+
+    public List<Constant> constants() {
+        return new ArrayList<>(constants);
+    }
+
+    public void addDefstruct(StructNode n) {
+        defstructs.add(n);
+    }
+
+    public List<StructNode> defstructs() {
+        return new ArrayList<StructNode>(defstructs);
     }
 
     public void addTypedef(TypedefNode n) {

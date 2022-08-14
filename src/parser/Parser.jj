@@ -376,15 +376,17 @@ String import_stmt():
 Declarations top_defs():
 {
     Declarations decls = new Declarations();
-    DefinedVariable defv;
-    Constant defc;
+    DefinedVariable defvars;
+    Constant defconst;
+    StructNode defstruct;
     DefinedFunction defn;
     TypedefNode typedef;
 }
 {
-    ( LOOKAHEAD(2) defc=defconst() { decls.addConstant(defc); }
-    | defv=defvar() { decls.addDefvar(defv); }
+    ( LOOKAHEAD(2) defconst=defconst() { decls.addConstant(defconst); }
+    | defvars=defvar() { decls.addDefvar(defvars); }
     | defn=defn() { decls.addDefn(defn); }
+    | defstruct=defstruct() { decls.addDefstruct(defstruct); }
     | typedef=typedef() { decls.addTypedef(typedef); }
     )*
     {
@@ -438,6 +440,46 @@ DefinedFunction defn():
         // TODO: priv is always false
         return new DefinedFunction(false, new TypeNode(t), n, ps, body);
     }
+}
+
+// struct name {
+//     member: type,
+//     ...
+// }
+StructNode defstruct():
+{
+    Token t;
+    String n;
+    List<Slot> membs;
+}
+{
+    t=<STRUCT> n=name() membs=member_list()
+        {
+            return new StructNode(location(t), new StructTypeRef(n), n, membs);
+        }
+}
+
+List<Slot> member_list():
+{
+    List<Slot> membs = new ArrayList<>();
+    Slot s;
+}
+{
+    "{" (s=slot() "," { membs.add(s); })* "}"
+        {
+            return membs;
+        }
+}
+
+// TODO: should be merged into `parameter`
+// name: type
+Slot slot():
+{
+    TypeNode t;
+    String n;
+}
+{
+    n=name() ":" t=type() { return new Slot(t, n); }
 }
 
 // type new = old;
