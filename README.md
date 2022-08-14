@@ -1,4 +1,4 @@
-# mat
+# Mat
 
 A toy programming language
 
