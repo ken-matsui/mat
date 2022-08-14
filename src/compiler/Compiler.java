@@ -1,26 +1,32 @@
 package mat.compiler;
 
 import mat.ast.AST;
-import mat.exception.FileException;
-import mat.exception.SyntaxException;
+import mat.exception.*;
 import mat.parser.Parser;
 
 import java.io.File;
 
 public class Compiler {
     static public void main(String[] srcs) {
-        new Compiler().compile(srcs);
+        new Compiler().build(srcs);
     }
 
-    private void compile(String[] srcs) {
+    private void build(String[] srcs) {
         for (String src : srcs) {
             try {
-                AST ast = Parser.parseFile(new File(src), false);
-            } catch (SyntaxException ex) {
-                System.err.println(ex.getMessage());
-            } catch (FileException ex) {
+                compile(src);
+            } catch (CompileException ex) {
                 System.err.println(ex.getMessage());
             }
         }
+    }
+
+    private void compile(String src) throws CompileException {
+        AST ast = Parser.parseFile(new File(src), false);
+        dumpAST(ast); // For now, just dump AST and finish
+    }
+
+    private void dumpAST(AST ast) {
+        ast.dump();
     }
 }

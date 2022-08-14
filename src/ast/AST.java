@@ -1,10 +1,21 @@
 package mat.ast;
 
 public class AST extends Node {
-    protected ExprNode expr;
+    protected Location source;
+    protected Declarations decls;
 
-    public AST(ExprNode expr) {
+    public AST(Location source, Declarations decls) {
         super();
-        this.expr = expr;
+        this.source = source;
+        this.decls = decls;
+    }
+
+    public Location location() {
+        return source;
+    }
+
+    protected void _dump(Dumper d) {
+        d.printNodeList("variables", decls.defvars());
+        d.printNodeList("functions", decls.defns());
     }
 }

@@ -9,9 +9,10 @@ PARSER_BEGIN(Parser)
 package mat.parser;
 
 import mat.ast.*;
+import mat.entity.*;
 import mat.exception.*;
+import mat.type.*;
 
-import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 
@@ -22,7 +23,7 @@ public class Parser {
 	public Parser(Reader s, String name, boolean debug) {
 		this(s);
 		this.sourceName = name;
-		this.knownTypedefs = new HashSet<String>();
+		this.knownTypedefs = new HashSet<>();
 		if (debug) {
 			enable_tracing();
 		} else {
@@ -37,10 +38,9 @@ public class Parser {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
 			throw new SyntaxException(ex.getMessage());
+		} catch (LookaheadSuccess err) {
+			throw new SyntaxException("syntax error");
 		}
-		//catch (LookaheadSuccess err) {
-		//	throw new SyntaxException("syntax error");
-		//}
 	}
 
 	static final public String SOURCE_ENCODING = "UTF-8";
@@ -63,6 +63,131 @@ public class Parser {
 								 throws SyntaxException, FileException {
 		return newFileParser(file, debug).parse();
 	}
+
+    private IntegerLiteralNode integerNode(Location loc, String image) {
+        int base = getBase(image);
+        String s = image;
+        if (base == 16) {
+            s = image.substring(2);
+        } else if (base == 8) {
+            s = image.substring(1);
+        }
+
+        if (image.endsWith("i8")) {
+            long i = Long.parseLong(s.replaceFirst("i8", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.i8Ref(), i);
+        } else if (image.endsWith("i16")) {
+            long i = Long.parseLong(s.replaceFirst("i16", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.i16Ref(), i);
+        } else if (image.endsWith("i32")) {
+            long i = Long.parseLong(s.replaceFirst("i32", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.i32Ref(), i);
+        } else if (image.endsWith("i64")) {
+            long i = Long.parseLong(s.replaceFirst("i64", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.i64Ref(), i);
+        } else if (image.endsWith("u8")) {
+            long i = Long.parseLong(s.replaceFirst("u8", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.u8Ref(), i);
+        } else if (image.endsWith("u16")) {
+            long i = Long.parseLong(s.replaceFirst("u16", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.u16Ref(), i);
+        } else if (image.endsWith("u32")) {
+            long i = Long.parseLong(s.replaceFirst("u32", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.u32Ref(), i);
+        } else if (image.endsWith("u64")) {
+            long i = Long.parseLong(s.replaceFirst("u64", ""), base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.u64Ref(), i);
+        } else {
+            long i = Long.parseLong(s, base);
+            return new IntegerLiteralNode(loc, IntegerTypeRef.i32Ref(), i);
+        }
+    }
+
+    private int getBase(String image) {
+        if (image.startsWith("0x") || image.startsWith("0X")) {
+            return 16;
+        } else if (image.startsWith("0") && !image.equals("0")) {
+            return 8;
+        } else {
+            return 10;
+        }
+    }
+
+    private long characterCode(String image) throws ParseException {
+        String s = stringValue(image);
+        if (s.length() != 1) {
+            throw new Error("must not happen: character length > 1");
+        }
+        return s.charAt(0);
+    }
+
+    private String stringValue(String _image) throws ParseException {
+        int pos = 0;
+        int idx;
+        StringBuffer buf = new StringBuffer();
+        String image = _image.substring(1, _image.length() - 1);
+
+        while ((idx = image.indexOf("\\", pos)) >= 0) {
+            buf.append(image.substring(pos, idx));
+            if (image.length() >= idx + 4
+                    && Character.isDigit(image.charAt(idx+1))
+                    && Character.isDigit(image.charAt(idx+2))
+                    && Character.isDigit(image.charAt(idx+3))) {
+                buf.append(unescapeOctal(image.substring(idx+1, idx+4)));
+                pos = idx + 4;
+            }
+            else {
+                buf.append(unescapeSeq(image.charAt(idx+1)));
+                pos = idx + 2;
+            }
+        }
+        if (pos < image.length()) {
+            buf.append(image.substring(pos, image.length()));
+        }
+        return buf.toString();
+    }
+
+    // #@@range/unescapeOctal{
+    private static final int charMax = 255;
+
+    private char unescapeOctal(String digits) throws ParseException {
+        int i = Integer.parseInt(digits, 8);
+        if (i > charMax) {
+            throw new ParseException(
+                "octal character sequence too big: \\" + digits);
+        }
+        return (char)i;
+    }
+    // #@@}
+
+    // #@@range/unescapeSeq{
+    private static final char bell = 7;
+    private static final char backspace = 8;
+    private static final char escape = 27;
+    private static final char vt = 11;
+
+    private char unescapeSeq(char c) throws ParseException {
+        switch (c) {
+        case '0': return '\0';
+        case '"': return '"';
+        case '\'': return '\'';
+        case 'a': return bell;
+        case 'b': return backspace;
+        case 'e': return escape;
+        case 'f': return '\f';
+        case 'n': return '\n';
+        case 'r': return '\r';
+        case 't': return '\t';
+        case 'v': return vt;
+        default:
+            throw new ParseException("unknown escape sequence: \"\\" + c);
+        }
+    }
+    // #@@}
+
+	protected Location location(Token t) {
+        return new Location(sourceName, t);
+    }
 }
 PARSER_END(Parser)
 
@@ -89,17 +214,20 @@ MORE: { <"/*"> : IN_BLOCK_COMMENT }
 TOKEN: {
       <VOID     : "void">
     | <CHAR     : "char">
-    | <SHORT    : "short">
-    | <INT      : "int">
-    | <LONG     : "long">
+    | <I8       : "i8">
+    | <I16      : "i16">
+    | <I32      : "i32">
+    | <I64      : "i64">
+    | <U8       : "u8">
+    | <U16      : "u16">
+    | <U32      : "u32">
+    | <U64      : "u64">
     | <STRUCT   : "struct">
     | <UNION    : "union">
     | <ENUM     : "enum">
     | <STATIC   : "static">
     | <EXTERN   : "extern">
     | <CONST    : "const">
-    | <SIGNED   : "signed">
-    | <UNSIGNED : "unsigned">
     | <IF       : "if">
     | <ELSE     : "else">
     | <SWITCH   : "switch">
@@ -114,6 +242,9 @@ TOKEN: {
     | <TYPEDEF  : "typedef">
     | <IMPORT   : "import">
     | <SIZEOF   : "sizeof">
+    | <FN       : "fn">
+    | <LET      : "let">
+    | <MUT      : "mut">
 }
 
 TOKEN: {
@@ -121,10 +252,14 @@ TOKEN: {
 }
 
 TOKEN: {
-    <INTEGER: ["1"-"9"] (["0"-"9"])* ("U")? ("L")?
-            | "0" ["x", "X"] (["0"-"9", "a"-"f", "A"-"F"])+ ("U")? ("L")?
-            | "0" (["0"-"7"])* ("U")? ("L")?
+    <INTEGER: ["1"-"9"] (["0"-"9"])* (<NUMERIC_SUFFIX>)?
+            | "0" ["x", "X"] (["0"-"9", "a"-"f", "A"-"F"])+ (<NUMERIC_SUFFIX>)?
+            | "0" (["0"-"7"])* (<NUMERIC_SUFFIX>)?
             >
+}
+
+TOKEN: {
+    <NUMERIC_SUFFIX: "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64">
 }
 
 // character literal
@@ -146,7 +281,7 @@ MORE: { <"\""> : IN_STRING }                           // rule1
 <IN_STRING> TOKEN: { <STRING: "\""> : DEFAULT }        // rule5
 
 //
-// Rules
+// Rule Fragments
 //
 
 String name():
@@ -157,25 +292,310 @@ String name():
 	t=<IDENTIFIER> { return t.image; }
 }
 
+TypeNode type():
+{
+    TypeRef ref;
+}
+{
+    ref=typeref() { return new TypeNode(ref); }
+}
+TypeRef typeref():
+{
+    Token t;
+}
+{
+    t=<VOID> { return new VoidTypeRef(location(t)); }
+    | t=<CHAR> { return IntegerTypeRef.i8Ref(location(t)); }
+    | t=<U8> { return IntegerTypeRef.u8Ref(location(t)); }
+    | t=<U16> { return IntegerTypeRef.u16Ref(location(t)); }
+    | t=<U32> { return IntegerTypeRef.u32Ref(location(t)); }
+    | t=<U64> { return IntegerTypeRef.u64Ref(location(t)); }
+    | t=<I8> { return IntegerTypeRef.i8Ref(location(t)); }
+    | t=<I16> { return IntegerTypeRef.i16Ref(location(t)); }
+    | t=<I32> { return IntegerTypeRef.i32Ref(location(t)); }
+    | t=<I64> { return IntegerTypeRef.i64Ref(location(t)); }
+}
+
+boolean mutability():
+{
+    Token t = null;
+}
+{
+    [t=<MUT>] { return t != null; }
+}
+
+//
+// Main Rules
+//
+
 AST compilation_unit():
 {
-	ExprNode ret;
+    Token t;
+	ArrayList<String> imports;
+    Declarations defs;
 }
 {
-    import_stmts() "int" "main()" "{" "return" ret=expr2() ";" "}" <EOF>
-		{
-			return new AST(ret);
-		}
+    {
+        t = getToken(1);
+    }
+    imports=import_stmts() defs=top_defs() <EOF>
+	{
+        defs.addImports(imports);
+		return new AST(location(t), defs);
+	}
 }
 
-void import_stmts(): {}
+ArrayList<String> import_stmts():
 {
-    (import_stmt())*
+    String i;
+    ArrayList<String> imports = new ArrayList<>();
+}
+{
+    ( i=import_stmt() { imports.add(i); } )*
+    {
+        return imports;
+    }
+}
+String import_stmt():
+{
+    StringBuilder builder = new StringBuilder();
+    String n;
+}
+{
+	<IMPORT> n=name() { builder.append(n); }
+	("." n=name() { builder.append("."); builder.append(n); })* ";"
+	{
+        return builder.toString();
+    }
 }
 
-void import_stmt(): {}
+Declarations top_defs():
 {
-	<IMPORT> name() ("." name())* ";"
+    Declarations defs = new Declarations();
+    DefinedVariable defv;
+    DefinedFunction defn;
+}
+{
+    ( defv=defvar() { defs.addDefvar(defv); }
+    | defn=defn() { defs.addDefn(defn); }
+    )*
+    {
+        return defs;
+    }
+}
+
+// let mut name: type = expr;
+DefinedVariable defvar():
+{
+    boolean mut;
+    TypeNode type;
+    String name;
+    ExprNode init = null;
+}
+{
+    <LET> mut=mutability() name=name() ":" type=type() ["=" init=expr()] ";"
+    {
+        return new DefinedVariable(mut, type, name, init);
+    }
+}
+
+// fn name(...) -> type {}
+DefinedFunction defn():
+{
+    TypeRef ret;
+    String n;
+    Params ps;
+    BlockNode body;
+}
+{
+    <FN> n=name() "(" ps=params() ")" "->" ret=typeref() body=block()
+    {
+        TypeRef t = new FunctionTypeRef(ret, ps.parametersTypeRef());
+        // TODO: priv is always false
+        return new DefinedFunction(false, new TypeNode(t), n, ps, body);
+    }
+}
+
+// name1: type1, name2: type2, name3: type3
+// Do not accept `...` like C
+Params params():
+{
+    ArrayList<Parameter> ps = new ArrayList<>();
+    Parameter p1 = null, pN;
+}
+{
+    [ p1=param() { ps.add(p1); }
+      ("," pN=param() { ps.add(pN); })* ]
+        {
+            if (p1 == null) {
+                return new Params(null, new ArrayList<>());
+            }
+            return new Params(p1.location(), ps);
+        }
+}
+// name: type
+Parameter param():
+{
+    String n;
+    TypeNode t;
+}
+{
+    n=name() ":" t=type()
+        {
+            return new Parameter(t, n);
+        }
+}
+
+BlockNode block():
+{
+    Token t;
+    DefinedVariable var;
+    List<DefinedVariable> vars = new ArrayList<>();
+    StmtNode stmt;
+    List<StmtNode> stmts = new ArrayList<>();
+}
+{
+    t="{"
+    ( var=defvar() { vars.add(var); }
+    | stmt=stmt() { stmts.add(stmt); }
+    )*
+    "}"
+    {
+        return new BlockNode(location(t), vars, stmts);
+    }
+}
+
+StmtNode stmt():
+{
+    StmtNode n = null;
+    ExprNode e = null;
+}
+{
+    ( ";" // empty statement
+    | e=expr() ";" { n = new ExprStmtNode(e.location(), e); }
+    | n=block()
+    )
+    {
+        return n;
+    }
+}
+
+ExprNode expr():
+{
+    ExprNode lhs, rhs, expr;
+    String op;
+}
+{
+    LOOKAHEAD(term() "=") lhs=term() "=" rhs=expr()
+    {
+        return new AssignNode(lhs, rhs);
+    }
+    | LOOKAHEAD(term() opassign_op()) lhs=term() op=opassign_op() rhs=expr()
+      {
+          return new OpAssignNode(lhs, op, rhs);
+      }
+    | expr=expr9()
+      {
+          return expr;
+      }
+}
+
+String opassign_op(): {}
+{
+    "+="  { return "+"; }
+    | "-="  { return "-"; }
+    | "*="  { return "*"; }
+    | "/="  { return "/"; }
+    | "%="  { return "%"; }
+    | "&="  { return "&"; }
+    | "|="  { return "|"; }
+    | "^="  { return "^"; }
+    | "<<=" { return "<<"; }
+    | ">>=" { return ">>"; }
+}
+
+ExprNode expr9():
+{
+    ExprNode l, r;
+}
+{
+    l=expr8() ("||" r=expr8() { l = new LogicalOrNode(l, r); })*
+    {
+        return l;
+    }
+}
+
+ExprNode expr8():
+{
+    ExprNode l, r;
+}
+{
+    l=expr7() ("&&" r=expr7() { l = new LogicalAndNode(l, r); })*
+    {
+        return l;
+    }
+}
+
+ExprNode expr7():
+{
+    ExprNode l, r;
+}
+{
+    l=expr6() ( ">"  r=expr6() { l = new BinaryOpNode(l, ">", r); }
+              | "<"  r=expr6() { l = new BinaryOpNode(l, "<", r); }
+              | ">=" r=expr6() { l = new BinaryOpNode(l, ">=", r); }
+              | "<=" r=expr6() { l = new BinaryOpNode(l, "<=", r); }
+              | "==" r=expr6() { l = new BinaryOpNode(l, "==", r); }
+              | "!=" r=expr6() { l = new BinaryOpNode(l, "!=", r); } )*
+    {
+        return l;
+    }
+}
+
+ExprNode expr6():
+{
+    ExprNode l, r;
+}
+{
+    l=expr5() ("|" r=expr5() { l = new BinaryOpNode(l, "|", r); })*
+    {
+        return l;
+    }
+}
+
+ExprNode expr5():
+{
+    ExprNode l, r;
+}
+{
+    l=expr4() ("^" r=expr4() { l = new BinaryOpNode(l, "^", r); })*
+    {
+        return l;
+    }
+}
+
+ExprNode expr4():
+{
+    ExprNode l, r;
+}
+{
+    l=expr3() ("&" r=expr3() { l = new BinaryOpNode(l, "&", r); })*
+    {
+        return l;
+    }
+}
+
+ExprNode expr3():
+{
+    ExprNode l, r;
+}
+{
+    l=expr2() ( ">>" r=expr2() { l = new BinaryOpNode(l, ">>", r); }
+              | "<<" r=expr2() { l = new BinaryOpNode(l, "<<", r); }
+              )*
+    {
+        return l;
+    }
 }
 
 ExprNode expr2():
@@ -186,9 +606,9 @@ ExprNode expr2():
 	l=expr1() ( "+" r=expr1() { l = new BinaryOpNode(l, "+", r); }
 	          | "-" r=expr1() { l = new BinaryOpNode(l, "-", r); }
 			  )*
-			{
-				return l;
-			}
+	{
+		return l;
+	}
 }
 
 ExprNode expr1():
@@ -196,13 +616,49 @@ ExprNode expr1():
 	ExprNode l, r;
 }
 {
-	l=primary() ( "*" r=primary() { l = new BinaryOpNode(l, "*", r); }
-			    | "/" r=primary() { l = new BinaryOpNode(l, "/", r); }
-				| "%" r=primary() { l = new BinaryOpNode(l, "%", r); }
+	l=primary() ( "*" r=term() { l = new BinaryOpNode(l, "*", r); }
+			    | "/" r=term() { l = new BinaryOpNode(l, "/", r); }
+				| "%" r=term() { l = new BinaryOpNode(l, "%", r); }
 			    )*
-			{
-				return l;
-			}
+	{
+		return l;
+	}
+}
+
+ExprNode term():
+{
+    TypeNode t;
+    ExprNode n;
+}
+{
+      LOOKAHEAD("(" type()) "(" t=type() ")" n=term() { return new CastNode(t, n); }
+      | n=postfix() { return n; }
+}
+
+ExprNode postfix():
+{
+    List<ExprNode> args;
+    ExprNode expr;
+}
+{
+    expr=primary()
+    ("(" args=args() ")" { expr = new FnCallNode(expr, args); })*
+    {
+        return expr;
+    }
+}
+
+List<ExprNode> args():
+{
+    List<ExprNode> args = new ArrayList<>();
+    ExprNode arg;
+}
+{
+    [ arg=expr() { args.add(arg); }
+      ("," arg=expr() { args.add(arg); })* ]
+    {
+        return args;
+    }
 }
 
 ExprNode primary():
@@ -212,6 +668,26 @@ ExprNode primary():
 {
 	t=<INTEGER>
 		{
-			return new IntegerLiteralNode( Long.parseLong(t.image));
+		    return integerNode(location(t), t.image);
 		}
+	| t=<CHARACTER>
+        {
+            return new IntegerLiteralNode(
+                location(t),
+                IntegerTypeRef.i8Ref(),
+                characterCode(t.image)
+            );
+        }
+    | t=<STRING>
+        {
+            return new StringLiteralNode(
+                location(t),
+                new PointerTypeRef(IntegerTypeRef.i8Ref()),
+                stringValue(t.image)
+            );
+        }
+    | t=<IDENTIFIER>
+        {
+            return new VariableNode(location(t), t.image);
+        }
 }
