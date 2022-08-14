@@ -1,5 +1,6 @@
 package mat.ast;
 
+import mat.entity.Constant;
 import mat.entity.DefinedFunction;
 import mat.entity.DefinedVariable;
 
@@ -11,6 +12,7 @@ import java.util.Set;
 public class Declarations {
     Set<DefinedVariable> defvars = new LinkedHashSet<>();
     Set<DefinedFunction> defns = new LinkedHashSet<>();
+    Set<Constant> constants = new LinkedHashSet<>();
 
     ArrayList<String> imports = new ArrayList<>();
 
@@ -20,6 +22,10 @@ public class Declarations {
 
     public List<DefinedFunction> defns() {
         return new ArrayList<>(defns);
+    }
+
+    public List<Constant> constants() {
+        return new ArrayList<>(constants);
     }
 
     public void addImports(ArrayList<String> imports) {
@@ -32,5 +38,9 @@ public class Declarations {
 
     public void addDefn(DefinedFunction func) {
         defns.add(func);
+    }
+
+    public void addConstant(Constant c) {
+        constants.add(c);
     }
 }

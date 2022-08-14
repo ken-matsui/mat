@@ -1,7 +1,9 @@
 import stdio;
 import mat.exception;
 
+let fuga: i32 = 1;
+
 fn main() -> i32 {
-    let hoge: i64 = 12;
+    let mut hoge: i64 = 12;
     1 + 2 + 2 - 1i64 * hoge;
 }

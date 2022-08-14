@@ -373,10 +373,12 @@ Declarations top_defs():
 {
     Declarations defs = new Declarations();
     DefinedVariable defv;
+    Constant defc;
     DefinedFunction defn;
 }
 {
-    ( defv=defvar() { defs.addDefvar(defv); }
+    ( LOOKAHEAD(2) defc=defconst() { defs.addConstant(defc); }
+    | defv=defvar() { defs.addDefvar(defv); }
     | defn=defn() { defs.addDefn(defn); }
     )*
     {
@@ -393,9 +395,25 @@ DefinedVariable defvar():
     ExprNode init = null;
 }
 {
-    <LET> mut=mutability() name=name() ":" type=type() ["=" init=expr()] ";"
+    <LET> <MUT> name=name() ":" type=type() ["=" init=expr()] ";"
     {
-        return new DefinedVariable(mut, type, name, init);
+        // TODO: priv is always false
+        return new DefinedVariable(false, type, name, init);
+    }
+}
+
+// let name: type = expr;
+// TODO: Merging into defvar would much clearer?
+Constant defconst():
+{
+    TypeNode type;
+    String name;
+    ExprNode init = null;
+}
+{
+    <LET> name=name() ":" type=type() ["=" init=expr()] ";"
+    {
+        return new Constant(type, name, init);
     }
 }
 
