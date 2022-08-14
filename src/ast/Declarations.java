@@ -1,7 +1,12 @@
 package mat.ast;
 
-import mat.entity.*;
-import java.util.*;
+import mat.entity.DefinedFunction;
+import mat.entity.DefinedVariable;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Declarations {
     Set<DefinedVariable> defvars = new LinkedHashSet<>();

@@ -1,13 +1,32 @@
 package mat.type;
 
-import mat.ast.*;
+import mat.ast.Slot;
 import mat.utils.ErrorHandler;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TypeTable {
+    static final protected Object checking = new Object();
+    static final protected Object checked = new Object();
+    private int intSize;
+    private int longSize;
+    private int pointerSize;
+    private Map<TypeRef, Type> table;
+    public TypeTable(int intSize, int longSize, int pointerSize) {
+        this.intSize = intSize;
+        this.longSize = longSize;
+        this.pointerSize = pointerSize;
+        this.table = new HashMap<TypeRef, Type>();
+    }
+
     static public TypeTable ilp32() { return newTable(1, 2, 4, 4, 4); }
+
     static public TypeTable ilp64() { return newTable(1, 2, 8, 8, 8); }
+
     static public TypeTable lp64()  { return newTable(1, 2, 4, 8, 8); }
+
     static public TypeTable llp64() { return newTable(1, 2, 4, 4, 8); }
 
     static private TypeTable newTable(int charsize, int shortsize,
@@ -31,18 +50,6 @@ public class TypeTable {
         table.put(IntegerTypeRef.u64Ref(),
                 new IntegerType(longsize, false, "u64"));
         return table;
-    }
-
-    private int intSize;
-    private int longSize;
-    private int pointerSize;
-    private Map<TypeRef, Type> table;
-
-    public TypeTable(int intSize, int longSize, int pointerSize) {
-        this.intSize = intSize;
-        this.longSize = longSize;
-        this.pointerSize = pointerSize;
-        this.table = new HashMap<TypeRef, Type>();
     }
 
     public boolean isDefined(TypeRef ref) {
@@ -149,12 +156,15 @@ public class TypeTable {
     public IntegerType i8() {
         return (IntegerType)table.get(IntegerTypeRef.i8Ref());
     }
+
     public IntegerType i16() {
         return (IntegerType)table.get(IntegerTypeRef.i16Ref());
     }
+
     public IntegerType i32() {
         return (IntegerType)table.get(IntegerTypeRef.i32Ref());
     }
+
     public IntegerType i64() {
         return (IntegerType)table.get(IntegerTypeRef.i64Ref());
     }
@@ -162,12 +172,15 @@ public class TypeTable {
     public IntegerType u8() {
         return (IntegerType)table.get(IntegerTypeRef.u8Ref());
     }
+
     public IntegerType u16() {
         return (IntegerType)table.get(IntegerTypeRef.u16Ref());
     }
+
     public IntegerType u32() {
         return (IntegerType)table.get(IntegerTypeRef.u32Ref());
     }
+
     public IntegerType u64() {
         return (IntegerType)table.get(IntegerTypeRef.u64Ref());
     }
@@ -221,9 +234,6 @@ public class TypeTable {
     protected void checkRecursiveDefinition(Type t, ErrorHandler h) {
         _checkRecursiveDefinition(t, new HashMap<Type, Object>(), h);
     }
-
-    static final protected Object checking = new Object();
-    static final protected Object checked = new Object();
 
     protected void _checkRecursiveDefinition(Type t,
                                              Map<Type, Object> marks,
