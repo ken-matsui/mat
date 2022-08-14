@@ -5,5 +5,5 @@ let fuga: i32 = 1;
 
 fn main() -> i32 {
     let mut hoge: i64 = 12;
-    1 + 2 + 2 - 1i64 * hoge;
+    return 1 + 2 + 2 - 1i64 * hoge;
 }

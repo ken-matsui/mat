@@ -13,7 +13,7 @@ public interface ASTVisitor<S, E> {
 //    public S visit(BreakNode node);
 //    public S visit(ContinueNode node);
 //    public S visit(LabelNode node);
-//    public S visit(ReturnNode node);
+    public S visit(ReturnNode node);
 
     // Expressions
     public E visit(AssignNode node);

@@ -452,6 +452,7 @@ Params params():
         }
 }
 // name: type
+// TODO: support mut
 Parameter param():
 {
     String n;
@@ -492,10 +493,20 @@ StmtNode stmt():
     ( ";" // empty statement
     | e=expr() ";" { n = new ExprStmtNode(e.location(), e); }
     | n=block()
+    | n=return_stmt()
     )
     {
         return n;
     }
+}
+
+ReturnNode return_stmt():
+{
+    Token t;
+    ExprNode expr = null;
+}
+{
+    t=<RETURN> [expr=expr()] ";" { return new ReturnNode(location(t), expr); }
 }
 
 ExprNode expr():
