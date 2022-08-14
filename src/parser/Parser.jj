@@ -64,6 +64,10 @@ public class Parser {
 		return newFileParser(file, debug).parse();
 	}
 
+    private void addType(String name) {
+        knownTypedefs.add(name);
+    }
+
     private IntegerLiteralNode integerNode(Location loc, String image) {
         int base = getBase(image);
         String s = image;
@@ -239,7 +243,7 @@ TOKEN: {
     | <RETURN   : "return">
     | <BREAK    : "break">
     | <CONTINUE : "continue">
-    | <TYPEDEF  : "typedef">
+    | <TYPE     : "type">
     | <IMPORT   : "import">
     | <SIZEOF   : "sizeof">
     | <FN       : "fn">
@@ -371,18 +375,20 @@ String import_stmt():
 
 Declarations top_defs():
 {
-    Declarations defs = new Declarations();
+    Declarations decls = new Declarations();
     DefinedVariable defv;
     Constant defc;
     DefinedFunction defn;
+    TypedefNode typedef;
 }
 {
-    ( LOOKAHEAD(2) defc=defconst() { defs.addConstant(defc); }
-    | defv=defvar() { defs.addDefvar(defv); }
-    | defn=defn() { defs.addDefn(defn); }
+    ( LOOKAHEAD(2) defc=defconst() { decls.addConstant(defc); }
+    | defv=defvar() { decls.addDefvar(defv); }
+    | defn=defn() { decls.addDefn(defn); }
+    | typedef=typedef() { decls.addTypedef(typedef); }
     )*
     {
-        return defs;
+        return decls;
     }
 }
 
@@ -431,6 +437,21 @@ DefinedFunction defn():
         TypeRef t = new FunctionTypeRef(ret, ps.parametersTypeRef());
         // TODO: priv is always false
         return new DefinedFunction(false, new TypeNode(t), n, ps, body);
+    }
+}
+
+// type new = old;
+TypedefNode typedef():
+{
+    Token t;
+    TypeRef ref;
+    Token newname;
+}
+{
+    t=<TYPE> newname=<IDENTIFIER> "=" ref=typeref() ";"
+    {
+        addType(newname.image);
+        return new TypedefNode(location(t), ref, newname.image);
     }
 }
 

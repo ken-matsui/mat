@@ -3,6 +3,8 @@ import mat.exception;
 
 let fuga: i32 = 1;
 
+type newint = i32;
+
 fn main() -> i32 {
     let mut hoge: i64 = 12;
     return 1 + 2 + 2 - 1i64 * hoge;

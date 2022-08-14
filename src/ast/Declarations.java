@@ -13,6 +13,7 @@ public class Declarations {
     Set<DefinedVariable> defvars = new LinkedHashSet<>();
     Set<DefinedFunction> defns = new LinkedHashSet<>();
     Set<Constant> constants = new LinkedHashSet<>();
+    Set<TypedefNode> typedefs = new LinkedHashSet<TypedefNode>();
 
     ArrayList<String> imports = new ArrayList<>();
 
@@ -42,5 +43,13 @@ public class Declarations {
 
     public void addConstant(Constant c) {
         constants.add(c);
+    }
+
+    public void addTypedef(TypedefNode n) {
+        typedefs.add(n);
+    }
+
+    public List<TypedefNode> typedefs() {
+        return new ArrayList<>(typedefs);
     }
 }
