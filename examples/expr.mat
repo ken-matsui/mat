@@ -2,5 +2,6 @@ import stdio;
 import mat.exception;
 
 fn main() -> i32 {
-    1 + 2 + 2 - 1i64 * 3;
+    let hoge: i64 = 12;
+    1 + 2 + 2 - 1i64 * hoge;
 }
