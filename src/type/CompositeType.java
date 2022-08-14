@@ -1,10 +1,14 @@
 package mat.type;
 
-import mat.ast.Slot;
 import mat.ast.Location;
-import mat.exception.*;
-import java.util.*;
-import java.lang.reflect.*;
+import mat.ast.Slot;
+import mat.exception.SemanticError;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 abstract public class CompositeType extends NamedType {
     protected List<Slot> members;

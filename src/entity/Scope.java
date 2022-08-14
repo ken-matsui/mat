@@ -1,8 +1,9 @@
 package mat.entity;
 
 import mat.exception.SemanticException;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
 
 abstract public class Scope {
     protected List<LocalScope> children;

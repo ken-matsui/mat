@@ -1,7 +1,8 @@
 package mat.entity;
 
 import mat.ast.Location;
-import java.util.*;
+
+import java.util.List;
 
 abstract public class ParamSlots<T> {
     protected Location location;

@@ -1,8 +1,8 @@
 package mat.ast;
 
-import mat.type.Type;
-import mat.entity.Entity;
 import mat.entity.DefinedVariable;
+import mat.entity.Entity;
+import mat.type.Type;
 
 public class VariableNode extends LHSNode {
     private Location location;

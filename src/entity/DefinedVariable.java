@@ -1,10 +1,10 @@
 package mat.entity;
 
-import mat.type.Type;
-import mat.ast.TypeNode;
-import mat.ast.ExprNode;
-import mat.ir.Expr;
 import mat.asm.Symbol;
+import mat.ast.ExprNode;
+import mat.ast.TypeNode;
+import mat.ir.Expr;
+import mat.type.Type;
 
 public class DefinedVariable extends Variable {
     protected ExprNode initializer;

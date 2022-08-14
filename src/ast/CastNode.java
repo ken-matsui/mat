@@ -1,6 +1,6 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.Type;
 
 public class CastNode extends ExprNode {
     protected TypeNode typeNode;

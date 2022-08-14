@@ -1,6 +1,6 @@
 package mat.type;
 
-import java.util.*;
+import java.util.List;
 
 public class FunctionType extends Type {
     protected Type returnType;

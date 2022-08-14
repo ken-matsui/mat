@@ -1,9 +1,11 @@
 package mat.ast;
 
-import mat.type.*;
-import mat.utils.*;
-import java.util.*;
-import java.io.*;
+import mat.type.Type;
+import mat.type.TypeRef;
+import mat.utils.TextUtils;
+
+import java.io.PrintStream;
+import java.util.List;
 
 public class Dumper {
     protected int nIndent;

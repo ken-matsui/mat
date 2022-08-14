@@ -1,10 +1,12 @@
 package mat.ir;
 
+import mat.asm.Label;
 import mat.ast.Location;
-import mat.entity.*;
-import mat.asm.*;
-import java.util.List;
+import mat.entity.DefinedFunction;
+import mat.entity.DefinedVariable;
+
 import java.io.PrintStream;
+import java.util.List;
 
 public class Dumper {
     PrintStream stream;

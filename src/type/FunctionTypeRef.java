@@ -1,8 +1,5 @@
 package mat.type;
 
-import mat.ast.*;
-import java.util.*;
-
 public class FunctionTypeRef extends TypeRef {
     protected TypeRef returnType;
     protected ParamTypeRefs params;

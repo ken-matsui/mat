@@ -1,9 +1,9 @@
 package mat.ir;
 
-import mat.asm.Type;
-import mat.asm.Operand;
 import mat.asm.ImmediateValue;
 import mat.asm.MemoryReference;
+import mat.asm.Operand;
+import mat.asm.Type;
 import mat.entity.Entity;
 
 abstract public class Expr implements Dumpable {

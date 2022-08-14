@@ -1,6 +1,7 @@
 package mat.asm;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SymbolTable {
     protected String base;

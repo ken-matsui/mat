@@ -1,8 +1,8 @@
 package mat.entity;
 
-import mat.type.Type;
+import mat.exception.SemanticException;
 import mat.utils.ErrorHandler;
-import mat.exception.*;
+
 import java.util.*;
 
 public class ToplevelScope extends Scope {

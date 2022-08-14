@@ -1,7 +1,7 @@
 package mat.type;
 
-import mat.ast.TypeNode;
 import mat.ast.Location;
+import mat.ast.TypeNode;
 
 public class UserType extends NamedType {
     protected TypeNode real;

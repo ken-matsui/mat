@@ -2,7 +2,8 @@ package mat.ast;
 
 import mat.entity.DefinedVariable;
 import mat.entity.LocalScope;
-import java.util.*;
+
+import java.util.List;
 
 public class BlockNode extends StmtNode {
     protected List<DefinedVariable> variables;

@@ -1,8 +1,10 @@
 package mat.type;
 
-import mat.entity.ParamSlots;
 import mat.ast.Location;
-import java.util.*;
+import mat.entity.ParamSlots;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParamTypeRefs extends ParamSlots<TypeRef> {
     public ParamTypeRefs(List<TypeRef> paramDescs) {

@@ -1,9 +1,10 @@
 package mat.type;
 
-import mat.ast.Slot;
 import mat.ast.Location;
+import mat.ast.Slot;
 import mat.utils.AsmUtils;
-import java.util.*;
+
+import java.util.List;
 
 public class UnionType extends CompositeType {
     public UnionType(String name, List<Slot> membs, Location loc) {

@@ -1,6 +1,6 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.TypeRef;
 
 public class IntegerLiteralNode extends LiteralNode {
     protected long value;

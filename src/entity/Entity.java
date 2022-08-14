@@ -1,12 +1,12 @@
 package mat.entity;
 
-import mat.type.*;
-import mat.ast.TypeNode;
-import mat.ast.Location;
-import mat.ast.ExprNode;
-import mat.asm.Operand;
-import mat.asm.MemoryReference;
 import mat.asm.ImmediateValue;
+import mat.asm.MemoryReference;
+import mat.asm.Operand;
+import mat.ast.ExprNode;
+import mat.ast.Location;
+import mat.ast.TypeNode;
+import mat.type.Type;
 
 abstract public class Entity implements mat.ast.Dumpable {
     protected String name;

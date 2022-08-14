@@ -1,8 +1,9 @@
 package mat.entity;
 
-import mat.ast.TypeNode;
 import mat.ast.BlockNode;
+import mat.ast.TypeNode;
 import mat.ir.Stmt;
+
 import java.util.List;
 
 public class DefinedFunction extends Function {

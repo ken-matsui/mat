@@ -1,6 +1,6 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.Type;
 
 abstract public class AbstractAssignNode extends ExprNode {
     ExprNode lhs, rhs;

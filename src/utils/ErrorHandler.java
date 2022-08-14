@@ -1,7 +1,9 @@
 package mat.utils;
 
 import mat.ast.Location;
-import java.io.*;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 public class ErrorHandler {
     protected String programId;

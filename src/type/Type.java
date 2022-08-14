@@ -1,7 +1,6 @@
 package mat.type;
 
-import mat.entity.Function;
-import mat.exception.*;
+import mat.exception.SemanticError;
 
 public abstract class Type {
     static final public long sizeUnknown = -1;

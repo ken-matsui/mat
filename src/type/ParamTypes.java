@@ -2,7 +2,9 @@ package mat.type;
 
 import mat.ast.Location;
 import mat.entity.ParamSlots;
-import java.util.*;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class ParamTypes extends ParamSlots<Type> {
     protected ParamTypes(Location loc, List<Type> paramDescs, boolean vararg) {

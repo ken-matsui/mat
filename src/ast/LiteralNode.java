@@ -1,7 +1,7 @@
 package mat.ast;
 
-import mat.type.TypeRef;
 import mat.type.Type;
+import mat.type.TypeRef;
 
 abstract public class LiteralNode extends ExprNode {
     protected Location location;

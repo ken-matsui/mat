@@ -1,8 +1,8 @@
 package mat.entity;
 
-import mat.asm.Symbol;
 import mat.asm.ImmediateValue;
 import mat.asm.MemoryReference;
+import mat.asm.Symbol;
 
 public class ConstantEntry {
     protected String value;

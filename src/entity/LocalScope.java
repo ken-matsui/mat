@@ -1,9 +1,13 @@
 package mat.entity;
 
+import mat.exception.SemanticException;
 import mat.type.Type;
 import mat.utils.ErrorHandler;
-import mat.exception.*;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LocalScope extends Scope {
     protected Scope parent;

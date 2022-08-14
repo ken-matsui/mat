@@ -1,7 +1,7 @@
 package mat.ast;
 
+import mat.exception.SemanticError;
 import mat.type.Type;
-import mat.exception.*;
 
 abstract public class ExprNode extends Node {
     public ExprNode() {

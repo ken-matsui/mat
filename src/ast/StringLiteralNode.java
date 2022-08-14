@@ -1,7 +1,7 @@
 package mat.ast;
 
-import mat.type.TypeRef;
 import mat.entity.ConstantEntry;
+import mat.type.TypeRef;
 
 public class StringLiteralNode extends LiteralNode {
     protected String value;

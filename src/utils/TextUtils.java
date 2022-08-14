@@ -1,7 +1,8 @@
 package mat.utils;
 
 import mat.parser.Parser;
-import java.io.*;
+
+import java.io.UnsupportedEncodingException;
 
 abstract public class TextUtils {
     static final private byte vtab = 013;

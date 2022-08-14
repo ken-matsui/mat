@@ -1,9 +1,10 @@
 package mat.entity;
 
-import mat.type.Type;
-import mat.ast.TypeNode;
-import mat.asm.Symbol;
 import mat.asm.Label;
+import mat.asm.Symbol;
+import mat.ast.TypeNode;
+import mat.type.Type;
+
 import java.util.List;
 import java.util.Objects;
 

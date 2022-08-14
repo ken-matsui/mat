@@ -1,7 +1,7 @@
 package mat.compiler;
 
 import mat.ast.AST;
-import mat.exception.*;
+import mat.exception.CompileException;
 import mat.parser.Parser;
 
 import java.io.File;

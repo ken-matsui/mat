@@ -1,10 +1,11 @@
 package mat.entity;
 
-import mat.type.TypeRef;
-import mat.type.ParamTypeRefs;
 import mat.ast.Location;
-import java.util.List;
+import mat.type.ParamTypeRefs;
+import mat.type.TypeRef;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class Params extends ParamSlots<Parameter>
         implements mat.ast.Dumpable {

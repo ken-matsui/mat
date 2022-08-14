@@ -1,8 +1,10 @@
 package mat.ast;
 
-import mat.type.*;
-import mat.exception.*;
-import java.util.*;
+import mat.exception.SemanticError;
+import mat.type.FunctionType;
+import mat.type.Type;
+
+import java.util.List;
 
 public class FnCallNode extends ExprNode {
     protected ExprNode expr;

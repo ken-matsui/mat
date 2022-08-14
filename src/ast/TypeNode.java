@@ -1,6 +1,7 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.Type;
+import mat.type.TypeRef;
 
 public class TypeNode extends Node {
     TypeRef typeRef;

@@ -1,6 +1,7 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.Type;
+import mat.type.TypeRef;
 
 public class Slot extends Node {
     protected TypeNode typeNode;
