@@ -514,10 +514,25 @@ StmtNode stmt():
     ( ";" // empty statement
     | e=expr() ";" { n = new ExprStmtNode(e.location(), e); }
     | n=block()
+    | n=if_stmt()
     | n=return_stmt()
     )
     {
         return n;
+    }
+}
+
+IfNode if_stmt():
+{
+    Token t;
+    ExprNode cond;
+    StmtNode thenBody, elseBody = null;
+}
+{
+    t=<IF> "(" cond=expr() ")" thenBody=stmt()
+            [LOOKAHEAD(1) <ELSE> elseBody=stmt()]
+    {
+        return new IfNode(location(t), cond, thenBody, elseBody);
     }
 }
 

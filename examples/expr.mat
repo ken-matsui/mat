@@ -7,5 +7,11 @@ type newint = i32;
 
 fn main() -> i32 {
     let mut hoge: i64 = 12;
-    return 1 + 2 + 2 - 1i64 * hoge;
+    if (hoge) {
+        return 1;
+    } else if (fuga) {
+        return 2;
+    } else {
+        return 1 + 2 + 2 - 1i64 * hoge;
+    }
 }
