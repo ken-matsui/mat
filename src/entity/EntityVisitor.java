@@ -1,9 +1,9 @@
 package mat.entity;
 
 public interface EntityVisitor<T> {
-    public T visit(DefinedVariable var);
-//    public T visit(UndefinedVariable var);
-    public T visit(DefinedFunction func);
-//    public T visit(UndefinedFunction func);
-    public T visit(Constant c);
+    T visit(DefinedVariable var);
+//    T visit(UndefinedVariable var);
+    T visit(DefinedFunction func);
+//    T visit(UndefinedFunction func);
+    T visit(Constant c);
 }

@@ -2,37 +2,37 @@ package mat.ast;
 
 public interface ASTVisitor<S, E> {
     // Statements
-    public S visit(BlockNode node);
-    public S visit(ExprStmtNode node);
-    public S visit(IfNode node);
-//    public S visit(SwitchNode node);
-//    public S visit(CaseNode node);
-//    public S visit(WhileNode node);
-//    public S visit(DoWhileNode node);
-//    public S visit(ForNode node);
-//    public S visit(BreakNode node);
-//    public S visit(ContinueNode node);
-    public S visit(ReturnNode node);
+    S visit(BlockNode node);
+    S visit(ExprStmtNode node);
+    S visit(IfNode node);
+//    S visit(SwitchNode node);
+//    S visit(CaseNode node);
+//    S visit(WhileNode node);
+//    S visit(DoWhileNode node);
+//    S visit(ForNode node);
+//    S visit(BreakNode node);
+//    S visit(ContinueNode node);
+    S visit(ReturnNode node);
 
     // Expressions
-    public E visit(AssignNode node);
-    public E visit(OpAssignNode node);
-    public E visit(LogicalOrNode node);
-    public E visit(LogicalAndNode node);
-    public E visit(BinaryOpNode node);
-//    public E visit(UnaryOpNode node);
-//    public E visit(PrefixOpNode node);
-//    public E visit(SuffixOpNode node);
-//    public E visit(ArefNode node);
-//    public E visit(MemberNode node);
-//    public E visit(PtrMemberNode node);
-    public E visit(FnCallNode node);
-//    public E visit(DereferenceNode node);
-//    public E visit(AddressNode node);
-    public E visit(CastNode node);
-//    public E visit(SizeofExprNode node);
-//    public E visit(SizeofTypeNode node);
-    public E visit(VariableNode node);
-    public E visit(IntegerLiteralNode node);
-    public E visit(StringLiteralNode node);
+    E visit(AssignNode node);
+    E visit(OpAssignNode node);
+    E visit(LogicalOrNode node);
+    E visit(LogicalAndNode node);
+    E visit(BinaryOpNode node);
+//    E visit(UnaryOpNode node);
+//    E visit(PrefixOpNode node);
+//    E visit(SuffixOpNode node);
+//    E visit(ArefNode node);
+//    E visit(MemberNode node);
+//    E visit(PtrMemberNode node);
+    E visit(FnCallNode node);
+//    E visit(DereferenceNode node);
+//    E visit(AddressNode node);
+    E visit(CastNode node);
+//    E visit(SizeofExprNode node);
+//    E visit(SizeofTypeNode node);
+    E visit(VariableNode node);
+    E visit(IntegerLiteralNode node);
+    E visit(StringLiteralNode node);
 }

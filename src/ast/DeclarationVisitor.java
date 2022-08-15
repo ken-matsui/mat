@@ -1,7 +1,7 @@
 package mat.ast;
 
 public interface DeclarationVisitor<T> {
-    public T visit(StructNode struct);
-//    public T visit(UnionNode union);
-    public T visit(TypedefNode typedef);
+    T visit(StructNode struct);
+//    T visit(UnionNode union);
+    T visit(TypedefNode typedef);
 }

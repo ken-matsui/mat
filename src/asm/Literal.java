@@ -1,14 +1,14 @@
 package mat.asm;
 
 public interface Literal extends Comparable<Literal> {
-    public String toSource();
-    public String toSource(SymbolTable table);
-    public String dump();
-    public void collectStatistics(Statistics stats);
-    public boolean isZero();
-    public Literal plus(long diff);
-    public int cmp(IntegerLiteral i);
-    public int cmp(NamedSymbol sym);
-    public int cmp(UnnamedSymbol sym);
-    public int cmp(SuffixedSymbol sym);
+    String toSource();
+    String toSource(SymbolTable table);
+    String dump();
+    void collectStatistics(Statistics stats);
+    boolean isZero();
+    Literal plus(long diff);
+    int cmp(IntegerLiteral i);
+    int cmp(NamedSymbol sym);
+    int cmp(UnnamedSymbol sym);
+    int cmp(SuffixedSymbol sym);
 }
