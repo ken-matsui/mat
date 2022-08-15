@@ -32,16 +32,11 @@ public class AST extends Node {
         dumpTokens(System.out);
     }
 
+    static final private int NUM_LEFT_COLUMNS = 24;
     public void dumpTokens(PrintStream s) {
         for (Token t = source.token(); t != null; t = t.next) {
-            printPair(ParserConstants.tokenImage[t.kind], TextUtils.dumpString(t.image), s);
+            s.printf("%-" + NUM_LEFT_COLUMNS + "s", ParserConstants.tokenImage[t.kind]);
+            s.println(TextUtils.dumpString(t.image));
         }
-    }
-
-    static final private int NUM_LEFT_COLUMNS = 24;
-
-    private void printPair(String key, String value, PrintStream s) {
-        s.printf("%-" + NUM_LEFT_COLUMNS + "s", key);
-        s.println(value);
     }
 }
