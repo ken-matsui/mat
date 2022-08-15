@@ -128,7 +128,7 @@ public class Parser {
     private String stringValue(String _image) throws ParseException {
         int pos = 0;
         int idx;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         String image = _image.substring(1, _image.length() - 1);
 
         while ((idx = image.indexOf("\\", pos)) >= 0) {
