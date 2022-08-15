@@ -33,7 +33,7 @@ public class Parser {
 
 	public AST parse() throws SyntaxException {
 		try {
-			return compilation_unit();
+			return CompilationUnit();
 		} catch (TokenMgrError err) {
 			throw new SyntaxException(err.getMessage());
 		} catch (ParseException ex) {
@@ -287,7 +287,7 @@ MORE: { "\"" : IN_STRING }                             // rule1
 // Rule Fragments
 //
 
-String name():
+String Name():
 {
 	Token t;
 }
@@ -295,14 +295,14 @@ String name():
 	t=<IDENTIFIER> { return t.image; }
 }
 
-TypeNode type():
+TypeNode Type():
 {
     TypeRef ref;
 }
 {
-    ref=typeref() { return new TypeNode(ref); }
+    ref=Typeref() { return new TypeNode(ref); }
 }
-TypeRef typeref():
+TypeRef Typeref():
 {
     Token t;
 }
@@ -319,7 +319,7 @@ TypeRef typeref():
     | t=<I64> { return IntegerTypeRef.i64Ref(location(t)); }
 }
 
-boolean mutability():
+boolean Mutability():
 {
     Token t = null;
 }
@@ -331,7 +331,7 @@ boolean mutability():
 // Main Rules
 //
 
-AST compilation_unit():
+AST CompilationUnit():
 {
     Token t;
 	ArrayList<String> imports;
@@ -341,38 +341,38 @@ AST compilation_unit():
     {
         t = getToken(1);
     }
-    imports=import_stmts() defs=top_defs() <EOF>
+    imports=ImportStmts() defs=TopDefs() <EOF>
 	{
         defs.addImports(imports);
 		return new AST(location(t), defs);
 	}
 }
 
-ArrayList<String> import_stmts():
+ArrayList<String> ImportStmts():
 {
     String i;
     ArrayList<String> imports = new ArrayList<>();
 }
 {
-    ( i=import_stmt() { imports.add(i); } )*
+    ( i=ImportStmt() { imports.add(i); } )*
     {
         return imports;
     }
 }
-String import_stmt():
+String ImportStmt():
 {
     StringBuilder builder = new StringBuilder();
     String n;
 }
 {
-	<IMPORT> n=name() { builder.append(n); }
-	("." n=name() { builder.append("."); builder.append(n); })* ";"
+	<IMPORT> n=Name() { builder.append(n); }
+	("." n=Name() { builder.append("."); builder.append(n); })* ";"
 	{
         return builder.toString();
     }
 }
 
-Declarations top_defs():
+Declarations TopDefs():
 {
     Declarations decls = new Declarations();
     DefinedVariable defvars;
@@ -382,11 +382,11 @@ Declarations top_defs():
     TypedefNode typedef;
 }
 {
-    ( LOOKAHEAD(2) defconst=defconst() { decls.addConstant(defconst); }
-    | defvars=defvar() { decls.addDefvar(defvars); }
-    | defn=defn() { decls.addDefn(defn); }
-    | defstruct=defstruct() { decls.addDefstruct(defstruct); }
-    | typedef=typedef() { decls.addTypedef(typedef); }
+    ( LOOKAHEAD(2) defconst=Defconst() { decls.addConstant(defconst); }
+    | defvars=Defvar() { decls.addDefvar(defvars); }
+    | defn=Defn() { decls.addDefn(defn); }
+    | defstruct=Defstruct() { decls.addDefstruct(defstruct); }
+    | typedef=Typedef() { decls.addTypedef(typedef); }
     )*
     {
         return decls;
@@ -394,7 +394,7 @@ Declarations top_defs():
 }
 
 // let mut name: type = expr;
-DefinedVariable defvar():
+DefinedVariable Defvar():
 {
     boolean mut;
     TypeNode type;
@@ -402,7 +402,7 @@ DefinedVariable defvar():
     ExprNode init = null;
 }
 {
-    <LET> <MUT> name=name() ":" type=type() ["=" init=expr()] ";"
+    <LET> <MUT> name=Name() ":" type=Type() ["=" init=expr()] ";"
     {
         // TODO: priv is always false
         return new DefinedVariable(false, type, name, init);
@@ -411,21 +411,21 @@ DefinedVariable defvar():
 
 // let name: type = expr;
 // TODO: Merging into defvar would much clearer?
-Constant defconst():
+Constant Defconst():
 {
     TypeNode type;
     String name;
     ExprNode init = null;
 }
 {
-    <LET> name=name() ":" type=type() ["=" init=expr()] ";"
+    <LET> name=Name() ":" type=Type() ["=" init=expr()] ";"
     {
         return new Constant(type, name, init);
     }
 }
 
 // fn name(...) -> type {}
-DefinedFunction defn():
+DefinedFunction Defn():
 {
     TypeRef ret;
     String n;
@@ -433,7 +433,7 @@ DefinedFunction defn():
     BlockNode body;
 }
 {
-    <FN> n=name() "(" ps=params() ")" "->" ret=typeref() body=block()
+    <FN> n=Name() "(" ps=params() ")" "->" ret=Typeref() body=block()
     {
         TypeRef t = new FunctionTypeRef(ret, ps.parametersTypeRef());
         // TODO: priv is always false
@@ -445,20 +445,20 @@ DefinedFunction defn():
 //     member: type,
 //     ...
 // }
-StructNode defstruct():
+StructNode Defstruct():
 {
     Token t;
     String n;
     List<Slot> membs;
 }
 {
-    t=<STRUCT> n=name() membs=member_list()
+    t=<STRUCT> n=Name() membs=MemberList()
         {
             return new StructNode(location(t), new StructTypeRef(n), n, membs);
         }
 }
 
-List<Slot> member_list():
+List<Slot> MemberList():
 {
     List<Slot> membs = new ArrayList<>();
     Slot s;
@@ -478,18 +478,18 @@ Slot slot():
     String n;
 }
 {
-    n=name() ":" t=type() { return new Slot(t, n); }
+    n=Name() ":" t=Type() { return new Slot(t, n); }
 }
 
 // type new = old;
-TypedefNode typedef():
+TypedefNode Typedef():
 {
     Token t;
     TypeRef ref;
     Token newname;
 }
 {
-    t=<TYPE> newname=<IDENTIFIER> "=" ref=typeref() ";"
+    t=<TYPE> newname=<IDENTIFIER> "=" ref=Typeref() ";"
     {
         addType(newname.image);
         return new TypedefNode(location(t), ref, newname.image);
@@ -521,7 +521,7 @@ Parameter param():
     TypeNode t;
 }
 {
-    n=name() ":" t=type()
+    n=Name() ":" t=Type()
         {
             return new Parameter(t, n);
         }
@@ -537,7 +537,7 @@ BlockNode block():
 }
 {
     t="{"
-    ( var=defvar() { vars.add(var); }
+    ( var=Defvar() { vars.add(var); }
     | stmt=stmt() { stmts.add(stmt); }
     )*
     "}"
@@ -737,7 +737,7 @@ ExprNode term():
     ExprNode n;
 }
 {
-      LOOKAHEAD("(" type()) "(" t=type() ")" n=term() { return new CastNode(t, n); }
+      LOOKAHEAD("(" Type()) "(" t=Type() ")" n=term() { return new CastNode(t, n); }
       | n=postfix() { return n; }
 }
 
