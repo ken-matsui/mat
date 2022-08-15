@@ -20,5 +20,8 @@ jobs:
         brew update
         brew install javacc ant
 
+    - name: Replace the JavaCC path
+      run: sed -i '.bak' 's,/opt/homebrew,/usr/local,' build.xml
+
     - name: Build with Ant
       run: ant compile
