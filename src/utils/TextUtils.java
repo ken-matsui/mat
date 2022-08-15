@@ -15,23 +15,27 @@ abstract public class TextUtils {
         }
     }
 
-    static public String dumpString(String string, String encoding)
-            throws UnsupportedEncodingException {
+    static public String dumpString(String string, String encoding) throws UnsupportedEncodingException {
         byte[] src = string.getBytes(encoding);
         StringBuilder buf = new StringBuilder();
         buf.append("\"");
         for (byte b : src) {
             int c = toUnsigned(b);
-            if (c == '"') buf.append("\\\"");
-            else if (isPrintable(c)) buf.append((char)c);
-            else if (c == '\b') buf.append("\\b");
-            else if (c == '\t') buf.append("\\t");
-            else if (c == '\n') buf.append("\\n");
-            else if (c == vtab) buf.append("\\v");
-            else if (c == '\f') buf.append("\\f");
-            else if (c == '\r') buf.append("\\r");
-            else {
-                buf.append("\\").append(Integer.toOctalString(c));
+            switch (c) {
+                case '"' -> buf.append("\\\"");
+                case '\b' -> buf.append("\\b");
+                case '\t' -> buf.append("\\t");
+                case '\n' -> buf.append("\\n");
+                case vtab -> buf.append("\\v");
+                case '\f' -> buf.append("\\f");
+                case '\r' -> buf.append("\\r");
+                default -> {
+                    if (isPrintable(c)) {
+                        buf.append((char)c);
+                    } else {
+                        buf.append("\\").append(Integer.toOctalString(c));
+                    }
+                }
             }
         }
         buf.append("\"");
