@@ -239,14 +239,8 @@ public class TypeTable {
                                              Map<Type, Object> marks,
                                              ErrorHandler h) {
         if (marks.get(t) == checking) {
-            h.error(((NamedType)t).location(),
-                    "recursive type definition: " + t);
-            return;
-        }
-        else if (marks.get(t) == checked) {
-            return;
-        }
-        else {
+            h.error(((NamedType)t).location(), "recursive type definition: " + t);
+        } else if (marks.get(t) != checked) {
             marks.put(t, checking);
             if (t instanceof CompositeType) {
                 CompositeType ct = (CompositeType)t;
