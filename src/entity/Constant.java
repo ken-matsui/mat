@@ -4,9 +4,7 @@ import mat.ast.TypeNode;
 import mat.ast.ExprNode;
 
 public class Constant extends Entity {
-    private TypeNode type;
-    private String name;
-    private ExprNode value;
+    private final ExprNode value;
 
     public Constant(TypeNode type, String name, ExprNode value) {
         super(true, type, name);
