@@ -3,6 +3,7 @@ package mat.compiler;
 import mat.ast.AST;
 import mat.exception.CompileException;
 import mat.parser.Parser;
+import mat.type.TypeTable;
 
 import java.io.File;
 
@@ -29,6 +30,8 @@ public class Compiler {
             switch (a) {
                 case "--dump-tokens" -> opts.dumpTokens = true;
                 case "--dump-ast" -> opts.dumpAST = true;
+                case "--dump-ref" -> opts.dumpRef = true;
+                case "--dump-sema" -> opts.dumpSema = true;
                 default -> {
                     if (a.endsWith(".mat")) {
                         opts.sources.add(a);
@@ -45,6 +48,12 @@ public class Compiler {
         if (dumpAST(ast)) {
             return;
         }
+
+        TypeTable types = opts.platform.typeTable();
+//        AST sema = semanticAnalyze(ast, types);
+//        if (dumpSema(sema)) {
+//            return;
+//        }
     }
 
     private boolean dumpAST(AST ast) {
@@ -52,6 +61,29 @@ public class Compiler {
             ast.dumpTokens();
             return true;
         } else if (opts.dumpAST) {
+            ast.dump();
+            return true;
+        }
+        return false;
+    }
+
+//    private AST semanticAnalyze(AST ast, TypeTable types) throws SemanticException {
+//        new LocalResolver(errorHandler).resolve(ast);
+//        new TypeResolver(types, errorHandler).resolve(ast);
+//        types.semanticCheck(errorHandler);
+//        if (opts.dumpRef) {
+//            ast.dump();
+//            return ast;
+//        }
+//        new DereferenceChecker(types, errorHandler).check(ast);
+//        new TypeChecker(types, errorHandler).check(ast);
+//        return ast;
+//    }
+
+    private boolean dumpSema(AST ast) {
+        if (opts.dumpRef) {
+            return true;
+        } else if (opts.dumpSema) {
             ast.dump();
             return true;
         }
