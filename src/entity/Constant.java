@@ -1,7 +1,7 @@
 package mat.entity;
 
-import mat.ast.TypeNode;
 import mat.ast.ExprNode;
+import mat.ast.TypeNode;
 
 public class Constant extends Entity {
     private final ExprNode value;

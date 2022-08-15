@@ -1,7 +1,10 @@
 package mat.ast;
 
-import mat.type.*;
-import java.util.*;
+import mat.type.StructType;
+import mat.type.Type;
+import mat.type.TypeRef;
+
+import java.util.List;
 
 public class StructNode extends CompositeTypeDefinition {
     public StructNode(Location loc, TypeRef ref, String name, List<Slot> membs) {

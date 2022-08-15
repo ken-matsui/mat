@@ -1,6 +1,9 @@
 package mat.ast;
 
-import mat.type.*;
+import mat.type.Type;
+import mat.type.TypeRef;
+import mat.type.UserType;
+import mat.type.UserTypeRef;
 
 public class TypedefNode extends TypeDefinition {
     protected TypeNode real;

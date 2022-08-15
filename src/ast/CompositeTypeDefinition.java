@@ -1,7 +1,8 @@
 package mat.ast;
 
-import mat.type.*;
-import java.util.*;
+import mat.type.TypeRef;
+
+import java.util.List;
 
 abstract public class CompositeTypeDefinition extends TypeDefinition {
     protected List<Slot> members;
