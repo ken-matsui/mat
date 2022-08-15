@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -18,13 +18,16 @@ jobs:
     - name: Set up JDK 18
       uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        java-version: '18'
         distribution: 'temurin'
 
-    - name: Install JavaCC
+    - name: Install JavaCC and Ant
       run: |
-        sudo apt-get update
-        sudo apt-get install -y javacc
+        brew update
+        brew install javacc ant
+
+    - name: Replace the JavaCC path
+      run: sed -i '.bak' 's,/opt/homebrew,/usr/local,' build.xml
 
     - name: Build with Ant
       run: ant compile
