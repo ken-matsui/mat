@@ -402,7 +402,7 @@ DefinedVariable Defvar():
     ExprNode init = null;
 }
 {
-    <LET> <MUT> name=Name() ":" type=Type() ["=" init=expr()] ";"
+    <LET> <MUT> name=Name() ":" type=Type() ["=" init=Expr()] ";"
     {
         // TODO: priv is always false
         return new DefinedVariable(false, type, name, init);
@@ -418,7 +418,7 @@ Constant Defconst():
     ExprNode init = null;
 }
 {
-    <LET> name=Name() ":" type=Type() ["=" init=expr()] ";"
+    <LET> name=Name() ":" type=Type() ["=" init=Expr()] ";"
     {
         return new Constant(type, name, init);
     }
@@ -433,7 +433,7 @@ DefinedFunction Defn():
     BlockNode body;
 }
 {
-    <FN> n=Name() "(" ps=params() ")" "->" ret=Typeref() body=block()
+    <FN> n=Name() "(" ps=params() ")" "->" ret=Typeref() body=Block()
     {
         TypeRef t = new FunctionTypeRef(ret, ps.parametersTypeRef());
         // TODO: priv is always false
@@ -504,8 +504,8 @@ Params params():
     Parameter p1 = null, pN;
 }
 {
-    [ p1=param() { ps.add(p1); }
-      ("," pN=param() { ps.add(pN); })* ]
+    [ p1=Param() { ps.add(p1); }
+      ("," pN=Param() { ps.add(pN); })* ]
         {
             if (p1 == null) {
                 return new Params(null, new ArrayList<>());
@@ -515,7 +515,7 @@ Params params():
 }
 // name: type
 // TODO: support mut
-Parameter param():
+Parameter Param():
 {
     String n;
     TypeNode t;
@@ -527,7 +527,7 @@ Parameter param():
         }
 }
 
-BlockNode block():
+BlockNode Block():
 {
     Token t;
     DefinedVariable var;
@@ -538,7 +538,7 @@ BlockNode block():
 {
     t="{"
     ( var=Defvar() { vars.add(var); }
-    | stmt=stmt() { stmts.add(stmt); }
+    | stmt=Stmt() { stmts.add(stmt); }
     )*
     "}"
     {
@@ -546,67 +546,67 @@ BlockNode block():
     }
 }
 
-StmtNode stmt():
+StmtNode Stmt():
 {
     StmtNode n = null;
     ExprNode e = null;
 }
 {
     ( ";" // empty statement
-    | e=expr() ";" { n = new ExprStmtNode(e.location(), e); }
-    | n=block()
-    | n=if_stmt()
-    | n=return_stmt()
+    | e=Expr() ";" { n = new ExprStmtNode(e.location(), e); }
+    | n=Block()
+    | n=IfStmt()
+    | n=ReturnStmt()
     )
     {
         return n;
     }
 }
 
-IfNode if_stmt():
+IfNode IfStmt():
 {
     Token t;
     ExprNode cond;
     StmtNode thenBody, elseBody = null;
 }
 {
-    t=<IF> "(" cond=expr() ")" thenBody=stmt()
-            [LOOKAHEAD(1) <ELSE> elseBody=stmt()]
+    t=<IF> "(" cond=Expr() ")" thenBody=Stmt()
+            [LOOKAHEAD(1) <ELSE> elseBody=Stmt()]
     {
         return new IfNode(location(t), cond, thenBody, elseBody);
     }
 }
 
-ReturnNode return_stmt():
+ReturnNode ReturnStmt():
 {
     Token t;
     ExprNode expr = null;
 }
 {
-    t=<RETURN> [expr=expr()] ";" { return new ReturnNode(location(t), expr); }
+    t=<RETURN> [expr=Expr()] ";" { return new ReturnNode(location(t), expr); }
 }
 
-ExprNode expr():
+ExprNode Expr():
 {
     ExprNode lhs, rhs, expr;
     String op;
 }
 {
-    LOOKAHEAD(term() "=") lhs=term() "=" rhs=expr()
+    LOOKAHEAD(Term() "=") lhs=Term() "=" rhs=Expr()
     {
         return new AssignNode(lhs, rhs);
     }
-    | LOOKAHEAD(term() opassign_op()) lhs=term() op=opassign_op() rhs=expr()
+    | LOOKAHEAD(Term() AssignOp()) lhs=Term() op=AssignOp() rhs=Expr()
       {
           return new OpAssignNode(lhs, op, rhs);
       }
-    | expr=expr9()
+    | expr=Expr9()
       {
           return expr;
       }
 }
 
-String opassign_op(): {}
+String AssignOp(): {}
 {
     "+="  { return "+"; }
     | "-="  { return "-"; }
@@ -620,154 +620,154 @@ String opassign_op(): {}
     | ">>=" { return ">>"; }
 }
 
-ExprNode expr9():
+ExprNode Expr9():
 {
     ExprNode l, r;
 }
 {
-    l=expr8() ("||" r=expr8() { l = new LogicalOrNode(l, r); })*
+    l=Expr8() ("||" r=Expr8() { l = new LogicalOrNode(l, r); })*
     {
         return l;
     }
 }
 
-ExprNode expr8():
+ExprNode Expr8():
 {
     ExprNode l, r;
 }
 {
-    l=expr7() ("&&" r=expr7() { l = new LogicalAndNode(l, r); })*
+    l=Expr7() ("&&" r=Expr7() { l = new LogicalAndNode(l, r); })*
     {
         return l;
     }
 }
 
-ExprNode expr7():
+ExprNode Expr7():
 {
     ExprNode l, r;
 }
 {
-    l=expr6() ( ">"  r=expr6() { l = new BinaryOpNode(l, ">", r); }
-              | "<"  r=expr6() { l = new BinaryOpNode(l, "<", r); }
-              | ">=" r=expr6() { l = new BinaryOpNode(l, ">=", r); }
-              | "<=" r=expr6() { l = new BinaryOpNode(l, "<=", r); }
-              | "==" r=expr6() { l = new BinaryOpNode(l, "==", r); }
-              | "!=" r=expr6() { l = new BinaryOpNode(l, "!=", r); } )*
+    l=Expr6() ( ">"  r=Expr6() { l = new BinaryOpNode(l, ">", r); }
+              | "<"  r=Expr6() { l = new BinaryOpNode(l, "<", r); }
+              | ">=" r=Expr6() { l = new BinaryOpNode(l, ">=", r); }
+              | "<=" r=Expr6() { l = new BinaryOpNode(l, "<=", r); }
+              | "==" r=Expr6() { l = new BinaryOpNode(l, "==", r); }
+              | "!=" r=Expr6() { l = new BinaryOpNode(l, "!=", r); } )*
     {
         return l;
     }
 }
 
-ExprNode expr6():
+ExprNode Expr6():
 {
     ExprNode l, r;
 }
 {
-    l=expr5() ("|" r=expr5() { l = new BinaryOpNode(l, "|", r); })*
+    l=Expr5() ("|" r=Expr5() { l = new BinaryOpNode(l, "|", r); })*
     {
         return l;
     }
 }
 
-ExprNode expr5():
+ExprNode Expr5():
 {
     ExprNode l, r;
 }
 {
-    l=expr4() ("^" r=expr4() { l = new BinaryOpNode(l, "^", r); })*
+    l=Expr4() ("^" r=Expr4() { l = new BinaryOpNode(l, "^", r); })*
     {
         return l;
     }
 }
 
-ExprNode expr4():
+ExprNode Expr4():
 {
     ExprNode l, r;
 }
 {
-    l=expr3() ("&" r=expr3() { l = new BinaryOpNode(l, "&", r); })*
+    l=Expr3() ("&" r=Expr3() { l = new BinaryOpNode(l, "&", r); })*
     {
         return l;
     }
 }
 
-ExprNode expr3():
+ExprNode Expr3():
 {
     ExprNode l, r;
 }
 {
-    l=expr2() ( ">>" r=expr2() { l = new BinaryOpNode(l, ">>", r); }
-              | "<<" r=expr2() { l = new BinaryOpNode(l, "<<", r); }
+    l=Expr2() ( ">>" r=Expr2() { l = new BinaryOpNode(l, ">>", r); }
+              | "<<" r=Expr2() { l = new BinaryOpNode(l, "<<", r); }
               )*
     {
         return l;
     }
 }
 
-ExprNode expr2():
+ExprNode Expr2():
 {
 	ExprNode l, r;
 }
 {
-	l=expr1() ( "+" r=expr1() { l = new BinaryOpNode(l, "+", r); }
-	          | "-" r=expr1() { l = new BinaryOpNode(l, "-", r); }
+	l=Expr1() ( "+" r=Expr1() { l = new BinaryOpNode(l, "+", r); }
+	          | "-" r=Expr1() { l = new BinaryOpNode(l, "-", r); }
 			  )*
 	{
 		return l;
 	}
 }
 
-ExprNode expr1():
+ExprNode Expr1():
 {
 	ExprNode l, r;
 }
 {
-	l=primary() ( "*" r=term() { l = new BinaryOpNode(l, "*", r); }
-			    | "/" r=term() { l = new BinaryOpNode(l, "/", r); }
-				| "%" r=term() { l = new BinaryOpNode(l, "%", r); }
-			    )*
+	l=Term() ( "*" r=Term() { l = new BinaryOpNode(l, "*", r); }
+			 | "/" r=Term() { l = new BinaryOpNode(l, "/", r); }
+			 | "%" r=Term() { l = new BinaryOpNode(l, "%", r); }
+			 )*
 	{
 		return l;
 	}
 }
 
-ExprNode term():
+ExprNode Term():
 {
     TypeNode t;
     ExprNode n;
 }
 {
-      LOOKAHEAD("(" Type()) "(" t=Type() ")" n=term() { return new CastNode(t, n); }
-      | n=postfix() { return n; }
+      LOOKAHEAD("(" Type()) "(" t=Type() ")" n=Term() { return new CastNode(t, n); }
+      | n=Postfix() { return n; }
 }
 
-ExprNode postfix():
+ExprNode Postfix():
 {
     List<ExprNode> args;
     ExprNode expr;
 }
 {
-    expr=primary()
-    ("(" args=args() ")" { expr = new FnCallNode(expr, args); })*
+    expr=Primary()
+    ("(" args=Args() ")" { expr = new FnCallNode(expr, args); })*
     {
         return expr;
     }
 }
 
-List<ExprNode> args():
+List<ExprNode> Args():
 {
     List<ExprNode> args = new ArrayList<>();
     ExprNode arg;
 }
 {
-    [ arg=expr() { args.add(arg); }
-      ("," arg=expr() { args.add(arg); })* ]
+    [ arg=Expr() { args.add(arg); }
+      ("," arg=Expr() { args.add(arg); })* ]
     {
         return args;
     }
 }
 
-ExprNode primary():
+ExprNode Primary():
 {
 	Token t;
 }
