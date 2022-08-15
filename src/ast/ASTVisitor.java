@@ -6,7 +6,6 @@ public interface ASTVisitor<S, E> {
     S visit(ExprStmtNode node);
     S visit(IfNode node);
 //    S visit(SwitchNode node);
-//    S visit(CaseNode node);
 //    S visit(WhileNode node);
 //    S visit(DoWhileNode node);
 //    S visit(ForNode node);
