@@ -234,9 +234,7 @@ TOKEN: {
     | <CONST    : "const">
     | <IF       : "if">
     | <ELSE     : "else">
-    | <SWITCH   : "switch">
-    | <CASE     : "case">
-    | <DEFAULT_ : "default">
+    | <MATCH    : "match">
     | <WHILE    : "while">
     | <DO       : "do">
     | <FOR      : "for">
@@ -256,14 +254,15 @@ TOKEN: {
 }
 
 TOKEN: {
-    <INTEGER: ["1"-"9"] (["0"-"9"])* (<NUMERIC_SUFFIX>)?
-            | "0" ["x", "X"] (["0"-"9", "a"-"f", "A"-"F"])+ (<NUMERIC_SUFFIX>)?
-            | "0" (["0"-"7"])* (<NUMERIC_SUFFIX>)?
-            >
+    <NUMERIC_TYPE: <I8> | <I16> | <I32> | <I64> | <U8> | <U16> | <U32> | <U64>>
 }
 
 TOKEN: {
-    <NUMERIC_SUFFIX: "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64">
+    <INTEGER:
+        ["1"-"9"] (["0"-"9"])* (<NUMERIC_TYPE>)?
+        | "0" ["x", "X"] (["0"-"9", "a"-"f", "A"-"F"])+ (<NUMERIC_TYPE>)?
+        | "0" (["0"-"7"])* (<NUMERIC_TYPE>)?
+    >
 }
 
 // character literal
