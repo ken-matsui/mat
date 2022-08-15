@@ -15,8 +15,7 @@
     <target name="compile" depends="init, parser">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${build.classes.dir}" />
-        <javac destdir="${build.classes.dir}" srcdir="${src.dir}"
-               debug="true" optimize="true">
+        <javac destdir="${build.classes.dir}" srcdir="${src.dir}" debug="true" optimize="true">
             <compilerarg value="-Xlint:unchecked" />
             <include name="src/**/*.java" />
         </javac>
