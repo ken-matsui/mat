@@ -18,7 +18,7 @@ jobs:
     - name: Install JavaCC and Ant
       run: |
         brew update
-        brew install javacc ant
+        brew install java javacc ant
 
     - name: Replace the JavaCC path
       run: sed -i '.bak' 's,/opt/homebrew,/usr/local,' build.xml
