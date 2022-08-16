@@ -230,6 +230,7 @@ class DereferenceChecker extends Visitor {
     // Utilities
     //
 
+    // TODO: remove this
     private void handleImplicitAddress(LHSNode node) {
         if (! node.isLoadable()) {
             Type t = node.type();

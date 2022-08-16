@@ -79,7 +79,7 @@ public class Compiler {
             return ast;
         }
         new DereferenceChecker(types, errorHandler).check(ast);
-//        new TypeChecker(types, errorHandler).check(ast);
+        new TypeChecker(types, errorHandler).check(ast);
         return ast;
     }
 
