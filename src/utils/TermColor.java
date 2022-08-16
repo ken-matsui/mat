@@ -1,16 +1,28 @@
 package mat.utils;
 
-public class TermColor {
+public enum TermColor {
     // Reset
-    public static final String RESET = "\033[00m";
+    RESET("\033[00m"),
 
     // Regular Colors
-    public static final String BLACK = "\033[30m";
-    public static final String RED = "\033[31m";
-    public static final String GREEN = "\033[32m";
-    public static final String YELLOW = "\033[33m";
-    public static final String BLUE = "\033[34m";
-    public static final String PURPLE = "\033[35m";
-    public static final String CYAN = "\033[36m";
-    public static final String WHITE = "\033[37m";
+    BLACK("\033[30m"),
+    RED("\033[31m"),
+    GREEN("\033[32m"),
+    YELLOW("\033[33m"),
+    BLUE("\033[34m"),
+    PURPLE("\033[35m"),
+    CYAN("\033[36m"),
+    WHITE("\033[37m"),
+    ;
+
+    private final String value;
+
+    TermColor(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }
