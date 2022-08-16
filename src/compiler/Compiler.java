@@ -3,6 +3,7 @@ package mat.compiler;
 import mat.ast.AST;
 import mat.exception.CompileException;
 import mat.exception.SemanticException;
+import mat.mir.MIR;
 import mat.parser.Parser;
 import mat.type.TypeTable;
 import mat.utils.ErrorHandler;
@@ -35,6 +36,7 @@ public class Compiler {
                 case "--dump-ast" -> opts.dumpAST = true;
                 case "--dump-ref" -> opts.dumpRef = true;
                 case "--dump-sema" -> opts.dumpSema = true;
+                case "--dump-mir" -> opts.dumpMIR = true;
                 default -> {
                     if (a.endsWith(".mat")) {
                         opts.sources.add(a);
@@ -55,6 +57,11 @@ public class Compiler {
         TypeTable types = opts.platform.typeTable();
         AST sema = semanticAnalyze(ast, types);
         if (dumpSema(sema)) {
+            return;
+        }
+
+        MIR mir = new MIRGenerator(types, errorHandler).generate(sema);
+        if (dumpMIR(mir)) {
             return;
         }
     }
@@ -88,6 +95,14 @@ public class Compiler {
             return true;
         } else if (opts.dumpSema) {
             ast.dump();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean dumpMIR(MIR mir) {
+        if (opts.dumpMIR) {
+            mir.dump();
             return true;
         }
         return false;

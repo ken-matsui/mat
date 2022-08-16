@@ -1,12 +1,14 @@
 package mat.compiler;
 
 import mat.ast.*;
-import mat.entity.*;
-import mat.type.*;
+import mat.entity.DefinedFunction;
+import mat.entity.DefinedVariable;
+import mat.exception.SemanticError;
+import mat.exception.SemanticException;
+import mat.type.CompositeType;
+import mat.type.Type;
+import mat.type.TypeTable;
 import mat.utils.ErrorHandler;
-import mat.exception.*;
-
-import java.util.*;
 
 class DereferenceChecker extends Visitor {
     // #@@range/ctor{

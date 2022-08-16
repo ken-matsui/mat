@@ -9,7 +9,7 @@ abstract public class Stmt implements Dumpable {
         this.location = loc;
     }
 
-    abstract public <S,E> S accept(IRVisitor<S,E> visitor);
+    abstract public <S,E> S accept(MIRVisitor<S,E> visitor);
 
     public Location location() {
         return location;

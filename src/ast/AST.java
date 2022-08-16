@@ -1,6 +1,7 @@
 package mat.ast;
 
 import mat.entity.*;
+import mat.mir.MIR;
 import mat.parser.ParserConstants;
 import mat.parser.Token;
 import mat.utils.TextUtils;
@@ -26,7 +27,7 @@ public class AST extends Node {
     }
 
     public List<TypeDefinition> types() {
-        List<TypeDefinition> result = new ArrayList<TypeDefinition>();
+        List<TypeDefinition> result = new ArrayList<>();
         result.addAll(decls.defstructs());
 //        result.addAll(decls.defunions());
         result.addAll(decls.typedefs());
@@ -34,7 +35,7 @@ public class AST extends Node {
     }
 
     public List<Entity> entities() {
-        List<Entity> result = new ArrayList<Entity>();
+        List<Entity> result = new ArrayList<>();
         result.addAll(decls.funcdecls);
         result.addAll(decls.vardecls);
         result.addAll(decls.defvars);
@@ -84,6 +85,16 @@ public class AST extends Node {
             throw new Error("must not happen: ConstantTable set twice");
         }
         this.constantTable = table;
+    }
+
+    public MIR mir() {
+        return new MIR(source,
+            decls.defvars(),
+            decls.defns(),
+            decls.funcdecls(),
+            scope,
+            constantTable
+        );
     }
 
     protected void _dump(Dumper d) {

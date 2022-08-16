@@ -1,12 +1,19 @@
 package mat.compiler;
 
 import mat.ast.*;
-import mat.entity.*;
-import mat.type.*;
+import mat.entity.DefinedFunction;
+import mat.entity.DefinedVariable;
+import mat.entity.Parameter;
+import mat.exception.SemanticException;
+import mat.type.FunctionType;
+import mat.type.IntegerType;
+import mat.type.Type;
+import mat.type.TypeTable;
 import mat.utils.ErrorHandler;
-import mat.exception.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 class TypeChecker extends Visitor {
     private final TypeTable typeTable;

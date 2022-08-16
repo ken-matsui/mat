@@ -10,7 +10,8 @@ public class Options {
     boolean dumpTokens = false;
     boolean dumpAST = false;
     boolean dumpRef = false;
-    boolean dumpSema = true; // TODO: For now, this is a default option.
+    boolean dumpSema = false;
+    boolean dumpMIR = true; // TODO: For now, this is a default option.
     List<String> sources = new ArrayList<>();
     Platform platform = new X86Linux();
 }

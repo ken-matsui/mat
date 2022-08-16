@@ -38,6 +38,10 @@ public class Declarations {
         return new ArrayList<>(defns);
     }
 
+    public List<UndefinedFunction> funcdecls() {
+        return new ArrayList<>(funcdecls);
+    }
+
     public void addConstant(Constant c) {
         constants.add(c);
     }

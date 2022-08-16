@@ -42,7 +42,7 @@ abstract public class Expr implements Dumpable {
         return null;
     }
 
-    abstract public <S,E> E accept(IRVisitor<S,E> visitor);
+    abstract public <S,E> E accept(MIRVisitor<S,E> visitor);
 
     public void dump(Dumper d) {
         d.printClass(this);
