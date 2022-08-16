@@ -11,7 +11,7 @@ import java.io.File;
 
 public class Compiler {
     private final Options opts = new Options();
-    private final ErrorHandler errorHandler = new ErrorHandler("mat");
+    private final ErrorHandler errorHandler = new ErrorHandler();
 
     static public void main(String[] args) throws IllegalStateException {
         new Compiler().build(args);

@@ -49,7 +49,7 @@ public class LocalResolver extends Visitor {
         // #@@}
         toplevel.checkReferences(errorHandler);
         if (errorHandler.errorOccured()) {
-            throw new SemanticException("failed to compile.");
+            throw new SemanticException("aborting due to previous error(s)");
         }
 
         ast.setScope(toplevel);
