@@ -40,11 +40,11 @@ struct Args {
     #[clap(long)]
     dump_mir: bool,
 
-    /// Dump structured assembly to stdout
+    /// Dump structured assembly
     #[clap(long)]
     dump_asm: bool,
 
-    /// Print structured assembly to stdout
+    /// Print raw assembly
     #[clap(long)]
     print_asm: bool,
 }
