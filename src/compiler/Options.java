@@ -11,7 +11,8 @@ public class Options {
     boolean dumpAST = false;
     boolean dumpRef = false;
     boolean dumpSema = false;
-    boolean dumpMIR = true; // TODO: For now, this is a default option.
+    boolean dumpMIR = false;
+    boolean dumpAsm = true; // TODO: For now, this is a default option.
     List<String> sources = new ArrayList<>();
     Platform platform = new X86Linux();
 }

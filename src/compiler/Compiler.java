@@ -5,6 +5,8 @@ import mat.exception.CompileException;
 import mat.exception.SemanticException;
 import mat.mir.MIR;
 import mat.parser.Parser;
+import mat.sysdep.AssemblyCode;
+import mat.sysdep.CodeGeneratorOptions;
 import mat.type.TypeTable;
 import mat.utils.ErrorHandler;
 
@@ -37,6 +39,7 @@ public class Compiler {
                 case "--dump-ref" -> opts.dumpRef = true;
                 case "--dump-sema" -> opts.dumpSema = true;
                 case "--dump-mir" -> opts.dumpMIR = true;
+                case "--dump-asm" -> opts.dumpAsm = true;
                 default -> {
                     if (a.endsWith(".mat")) {
                         opts.sources.add(a);
@@ -62,6 +65,12 @@ public class Compiler {
 
         MIR mir = new MIRGenerator(types, errorHandler).generate(sema);
         if (dumpMIR(mir)) {
+            return;
+        }
+
+        // TODO: new CodeGeneratorOptions()
+        AssemblyCode asm = opts.platform.codeGenerator(new CodeGeneratorOptions(), errorHandler).generate(mir);
+        if (dumpAsm(asm)) {
             return;
         }
     }
@@ -103,6 +112,14 @@ public class Compiler {
     private boolean dumpMIR(MIR mir) {
         if (opts.dumpMIR) {
             mir.dump();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean dumpAsm(AssemblyCode asm) {
+        if (opts.dumpAsm) {
+            asm.dump();
             return true;
         }
         return false;
