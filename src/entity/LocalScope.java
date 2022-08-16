@@ -127,7 +127,7 @@ public class LocalScope extends Scope {
 
     public void checkReferences(ErrorHandler h) {
         for (DefinedVariable var : variables.values()) {
-            if (!var.isRefered()) {
+            if (!var.isReferred()) {
                 h.warn(var.location(), "unused variable: " + var.name());
             }
         }

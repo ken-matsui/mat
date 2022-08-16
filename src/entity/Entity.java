@@ -12,7 +12,7 @@ abstract public class Entity implements mat.ast.Dumpable {
     protected String name;
     protected boolean isPrivate;
     protected TypeNode typeNode;
-    protected long nRefered;
+    protected long nReferred;
     protected MemoryReference memref;
     protected Operand address;
 
@@ -20,7 +20,7 @@ abstract public class Entity implements mat.ast.Dumpable {
         this.name = name;
         this.isPrivate = priv;
         this.typeNode = type;
-        this.nRefered = 0;
+        this.nReferred = 0;
     }
 
     public String name() {
@@ -62,12 +62,12 @@ abstract public class Entity implements mat.ast.Dumpable {
         return type().alignment();
     }
 
-    public void refered() {
-        nRefered++;
+    public void referred() {
+        nReferred++;
     }
 
-    public boolean isRefered() {
-        return (nRefered > 0);
+    public boolean isReferred() {
+        return (nReferred > 0);
     }
 
     public void setMemref(MemoryReference mem) {

@@ -49,7 +49,7 @@ public class DefinedFunction extends Function {
 
     /**
      * Returns function local variables.
-     * Does NOT include paramters.
+     * Does NOT include parameters.
      * Does NOT include static local variables.
      */
     public List<DefinedVariable> localVariables() {

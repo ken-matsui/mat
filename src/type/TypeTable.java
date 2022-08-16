@@ -10,15 +10,15 @@ import java.util.Map;
 public class TypeTable {
     static final protected Object checking = new Object();
     static final protected Object checked = new Object();
-    private int intSize;
-    private int longSize;
-    private int pointerSize;
-    private Map<TypeRef, Type> table;
+    private final int intSize;
+    private final int longSize;
+    private final int pointerSize;
+    private final Map<TypeRef, Type> table;
     public TypeTable(int intSize, int longSize, int pointerSize) {
         this.intSize = intSize;
         this.longSize = longSize;
         this.pointerSize = pointerSize;
-        this.table = new HashMap<TypeRef, Type>();
+        this.table = new HashMap<>();
     }
 
     static public TypeTable ilp32() { return newTable(1, 2, 4, 4, 4); }
@@ -192,7 +192,7 @@ public class TypeTable {
     public void semanticCheck(ErrorHandler h) {
         for (Type t : types()) {
             // We can safely use "instanceof" instead of isXXXX() here,
-            // because the type refered from UserType must be also
+            // because the type referred from UserType must be also
             // kept in this table.
             if (t instanceof CompositeType) {
                 checkVoidMembers((CompositeType)t, h);

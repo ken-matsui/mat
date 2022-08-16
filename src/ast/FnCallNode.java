@@ -20,7 +20,7 @@ public class FnCallNode extends ExprNode {
     }
 
     /**
-     * Returns a type of return value of the function which is refered
+     * Returns a type of return value of the function which is referred
      * by expr.  This method expects expr.type().isCallable() is true.
      */
     public Type type() {
@@ -33,7 +33,7 @@ public class FnCallNode extends ExprNode {
     }
 
     /**
-     * Returns a type of function which is refered by expr.
+     * Returns a type of function which is referred by expr.
      * This method expects expr.type().isCallable() is true.
      */
     public FunctionType functionType() {

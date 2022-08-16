@@ -120,7 +120,7 @@ public class ToplevelScope extends Scope {
             if (ent.isDefined()
                     && ent.isPrivate()
                     && !ent.isConstant()
-                    && !ent.isRefered()) {
+                    && !ent.isReferred()) {
                 h.warn(ent.location(), "unused variable: " + ent.name());
             }
         }
