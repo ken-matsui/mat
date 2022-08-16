@@ -4,6 +4,7 @@ import mat.exception;
 let fuga: i32 = 1;
 
 type newint = i32;
+type newdd = newint;
 
 struct User {
     active: u8,

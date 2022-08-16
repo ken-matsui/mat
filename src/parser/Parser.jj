@@ -68,6 +68,10 @@ public class Parser {
         knownTypedefs.add(name);
     }
 
+    private boolean isType(String name) {
+        return knownTypedefs.contains(name);
+    }
+
     private IntegerLiteralNode integerNode(Location loc, String image) {
         int base = getBase(image);
         String s = image;
@@ -317,6 +321,8 @@ TypeRef Typeref():
     | t=<I16> { return IntegerTypeRef.i16Ref(location(t)); }
     | t=<I32> { return IntegerTypeRef.i32Ref(location(t)); }
     | t=<I64> { return IntegerTypeRef.i64Ref(location(t)); }
+    | LOOKAHEAD({isType(getToken(1).image)}) t=<IDENTIFIER>
+        { return new UserTypeRef(location(t), t.image); }
 }
 
 boolean Mutability():

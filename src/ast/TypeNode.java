@@ -25,6 +25,13 @@ public class TypeNode extends Node {
         return (type != null);
     }
 
+    public void setType(Type t) {
+        if (type != null) {
+            throw new Error("TypeNode#setType called twice");
+        }
+        type = t;
+    }
+
     public Type type() {
         if (type == null) {
             throw new Error("TypeNode not resolved: " + typeRef);
