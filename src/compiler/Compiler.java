@@ -134,8 +134,6 @@ public class Compiler {
             System.out.print(asm.toSource());
             return true;
         }
-        else {
-            return false;
-        }
+        return false;
     }
 }
