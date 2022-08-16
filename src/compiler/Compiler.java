@@ -40,6 +40,7 @@ public class Compiler {
                 case "--dump-sema" -> opts.dumpSema = true;
                 case "--dump-mir" -> opts.dumpMIR = true;
                 case "--dump-asm" -> opts.dumpAsm = true;
+                case "--print-asm" -> opts.printAsm = true;
                 default -> {
                     if (a.endsWith(".mat")) {
                         opts.sources.add(a);
@@ -71,6 +72,9 @@ public class Compiler {
         // TODO: new CodeGeneratorOptions()
         AssemblyCode asm = opts.platform.codeGenerator(new CodeGeneratorOptions(), errorHandler).generate(mir);
         if (dumpAsm(asm)) {
+            return;
+        }
+        if (printAsm(asm)) {
             return;
         }
     }
@@ -123,5 +127,15 @@ public class Compiler {
             return true;
         }
         return false;
+    }
+
+    private boolean printAsm(AssemblyCode asm) {
+        if (opts.printAsm) {
+            System.out.print(asm.toSource());
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
