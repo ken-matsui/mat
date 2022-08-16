@@ -4,7 +4,7 @@ import mat.exception;
 let fuga: i32 = 1;
 
 type newint = i32;
-type newdd = newint;
+type User = newint;
 
 struct User {
     active: u8,
@@ -18,8 +18,9 @@ fn f1(arg: char, arg2: u64) -> u32 {
 }
 
 fn main() -> i32 {
-    let mut hoge: i64 = 12;
-    boo = 23; // unresolved reference: boo
+    let mut hoge: User = 12;
+    //boo = 23; // unresolved reference: boo
+    hoge(1, 2, 3); // calling object is not a function
     if (hoge) {
         return 1;
     } else if (fuga) {

@@ -78,7 +78,7 @@ public class Compiler {
             ast.dump();
             return ast;
         }
-//        new DereferenceChecker(types, errorHandler).check(ast);
+        new DereferenceChecker(types, errorHandler).check(ast);
 //        new TypeChecker(types, errorHandler).check(ast);
         return ast;
     }
