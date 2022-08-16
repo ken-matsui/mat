@@ -2,7 +2,7 @@ package mat.entity;
 
 import mat.ast.BlockNode;
 import mat.ast.TypeNode;
-import mat.ir.Stmt;
+import mat.mir.Stmt;
 
 import java.util.List;
 

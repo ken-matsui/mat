@@ -1,4 +1,4 @@
-package mat.ir;
+package mat.mir;
 
 import mat.asm.ImmediateValue;
 import mat.asm.MemoryReference;

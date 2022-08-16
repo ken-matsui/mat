@@ -1,4 +1,4 @@
-package mat.ir;
+package mat.mir;
 
 public interface IRVisitor<S,E> {
 //    S visit(ExprStmt s);

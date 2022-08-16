@@ -1,4 +1,4 @@
-package mat.ir;
+package mat.mir;
 
 import mat.ast.Location;
 

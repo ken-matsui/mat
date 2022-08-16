@@ -3,7 +3,7 @@ package mat.entity;
 import mat.asm.Symbol;
 import mat.ast.ExprNode;
 import mat.ast.TypeNode;
-import mat.ir.Expr;
+import mat.mir.Expr;
 import mat.type.Type;
 
 public class DefinedVariable extends Variable {
