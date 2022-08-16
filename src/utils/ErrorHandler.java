@@ -3,31 +3,46 @@ package mat.utils;
 import mat.ast.Location;
 
 import java.io.PrintStream;
+import java.util.Optional;
 
 public class ErrorHandler {
     protected PrintStream stream = new PrintStream(System.err);
     protected long nError;
     protected long nWarning;
 
-    private static final String errorPrefix = TermColor.RED + "error" + TermColor.RESET;
-    private static final String warnPrefix = TermColor.YELLOW + "warning" + TermColor.RESET;
-
-    public void error(Location loc, String msg) {
-        error(loc.toString() + ": " + msg);
-    }
+    public static final String errorPrefix = TermColor.RED + "error" + TermColor.RESET;
+    public static final String warnPrefix = TermColor.YELLOW + "warning" + TermColor.RESET;
+    public static final String arrow = TermColor.BLUE + "  --> " + TermColor.RESET;
 
     public void error(String msg) {
-        stream.println(errorPrefix + ": " + msg + '\n');
+        error(msg, Optional.empty());
+    }
+
+    public void error(String msg, Location loc) {
+        error(msg, Optional.of(loc));
+    }
+
+    public void error(String msg, Optional<Location> loc) {
+        emit(errorPrefix, msg, loc);
         nError++;
     }
 
-    public void warn(Location loc, String msg) {
-        warn(loc.toString() + ": " + msg);
+    public void warn(String msg) {
+        warn(msg, Optional.empty());
     }
 
-    public void warn(String msg) {
-        stream.println(warnPrefix + ": " + msg + '\n');
+    public void warn(String msg, Location loc) {
+        warn(msg, Optional.of(loc));
+    }
+
+    public void warn(String msg, Optional<Location> loc) {
+        emit(warnPrefix, msg, loc);
         nWarning++;
+    }
+
+    private void emit(String prefix, String msg, Optional<Location> loc) {
+        stream.println(prefix + ": " + msg);
+        loc.ifPresent(location -> stream.println(arrow + location + '\n'));
     }
 
     public boolean errorOccurred() {

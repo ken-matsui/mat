@@ -214,7 +214,7 @@ public class TypeTable {
     protected void checkVoidMembers(CompositeType t, ErrorHandler h) {
         for (Slot s : t.members()) {
             if (s.type().isVoid()) {
-                h.error(t.location(), "struct/union cannot contain void");
+                h.error("struct/union cannot contain void", t.location());
             }
         }
     }
@@ -223,8 +223,7 @@ public class TypeTable {
         Map<String, Slot> seen = new HashMap<String, Slot>();
         for (Slot s : t.members()) {
             if (seen.containsKey(s.name())) {
-                h.error(t.location(),
-                        t.toString() + " has duplicated member: " + s.name());
+                h.error(t.toString() + " has duplicated member: " + s.name(), t.location());
             }
             seen.put(s.name(), s);
         }
@@ -239,7 +238,7 @@ public class TypeTable {
                                              Map<Type, Object> marks,
                                              ErrorHandler h) {
         if (marks.get(t) == checking) {
-            h.error(((NamedType)t).location(), "recursive type definition: " + t);
+            h.error("recursive type definition: " + t, ((NamedType)t).location());
         } else if (marks.get(t) != checked) {
             marks.put(t, checking);
             if (t instanceof CompositeType) {

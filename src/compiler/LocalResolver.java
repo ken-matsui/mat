@@ -141,10 +141,10 @@ public class LocalResolver extends Visitor {
     // #@@}
 
     private void error(Node node, String message) {
-        errorHandler.error(node.location(), message);
+        errorHandler.error(message, node.location());
     }
 
     private void error(Location loc, String message) {
-        errorHandler.error(loc, message);
+        errorHandler.error(message, loc);
     }
 }

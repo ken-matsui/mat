@@ -121,7 +121,7 @@ public class ToplevelScope extends Scope {
                     && ent.isPrivate()
                     && !ent.isConstant()
                     && !ent.isReferred()) {
-                h.warn(ent.location(), "unused variable: " + ent.name());
+                h.warn("unused variable: " + ent.name(), ent.location());
             }
         }
         // do not check parameters

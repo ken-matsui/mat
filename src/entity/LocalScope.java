@@ -17,7 +17,7 @@ public class LocalScope extends Scope {
         super();
         this.parent = parent;
         parent.addChild(this);
-        variables = new LinkedHashMap<String, DefinedVariable>();
+        variables = new LinkedHashMap<>();
     }
 
     public boolean isToplevel() {
@@ -100,7 +100,7 @@ public class LocalScope extends Scope {
      * Returns all static local variables defined in this scope.
      */
     public List<DefinedVariable> staticLocalVariables() {
-        List<DefinedVariable> result = new ArrayList<DefinedVariable>();
+        List<DefinedVariable> result = new ArrayList<>();
         for (LocalScope s : allLocalScopes()) {
             for (DefinedVariable var : s.variables.values()) {
                 if (var.isPrivate()) {
@@ -113,7 +113,7 @@ public class LocalScope extends Scope {
 
     // Returns a list of all child scopes including this scope.
     protected List<LocalScope> allLocalScopes() {
-        List<LocalScope> result = new ArrayList<LocalScope>();
+        List<LocalScope> result = new ArrayList<>();
         collectScope(result);
         return result;
     }
@@ -128,7 +128,7 @@ public class LocalScope extends Scope {
     public void checkReferences(ErrorHandler h) {
         for (DefinedVariable var : variables.values()) {
             if (!var.isReferred()) {
-                h.warn(var.location(), "unused variable: " + var.name());
+                h.warn("unused variable: " + var.name(), var.location());
             }
         }
         for (LocalScope c : children) {

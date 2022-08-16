@@ -23,7 +23,7 @@ public class Compiler {
             try {
                 compile(src);
             } catch (CompileException ex) {
-                System.err.println(ex.getMessage());
+                System.err.println(ErrorHandler.errorPrefix + ": " + ex.getMessage());
             }
         }
     }
