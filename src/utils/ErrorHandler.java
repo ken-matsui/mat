@@ -27,7 +27,7 @@ public class ErrorHandler {
         nWarning++;
     }
 
-    public boolean errorOccured() {
+    public boolean errorOccurred() {
         return (nError > 0);
     }
 }

@@ -48,7 +48,7 @@ public class LocalResolver extends Visitor {
         resolveFunctions(ast.definedFunctions());
         // #@@}
         toplevel.checkReferences(errorHandler);
-        if (errorHandler.errorOccured()) {
+        if (errorHandler.errorOccurred()) {
             throw new SemanticException("aborting due to previous error(s)");
         }
 
