@@ -73,11 +73,11 @@ public class Compiler {
     private AST semanticAnalyze(AST ast, TypeTable types) throws SemanticException {
         new LocalResolver(errorHandler).resolve(ast);
         new TypeResolver(types, errorHandler).resolve(ast);
-//        types.semanticCheck(errorHandler);
-//        if (opts.dumpRef) {
-//            ast.dump();
-//            return ast;
-//        }
+        types.semanticCheck(errorHandler);
+        if (opts.dumpRef) {
+            ast.dump();
+            return ast;
+        }
 //        new DereferenceChecker(types, errorHandler).check(ast);
 //        new TypeChecker(types, errorHandler).check(ast);
         return ast;
