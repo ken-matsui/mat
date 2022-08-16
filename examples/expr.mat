@@ -18,6 +18,7 @@ fn f1(arg: char, arg2: u64) -> u32 {
 
 fn main() -> i32 {
     let mut hoge: i64 = 12;
+    boo = 23; // unresolved reference: boo
     if (hoge) {
         return 1;
     } else if (fuga) {

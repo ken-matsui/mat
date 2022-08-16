@@ -1,8 +1,6 @@
 package mat.ast;
 
-import mat.entity.Constant;
-import mat.entity.DefinedFunction;
-import mat.entity.DefinedVariable;
+import mat.entity.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -11,7 +9,9 @@ import java.util.Set;
 
 public class Declarations {
     Set<DefinedVariable> defvars = new LinkedHashSet<>();
+    Set<UndefinedVariable> vardecls = new LinkedHashSet<>();
     Set<DefinedFunction> defns = new LinkedHashSet<>();
+    Set<UndefinedFunction> funcdecls = new LinkedHashSet<>();
     Set<Constant> constants = new LinkedHashSet<>();
     Set<StructNode> defstructs = new LinkedHashSet<>();
     Set<TypedefNode> typedefs = new LinkedHashSet<>();

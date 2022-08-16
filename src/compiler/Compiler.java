@@ -2,13 +2,16 @@ package mat.compiler;
 
 import mat.ast.AST;
 import mat.exception.CompileException;
+import mat.exception.SemanticException;
 import mat.parser.Parser;
 import mat.type.TypeTable;
+import mat.utils.ErrorHandler;
 
 import java.io.File;
 
 public class Compiler {
     private final Options opts = new Options();
+    private final ErrorHandler errorHandler = new ErrorHandler("mat");
 
     static public void main(String[] args) throws IllegalStateException {
         new Compiler().build(args);
@@ -50,10 +53,10 @@ public class Compiler {
         }
 
         TypeTable types = opts.platform.typeTable();
-//        AST sema = semanticAnalyze(ast, types);
-//        if (dumpSema(sema)) {
-//            return;
-//        }
+        AST sema = semanticAnalyze(ast, types);
+        if (dumpSema(sema)) {
+            return;
+        }
     }
 
     private boolean dumpAST(AST ast) {
@@ -67,8 +70,8 @@ public class Compiler {
         return false;
     }
 
-//    private AST semanticAnalyze(AST ast, TypeTable types) throws SemanticException {
-//        new LocalResolver(errorHandler).resolve(ast);
+    private AST semanticAnalyze(AST ast, TypeTable types) throws SemanticException {
+        new LocalResolver(errorHandler).resolve(ast);
 //        new TypeResolver(types, errorHandler).resolve(ast);
 //        types.semanticCheck(errorHandler);
 //        if (opts.dumpRef) {
@@ -77,8 +80,8 @@ public class Compiler {
 //        }
 //        new DereferenceChecker(types, errorHandler).check(ast);
 //        new TypeChecker(types, errorHandler).check(ast);
-//        return ast;
-//    }
+        return ast;
+    }
 
     private boolean dumpSema(AST ast) {
         if (opts.dumpRef) {
