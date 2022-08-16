@@ -28,6 +28,8 @@ jobs:
 
     - name: Replace the JavaCC path
       run: sed -i '.bak' 's,/opt/homebrew,/usr/local,' build.xml
+      working-directory: java
 
     - name: Build with Ant
       run: ant compile
+      working-directory: java

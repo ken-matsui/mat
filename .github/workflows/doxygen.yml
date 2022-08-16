@@ -39,6 +39,8 @@ jobs:
 
       - name: Build docs with doxygen
         uses: mattnotmitt/doxygen-action@v1.9.2
+        with:
+          working-directory: 'java/'
 
       - name: Setup Pages
         uses: actions/configure-pages@v1
@@ -46,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './html'
+          path: './java/html'
 
       - name: Deploy to GitHub Pages
         id: deployment
