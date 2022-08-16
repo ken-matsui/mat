@@ -1,6 +1,7 @@
 package mat.entity;
 
 import mat.ast.TypeNode;
+
 import java.util.List;
 
 public class UndefinedFunction extends Function {
