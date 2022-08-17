@@ -184,8 +184,6 @@ fn defconst() -> impl Parser<char, Constant, Error = Simple<char>> + Clone {
         .padded()
 }
 
-fn primary() {}
-
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     // Vec<(Expr, Span)>
     // let ident = text::ident().padded();

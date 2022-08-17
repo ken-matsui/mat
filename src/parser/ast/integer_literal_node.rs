@@ -73,7 +73,6 @@ pub(crate) fn integer() -> impl Parser<char, IntegerLiteralNode, Error = Simple<
             })
             .map(IntegerLiteralNode::U64),
     ))
-    .padded()
 }
 
 pub(crate) fn character() -> impl Parser<char, IntegerLiteralNode, Error = Simple<char>> + Clone {
