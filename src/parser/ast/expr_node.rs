@@ -5,10 +5,16 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Op {
+    /// <<
+    Shl,
+    /// >>
+    Shr,
+
     /// +
     Add,
     /// -
     Sub,
+
     /// *
     Mul,
     /// /
@@ -38,6 +44,24 @@ pub(crate) enum ExprNode {
     Cast(CastNode),
     Binary(BinaryOpNode),
     Expr(Box<ExprNode>),
+}
+
+pub(crate) fn expr3() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
+    expr2()
+        .then(
+            just("<<")
+                .to(Op::Shl)
+                .or(just(">>").to(Op::Shr))
+                .then(expr2())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| {
+            ExprNode::Binary(BinaryOpNode {
+                lhs: Box::new(lhs),
+                op,
+                rhs: Box::new(rhs),
+            })
+        })
 }
 
 pub(crate) fn expr2() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
@@ -111,6 +135,48 @@ pub(crate) fn primary() -> impl Parser<char, ExprNode, Error = Simple<char>> + C
 mod tests {
     use super::*;
     use chumsky::Parser;
+
+    #[test]
+    fn expr3_test() {
+        assert_eq!(
+            expr3().parse("1 << 2 + 3*4"),
+            Ok(ExprNode::Binary(BinaryOpNode {
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                op: Op::Shl,
+                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    op: Op::Add,
+                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        op: Op::Mul,
+                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
+                    })),
+                })),
+            }))
+        );
+
+        assert_eq!(
+            expr3().parse("1 >> 2 + 3*4"),
+            Ok(ExprNode::Binary(BinaryOpNode {
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                op: Op::Shr,
+                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    op: Op::Add,
+                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        op: Op::Mul,
+                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
+                    })),
+                })),
+            }))
+        );
+
+        assert_eq!(
+            expr3().parse("1"),
+            Ok(ExprNode::Integer(IntegerLiteralNode::I32(1)))
+        );
+    }
 
     #[test]
     fn expr2_test() {
