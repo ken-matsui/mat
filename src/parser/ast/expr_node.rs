@@ -41,59 +41,22 @@ pub(crate) enum ExprNode {
 }
 
 pub(crate) fn expr1() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
-    choice((
-        // recursive(|trm| {
-        //     trm.ignored()
-        //         .then(term())
-        //         .then(one_of("*/%"))
-        //         .then(term())
-        //         .map(|((((), lhs), op), rhs)| {
-        //             ExprNode::Binary(BinaryOpNode {
-        //                 lhs: Box::new(lhs),
-        //                 op: op.to_string(),
-        //                 rhs: Box::new(rhs),
-        //             })
-        //         })
-        // }),
-        term()
-            .then(
-                just('*')
-                    .to(Op::Mul)
-                    .or(just('/').to(Op::Div))
-                    .or(just('%').to(Op::Rem)),
-            )
-            .then(term())
-            .map(|((lhs, op), rhs)| {
-                ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::new(lhs),
-                    op,
-                    rhs: Box::new(rhs),
-                })
-            }),
-        // term()
-        //     .then_ignore(just('/'))
-        //     .then(term())
-        //     .map(|(lhs, rhs)| {
-        //         ExprNode::Binary(BinaryOpNode {
-        //             lhs: Box::new(lhs),
-        //             op: "/".to_string(),
-        //             rhs: Box::new(rhs),
-        //         })
-        //     }),
-        // term()
-        //     .then_ignore(just('%'))
-        //     .then(term())
-        //     .map(|(lhs, rhs)| {
-        //         ExprNode::Binary(BinaryOpNode {
-        //             lhs: Box::new(lhs),
-        //             op: "%".to_string(),
-        //             rhs: Box::new(rhs),
-        //         })
-        //     }),
-        term(),
-    ))
-    // .repeated()
-    // .foldl(|lhs, rhs| ExprNode::Expr(Box::new(rhs)))
+    term()
+        .then(
+            just('*')
+                .to(Op::Mul)
+                .or(just('/').to(Op::Div))
+                .or(just('%').to(Op::Rem))
+                .then(term())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| {
+            ExprNode::Binary(BinaryOpNode {
+                lhs: Box::new(lhs),
+                op,
+                rhs: Box::new(rhs),
+            })
+        })
 }
 
 pub(crate) fn term() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
@@ -124,7 +87,6 @@ pub(crate) fn primary() -> impl Parser<char, ExprNode, Error = Simple<char>> + C
         string().map(ExprNode::String),
         variable().map(ExprNode::Variable),
     ))
-    .padded()
 }
 
 #[cfg(test)]
@@ -135,29 +97,47 @@ mod tests {
     #[test]
     fn expr1_test() {
         assert_eq!(
-            expr1().parse("1i8 *1"),
+            expr1().parse("1*1"),
             Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I8(1))),
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
                 op: Op::Mul,
                 rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
             }))
         );
         assert_eq!(
-            expr1().parse("1i8 / 1"),
+            expr1().parse("1 / 1"),
             Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I8(1))),
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
                 op: Op::Div,
                 rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
             }))
         );
         assert_eq!(
-            expr1().parse("1i8 % 2"),
+            expr1().parse("1 %2"),
             Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I8(1))),
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
                 op: Op::Rem,
                 rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
             }))
         );
+
+        assert_eq!(
+            expr1().parse("1 % 2 / 3 * 4"),
+            Ok(ExprNode::Binary(BinaryOpNode {
+                lhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                    lhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                        op: Op::Rem,
+                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2)))
+                    })),
+                    op: Op::Div,
+                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                })),
+                op: Op::Mul,
+                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+            }))
+        );
+
         assert_eq!(
             expr1().parse("1"),
             Ok(ExprNode::Integer(IntegerLiteralNode::I32(1)))
