@@ -113,23 +113,29 @@ fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
 // import std.io;
 fn import_stmt() -> impl Parser<char, Import, Error = Simple<char>> + Clone {
     text::keyword("import")
-        .padded()
         .then(
             ident()
                 .repeated()
                 .separated_by(just('.'))
                 .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
         )
-        .padded()
         .then_ignore(just(';'))
-        .padded()
         .map(|s| Import { id: s.1 })
         .labelled("import")
+        .padded()
 }
 
 fn import_stmts() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     import_stmt().repeated()
 }
+
+// fn defvar() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
+//     text::keyword("let mut")
+//         .then(ident())
+//         .then_ignore(':')
+//         .then(ident())
+//         .then_ignore('=')
+// }
 
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     // Vec<(Expr, Span)>
@@ -233,7 +239,7 @@ pub(crate) fn parse(src: String) -> Result<Vec<Import>, Vec<Simple<char>>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::parse::{import_stmt, Import};
+    use super::*;
     use chumsky::Parser;
 
     #[test]
@@ -260,5 +266,33 @@ mod tests {
         assert!(import_stmt().parse("import std.1io;").is_err());
         assert!(import_stmt().parse("import std.io").is_err());
         assert!(import_stmt().parse("use std.io;").is_err());
+    }
+
+    #[test]
+    fn import_stmts_test() {
+        assert_eq!(
+            import_stmts().parse("import std.io;\nimport stdio;").ok(),
+            Some(vec![
+                Import {
+                    id: "std.io".to_string()
+                },
+                Import {
+                    id: "stdio".to_string()
+                }
+            ])
+        );
+        assert_eq!(
+            import_stmts()
+                .parse("import std.io;\n     \r  \nimport stdio;")
+                .ok(),
+            Some(vec![
+                Import {
+                    id: "std.io".to_string()
+                },
+                Import {
+                    id: "stdio".to_string()
+                }
+            ])
+        );
     }
 }
