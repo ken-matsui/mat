@@ -1,6 +1,7 @@
 mod parser;
 
 use clap::{ArgGroup, Parser};
+use std::fs::read_to_string;
 
 #[derive(Parser, Debug)]
 #[clap(version, about, long_about = None)]
@@ -51,5 +52,6 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    println!("Hello, world!: {:?}", args);
+    let src = read_to_string(args.source).expect("Failed to read file");
+    println!("{:?}", parser::parse::parse(src));
 }
