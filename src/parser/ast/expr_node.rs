@@ -83,6 +83,17 @@ pub(crate) enum ExprNode {
     Rem(Box<ExprNode>, Box<ExprNode>),
 }
 
+pub(crate) fn expr8() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
+    expr7()
+        .then(
+            just("&&")
+                .to(ExprNode::And as fn(_, _) -> _)
+                .then(expr7())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+}
+
 pub(crate) fn expr7() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr6()
         .then(
@@ -203,6 +214,47 @@ pub(crate) fn primary() -> impl Parser<char, ExprNode, Error = Simple<char>> + C
 mod tests {
     use super::*;
     use chumsky::Parser;
+
+    #[test]
+    fn expr8_test() {
+        assert_eq!(
+            expr8().parse("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
+            Ok(ExprNode::And(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::new(ExprNode::Neq(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitOr(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitXor(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::BitAnd(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Shl(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Add(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Mul(
+                                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
+                                                8
+                                            ))),
+                                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
+                                                9
+                                            )))
+                                        )),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
+        );
+
+        assert_eq!(
+            expr8().parse("1"),
+            Ok(ExprNode::Integer(IntegerLiteralNode::I32(1)))
+        );
+    }
 
     #[test]
     fn expr7_test() {
