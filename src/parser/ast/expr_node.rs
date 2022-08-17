@@ -4,208 +4,169 @@ use crate::parser::ast::{
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum Op {
-    /// +=
-    AddAssign,
-    /// -=
-    SubAssign,
-    /// *=
-    MulAssign,
-    /// /=
-    DivAssign,
-    /// %=
-    RemAssign,
-    /// &=
-    BitAndAssign,
-    /// |=
-    BitOrAssign,
-    /// ^=
-    BitXorAssign,
-    /// <<=
-    ShlAssign,
-    /// >>=
-    ShrAssign,
-
-    /// ||
-    Or,
-
-    /// &&
-    And,
-
-    /// <
-    Lt,
-    /// >
-    Gt,
-    /// <=
-    Lte,
-    /// >=
-    Gte,
-    /// ==
-    Eq,
-    /// !=
-    Neq,
-
-    /// |
-    BitOr,
-
-    /// ^
-    BitXor,
-
-    /// &
-    BitAnd,
-
-    /// <<
-    Shl,
-    /// >>
-    Shr,
-
-    /// +
-    Add,
-    /// -
-    Sub,
-
-    /// *
-    Mul,
-    /// /
-    Div,
-    /// %
-    Rem,
-}
-
-#[derive(Debug, PartialEq)]
-pub(crate) struct BinaryOpNode {
-    lhs: Box<ExprNode>,
-    op: Op,
-    rhs: Box<ExprNode>,
-}
-
-#[derive(Debug, PartialEq)]
 pub(crate) struct CastNode {
     type_node: String, // TODO: TypeNode
     expr: Box<ExprNode>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum ExprNode {
     Integer(IntegerLiteralNode),
     String(StringLiteralNode),
     Variable(VariableNode),
     Cast(CastNode),
-    Binary(BinaryOpNode),
-    Expr(Box<ExprNode>),
+
+    /// +=
+    AddAssign(Box<ExprNode>, Box<ExprNode>),
+    /// -=
+    SubAssign(Box<ExprNode>, Box<ExprNode>),
+    /// *=
+    MulAssign(Box<ExprNode>, Box<ExprNode>),
+    /// /=
+    DivAssign(Box<ExprNode>, Box<ExprNode>),
+    /// %=
+    RemAssign(Box<ExprNode>, Box<ExprNode>),
+    /// &=
+    BitAndAssign(Box<ExprNode>, Box<ExprNode>),
+    /// |=
+    BitOrAssign(Box<ExprNode>, Box<ExprNode>),
+    /// ^=
+    BitXorAssign(Box<ExprNode>, Box<ExprNode>),
+    /// <<=
+    ShlAssign(Box<ExprNode>, Box<ExprNode>),
+    /// >>=
+    ShrAssign(Box<ExprNode>, Box<ExprNode>),
+
+    /// ||
+    Or(Box<ExprNode>, Box<ExprNode>),
+
+    /// &&
+    And(Box<ExprNode>, Box<ExprNode>),
+
+    /// <
+    Lt(Box<ExprNode>, Box<ExprNode>),
+    /// >
+    Gt(Box<ExprNode>, Box<ExprNode>),
+    /// <=
+    Lte(Box<ExprNode>, Box<ExprNode>),
+    /// >=
+    Gte(Box<ExprNode>, Box<ExprNode>),
+    /// ==
+    Eq(Box<ExprNode>, Box<ExprNode>),
+    /// !=
+    Neq(Box<ExprNode>, Box<ExprNode>),
+
+    /// |
+    BitOr(Box<ExprNode>, Box<ExprNode>),
+
+    /// ^
+    BitXor(Box<ExprNode>, Box<ExprNode>),
+
+    /// &
+    BitAnd(Box<ExprNode>, Box<ExprNode>),
+
+    /// <<
+    Shl(Box<ExprNode>, Box<ExprNode>),
+    /// >>
+    Shr(Box<ExprNode>, Box<ExprNode>),
+
+    /// +
+    Add(Box<ExprNode>, Box<ExprNode>),
+    /// -
+    Sub(Box<ExprNode>, Box<ExprNode>),
+
+    /// *
+    Mul(Box<ExprNode>, Box<ExprNode>),
+    /// /
+    Div(Box<ExprNode>, Box<ExprNode>),
+    /// %
+    Rem(Box<ExprNode>, Box<ExprNode>),
 }
 
 pub(crate) fn expr7() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr6()
         .then(
             just("!=")
-                .to(Op::Neq)
-                .or(just("==").to(Op::Eq))
-                .or(just(">=").to(Op::Gte))
-                .or(just("<=").to(Op::Lte))
-                .or(just('>').to(Op::Gt))
-                .or(just('<').to(Op::Lt))
+                .to(ExprNode::Neq as fn(_, _) -> _)
+                .or(just("==").to(ExprNode::Eq as fn(_, _) -> _))
+                .or(just(">=").to(ExprNode::Gte as fn(_, _) -> _))
+                .or(just("<=").to(ExprNode::Lte as fn(_, _) -> _))
+                .or(just('>').to(ExprNode::Gt as fn(_, _) -> _))
+                .or(just('<').to(ExprNode::Lt as fn(_, _) -> _))
                 .then(expr6())
                 .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr6() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr5()
-        .then(just('|').to(Op::BitOr).then(expr5()).repeated())
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .then(
+            just('|')
+                .to(ExprNode::BitOr as fn(_, _) -> _)
+                .then(expr5())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr5() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr4()
-        .then(just('^').to(Op::BitXor).then(expr4()).repeated())
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .then(
+            just('^')
+                .to(ExprNode::BitXor as fn(_, _) -> _)
+                .then(expr4())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr4() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr3()
-        .then(just('&').to(Op::BitAnd).then(expr3()).repeated())
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .then(
+            just('&')
+                .to(ExprNode::BitAnd as fn(_, _) -> _)
+                .then(expr3())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr3() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr2()
         .then(
             just("<<")
-                .to(Op::Shl)
-                .or(just(">>").to(Op::Shr))
+                .to(ExprNode::Shl as fn(_, _) -> _)
+                .or(just(">>").to(ExprNode::Shr as fn(_, _) -> _))
                 .then(expr2())
                 .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr2() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     expr1()
         .then(
             just('+')
-                .to(Op::Add)
-                .or(just('-').to(Op::Sub))
+                .to(ExprNode::Add as fn(_, _) -> _)
+                .or(just('-').to(ExprNode::Sub as fn(_, _) -> _))
                 .then(expr1())
                 .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn expr1() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     term()
         .then(
             just('*')
-                .to(Op::Mul)
-                .or(just('/').to(Op::Div))
-                .or(just('%').to(Op::Rem))
+                .to(ExprNode::Mul as fn(_, _) -> _)
+                .or(just('/').to(ExprNode::Div as fn(_, _) -> _))
+                .or(just('%').to(ExprNode::Rem as fn(_, _) -> _))
                 .then(term())
                 .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| {
-            ExprNode::Binary(BinaryOpNode {
-                lhs: Box::new(lhs),
-                op,
-                rhs: Box::new(rhs),
-            })
-        })
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
 pub(crate) fn term() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
@@ -247,224 +208,158 @@ mod tests {
     fn expr7_test() {
         assert_eq!(
             expr7().parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Neq,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Neq(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr7().parse("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Eq,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Eq(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr7().parse("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Gte,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Gte(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr7().parse("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Lte,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Lte(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr7().parse("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Gt,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Gt(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr7().parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Lt,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitOr,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitXor,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::BitAnd,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Shl,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Add,
-                                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            7
-                                        ))),
-                                        op: Op::Mul,
-                                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(
-                                            8
-                                        )))
-                                    })),
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Lt(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitOr(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitXor(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::BitAnd(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Shl(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Add(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Mul(
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(8)))
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
@@ -477,31 +372,25 @@ mod tests {
     fn expr6_test() {
         assert_eq!(
             expr6().parse("1 | 2 ^ 3 & 4 << 5 + 6*7"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::BitOr,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitXor,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::BitAnd,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::Shl,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Add,
-                                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
-                                    op: Op::Mul,
-                                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7)))
-                                })),
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::BitOr(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitXor(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::BitAnd(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::Shl(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Add(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Mul(
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(7)))
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
@@ -514,27 +403,22 @@ mod tests {
     fn expr5_test() {
         assert_eq!(
             expr5().parse("1 ^ 2 & 3 << 4 + 5*6"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::BitXor,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::BitAnd,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::Shl,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::Add,
-                            rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
-                                op: Op::Mul,
-                                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6)))
-                            })),
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::BitXor(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::BitAnd(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Shl(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::Add(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Mul(
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(6)))
+                            )),
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
@@ -547,23 +431,19 @@ mod tests {
     fn expr4_test() {
         assert_eq!(
             expr4().parse("1 & 2 << 3 + 4*5"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::BitAnd,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::Shl,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::Add,
-                        rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                            lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-                            op: Op::Mul,
-                            rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5)))
-                        })),
-                    })),
-                })),
-            }))
+            Ok(ExprNode::BitAnd(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Shl(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Add(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::Mul(
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(ExprNode::Integer(IntegerLiteralNode::I32(5)))
+                        )),
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
@@ -576,36 +456,30 @@ mod tests {
     fn expr3_test() {
         assert_eq!(
             expr3().parse("1 << 2 + 3*4"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Shl,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::Add,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::Mul,
-                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Shl(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Add(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Mul(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
             expr3().parse("1 >> 2 + 3*4"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Shr,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::Add,
-                    rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                        op: Op::Mul,
-                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
-                    })),
-                })),
-            }))
+            Ok(ExprNode::Shr(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Add(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Mul(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
+                    )),
+                )),
+            ))
         );
 
         assert_eq!(
@@ -618,45 +492,38 @@ mod tests {
     fn expr2_test() {
         assert_eq!(
             expr2().parse("1 + 2*3"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Add,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::Mul,
-                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
-                })),
-            }))
+            Ok(ExprNode::Add(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Mul(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                )),
+            ))
         );
 
         assert_eq!(
             expr2().parse("1 - 2*3"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Sub,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-                    op: Op::Mul,
-                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
-                })),
-            }))
+            Ok(ExprNode::Sub(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Mul(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                )),
+            ))
         );
 
         assert_eq!(
             expr2().parse("1*2 + 3*4"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                    op: Op::Mul,
-                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2)))
-                })),
-                op: Op::Add,
-                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
-                    op: Op::Mul,
-                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
-                })),
-            }))
+            Ok(ExprNode::Add(
+                Box::from(ExprNode::Mul(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2)))
+                )),
+                Box::from(ExprNode::Mul(
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3))),
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4)))
+                )),
+            ))
         );
 
         assert_eq!(
@@ -669,44 +536,38 @@ mod tests {
     fn expr1_test() {
         assert_eq!(
             expr1().parse("1*1"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Mul,
-                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-            }))
+            Ok(ExprNode::Mul(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+            ))
         );
         assert_eq!(
             expr1().parse("1 / 1"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Div,
-                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-            }))
+            Ok(ExprNode::Div(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+            ))
         );
         assert_eq!(
             expr1().parse("1 %2"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                op: Op::Rem,
-                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
-            }))
+            Ok(ExprNode::Rem(
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+            ))
         );
 
         assert_eq!(
             expr1().parse("1 % 2 / 3 * 4"),
-            Ok(ExprNode::Binary(BinaryOpNode {
-                lhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                    lhs: Box::from(ExprNode::Binary(BinaryOpNode {
-                        lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
-                        op: Op::Rem,
-                        rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2)))
-                    })),
-                    op: Op::Div,
-                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
-                })),
-                op: Op::Mul,
-                rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
-            }))
+            Ok(ExprNode::Mul(
+                Box::from(ExprNode::Div(
+                    Box::from(ExprNode::Rem(
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                        Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2)))
+                    )),
+                    Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                )),
+                Box::from(ExprNode::Integer(IntegerLiteralNode::I32(4))),
+            ))
         );
 
         assert_eq!(

@@ -1,6 +1,6 @@
 use chumsky::prelude::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct VariableNode(pub(crate) String);
 
 pub(crate) fn variable() -> impl Parser<char, VariableNode, Error = Simple<char>> + Clone {

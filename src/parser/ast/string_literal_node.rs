@@ -1,7 +1,7 @@
 use chumsky::prelude::*;
 
 // pointer for i8
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct StringLiteralNode(pub(crate) String);
 
 pub(crate) fn string() -> impl Parser<char, StringLiteralNode, Error = Simple<char>> + Clone {

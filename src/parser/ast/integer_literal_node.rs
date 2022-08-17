@@ -1,6 +1,6 @@
 use chumsky::prelude::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum IntegerLiteralNode {
     I8(i8),
     I16(i16),
