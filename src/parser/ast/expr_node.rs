@@ -40,6 +40,24 @@ pub(crate) enum ExprNode {
     Expr(Box<ExprNode>),
 }
 
+pub(crate) fn expr2() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
+    expr1()
+        .then(
+            just('+')
+                .to(Op::Add)
+                .or(just('-').to(Op::Sub))
+                .then(expr1())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| {
+            ExprNode::Binary(BinaryOpNode {
+                lhs: Box::new(lhs),
+                op,
+                rhs: Box::new(rhs),
+            })
+        })
+}
+
 pub(crate) fn expr1() -> impl Parser<char, ExprNode, Error = Simple<char>> + Clone {
     term()
         .then(
@@ -93,6 +111,40 @@ pub(crate) fn primary() -> impl Parser<char, ExprNode, Error = Simple<char>> + C
 mod tests {
     use super::*;
     use chumsky::Parser;
+
+    #[test]
+    fn expr2_test() {
+        assert_eq!(
+            expr2().parse("1 + 2*3"),
+            Ok(ExprNode::Binary(BinaryOpNode {
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                op: Op::Add,
+                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    op: Op::Mul,
+                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                })),
+            }))
+        );
+
+        assert_eq!(
+            expr2().parse("1 - 2*3"),
+            Ok(ExprNode::Binary(BinaryOpNode {
+                lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(1))),
+                op: Op::Sub,
+                rhs: Box::from(ExprNode::Binary(BinaryOpNode {
+                    lhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(2))),
+                    op: Op::Mul,
+                    rhs: Box::from(ExprNode::Integer(IntegerLiteralNode::I32(3)))
+                })),
+            }))
+        );
+
+        assert_eq!(
+            expr2().parse("1"),
+            Ok(ExprNode::Integer(IntegerLiteralNode::I32(1)))
+        );
+    }
 
     #[test]
     fn expr1_test() {
