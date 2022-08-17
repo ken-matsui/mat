@@ -16,6 +16,8 @@ pub(crate) enum ExprNode {
     Variable(VariableNode),
     Cast(CastNode),
 
+    /// =
+    Assign(Box<ExprNode>, Box<ExprNode>),
     /// +=
     AddAssign(Box<ExprNode>, Box<ExprNode>),
     /// -=
