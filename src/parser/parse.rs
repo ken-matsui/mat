@@ -295,20 +295,20 @@ mod tests {
     #[test]
     fn import_stmt_test() {
         assert_eq!(
-            import_stmt().parse("import std.io;").ok(),
-            Some(Import {
+            import_stmt().parse("import std.io;"),
+            Ok(Import {
                 id: "std.io".to_string()
             })
         );
         assert_eq!(
-            import_stmt().parse("import     std  .   io   ;").ok(),
-            Some(Import {
+            import_stmt().parse("import     std  .   io   ;"),
+            Ok(Import {
                 id: "std.io".to_string()
             })
         );
         assert_eq!(
-            import_stmt().parse("import stdio;").ok(),
-            Some(Import {
+            import_stmt().parse("import stdio;"),
+            Ok(Import {
                 id: "stdio".to_string()
             })
         );
@@ -321,8 +321,8 @@ mod tests {
     #[test]
     fn import_stmts_test() {
         assert_eq!(
-            import_stmts().parse("import std.io;\nimport stdio;").ok(),
-            Some(vec![
+            import_stmts().parse("import std.io;\nimport stdio;"),
+            Ok(vec![
                 Import {
                     id: "std.io".to_string()
                 },
@@ -332,10 +332,8 @@ mod tests {
             ])
         );
         assert_eq!(
-            import_stmts()
-                .parse("import std.io;\n     \r  \nimport stdio;")
-                .ok(),
-            Some(vec![
+            import_stmts().parse("import std.io;\n     \r  \nimport stdio;"),
+            Ok(vec![
                 Import {
                     id: "std.io".to_string()
                 },
@@ -349,8 +347,8 @@ mod tests {
     #[test]
     fn defvar_test() {
         assert_eq!(
-            defvar().parse("let mut var: type = 10;").ok(),
-            Some(DefinedVariable {
+            defvar().parse("let mut var: type = 10;"),
+            Ok(DefinedVariable {
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
                 expr: "10".to_string(),
@@ -364,8 +362,8 @@ mod tests {
     #[test]
     fn defconst_test() {
         assert_eq!(
-            defconst().parse("let var: type = 10;").ok(),
-            Some(Constant {
+            defconst().parse("let var: type = 10;"),
+            Ok(Constant {
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
                 expr: "10".to_string(),
