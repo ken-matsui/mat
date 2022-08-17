@@ -5,6 +5,33 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Op {
+    /// +=
+    AddAssign,
+    /// -=
+    SubAssign,
+    /// *=
+    MulAssign,
+    /// /=
+    DivAssign,
+    /// %=
+    RemAssign,
+    /// &=
+    BitAndAssign,
+    /// |=
+    BitOrAssign,
+    /// ^=
+    BitXorAssign,
+    /// <<=
+    ShlAssign,
+    /// >>=
+    ShrAssign,
+
+    /// ||
+    Or,
+
+    /// &&
+    And,
+
     /// <
     Lt,
     /// >
