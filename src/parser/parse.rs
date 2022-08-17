@@ -120,7 +120,7 @@ fn import_stmt() -> impl Parser<char, Import, Error = Simple<char>> + Clone {
                 .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
         )
         .then_ignore(just(';'))
-        .map(|s| Import { id: s.1 })
+        .map(|((), id)| Import { id })
         .labelled("import")
         .padded()
 }
@@ -136,6 +136,7 @@ struct DefinedVariable {
     expr: String,
 }
 
+// let mut var: type = expr;
 fn defvar() -> impl Parser<char, DefinedVariable, Error = Simple<char>> + Clone {
     text::keyword("let")
         .padded()
@@ -163,6 +164,8 @@ struct Constant {
     expr: String,
 }
 
+// let var: type = expr;
+// TODO: Merging into defvar would much clearer?
 fn defconst() -> impl Parser<char, Constant, Error = Simple<char>> + Clone {
     text::keyword("let")
         .then(ident())
@@ -180,6 +183,10 @@ fn defconst() -> impl Parser<char, Constant, Error = Simple<char>> + Clone {
         .labelled("constant")
         .padded()
 }
+
+// fn primary() {
+//
+// }
 
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     // Vec<(Expr, Span)>
