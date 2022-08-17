@@ -101,13 +101,13 @@ pub(crate) enum Expr {
     },
 }
 
+fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
+    text::ident().padded()
+}
+
 #[derive(Debug, PartialEq)]
 pub(crate) struct Import {
     id: String,
-}
-
-fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
-    text::ident().padded()
 }
 
 // import std.io;
@@ -129,13 +129,32 @@ fn import_stmts() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clon
     import_stmt().repeated()
 }
 
-// fn defvar() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
-//     text::keyword("let mut")
-//         .then(ident())
-//         .then_ignore(':')
-//         .then(ident())
-//         .then_ignore('=')
-// }
+#[derive(Debug, PartialEq)]
+struct Variable {
+    name: String,
+    type_ref: String,
+    expr: String,
+}
+
+fn defvar() -> impl Parser<char, Variable, Error = Simple<char>> + Clone {
+    text::keyword("let")
+        .padded()
+        .then_ignore(just("mut"))
+        .then(ident())
+        .then_ignore(just(':'))
+        .then(ident())
+        .then_ignore(just('='))
+        .padded()
+        .then(text::digits(10))
+        .then_ignore(just(';'))
+        .map(|((((), nm), ty), expr)| Variable {
+            name: nm,
+            type_ref: ty,
+            expr,
+        })
+        .labelled("variable")
+        .padded()
+}
 
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     // Vec<(Expr, Span)>
@@ -234,6 +253,7 @@ fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
 }
 
 pub(crate) fn parse(src: String) -> Result<Vec<Import>, Vec<Simple<char>>> {
+    println!("{:?}", defvar().parse("let mut hoge: type = 10;"));
     parser().parse(src)
 }
 
@@ -294,5 +314,20 @@ mod tests {
                 }
             ])
         );
+    }
+
+    #[test]
+    fn defvar_test() {
+        assert_eq!(
+            defvar().parse("let mut var: type = 10;").ok(),
+            Some(Variable {
+                name: "var".to_string(),
+                type_ref: "type".to_string(),
+                expr: "10".to_string(),
+            })
+        );
+        assert!(defvar().parse("let mut var: type = 10").is_err());
+        assert!(defvar().parse("let var: type = 10;").is_err());
+        assert!(defvar().parse("let mut var := 10;").is_err());
     }
 }
