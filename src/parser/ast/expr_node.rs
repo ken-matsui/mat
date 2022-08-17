@@ -85,6 +85,41 @@ pub(crate) enum Expr {
     Rem(Box<Expr>, Box<Expr>),
 }
 
+pub(crate) fn expr() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+    choice((
+        term()
+            .then(
+                just('=')
+                    .to(Expr::Assign as fn(_, _) -> _)
+                    .or(just("+=").to(Expr::AddAssign as fn(_, _) -> _))
+                    .or(just("-=").to(Expr::SubAssign as fn(_, _) -> _))
+                    .or(just("*=").to(Expr::MulAssign as fn(_, _) -> _))
+                    .or(just("/=").to(Expr::DivAssign as fn(_, _) -> _))
+                    .or(just("%=").to(Expr::RemAssign as fn(_, _) -> _))
+                    .or(just("&=").to(Expr::BitAndAssign as fn(_, _) -> _))
+                    .or(just("|=").to(Expr::BitOrAssign as fn(_, _) -> _))
+                    .or(just("^=").to(Expr::BitXorAssign as fn(_, _) -> _))
+                    .or(just("<<=").to(Expr::ShlAssign as fn(_, _) -> _))
+                    .or(just(">>=").to(Expr::ShrAssign as fn(_, _) -> _))
+                    // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
+                    .then(expr9()),
+            )
+            .map(|(lhs, (op, rhs))| op(Box::new(lhs), Box::new(rhs))),
+        expr9(),
+    ))
+}
+
+pub(crate) fn expr9() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+    expr8()
+        .then(
+            just("||")
+                .to(Expr::Or as fn(_, _) -> _)
+                .then(expr8())
+                .repeated(),
+        )
+        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+}
+
 pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr7()
         .then(
@@ -210,6 +245,7 @@ pub(crate) fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone
         string().map(Expr::String),
         variable().map(Expr::Variable),
     ))
+    .padded()
 }
 
 #[cfg(test)]
@@ -217,13 +253,205 @@ mod tests {
     use super::*;
     use chumsky::Parser;
 
+    fn big_expr() -> Expr {
+        Expr::Or(
+            Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
+            Box::from(Expr::And(
+                Box::from(Expr::Integer(IntegerLiteralNode::I32(2))),
+                Box::from(Expr::Neq(
+                    Box::from(Expr::Integer(IntegerLiteralNode::I32(3))),
+                    Box::from(Expr::BitOr(
+                        Box::from(Expr::Integer(IntegerLiteralNode::I32(4))),
+                        Box::from(Expr::BitXor(
+                            Box::from(Expr::Integer(IntegerLiteralNode::I32(5))),
+                            Box::from(Expr::BitAnd(
+                                Box::from(Expr::Integer(IntegerLiteralNode::I32(6))),
+                                Box::from(Expr::Shl(
+                                    Box::from(Expr::Integer(IntegerLiteralNode::I32(7))),
+                                    Box::from(Expr::Add(
+                                        Box::from(Expr::Integer(IntegerLiteralNode::I32(8))),
+                                        Box::from(Expr::Mul(
+                                            Box::from(Expr::Integer(IntegerLiteralNode::I32(9))),
+                                            Box::from(Expr::Integer(IntegerLiteralNode::I32(10))),
+                                        )),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            )),
+        )
+    }
+    #[test]
+    fn expr_test1() {
+        assert_eq!(
+            expr().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::Assign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test2() {
+        assert_eq!(
+            expr().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::AddAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test3() {
+        assert_eq!(
+            expr().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::SubAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test4() {
+        assert_eq!(
+            expr().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::MulAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test5() {
+        assert_eq!(
+            expr().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::DivAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test6() {
+        assert_eq!(
+            expr().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::RemAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test7() {
+        assert_eq!(
+            expr().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::BitAndAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test8() {
+        assert_eq!(
+            expr().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::BitOrAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test9() {
+        assert_eq!(
+            expr().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::BitXorAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test10() {
+        assert_eq!(
+            expr().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::ShlAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test11() {
+        assert_eq!(
+            expr().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::ShrAssign(
+                Box::from(Expr::Variable(VariableNode("var".to_string()))),
+                Box::from(big_expr()),
+            ))
+        );
+    }
+    #[test]
+    fn expr_test12() {
+        assert_eq!(
+            expr().parse("1"),
+            Ok(Expr::Integer(IntegerLiteralNode::I32(1)))
+        );
+    }
+
+    #[test]
+    fn expr9_test() {
+        assert_eq!(
+            expr9().parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            Ok(Expr::Or(
+                Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
+                Box::from(Expr::And(
+                    Box::from(Expr::Integer(IntegerLiteralNode::I32(2))),
+                    Box::from(Expr::Neq(
+                        Box::from(Expr::Integer(IntegerLiteralNode::I32(3))),
+                        Box::from(Expr::BitOr(
+                            Box::from(Expr::Integer(IntegerLiteralNode::I32(4))),
+                            Box::from(Expr::BitXor(
+                                Box::from(Expr::Integer(IntegerLiteralNode::I32(5))),
+                                Box::from(Expr::BitAnd(
+                                    Box::from(Expr::Integer(IntegerLiteralNode::I32(6))),
+                                    Box::from(Expr::Shl(
+                                        Box::from(Expr::Integer(IntegerLiteralNode::I32(7))),
+                                        Box::from(Expr::Add(
+                                            Box::from(Expr::Integer(IntegerLiteralNode::I32(8))),
+                                            Box::from(Expr::Mul(
+                                                Box::from(Expr::Integer(IntegerLiteralNode::I32(
+                                                    9
+                                                ))),
+                                                Box::from(Expr::Integer(IntegerLiteralNode::I32(
+                                                    10
+                                                )))
+                                            )),
+                                        )),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            ))
+        );
+
+        assert_eq!(
+            expr9().parse("1"),
+            Ok(Expr::Integer(IntegerLiteralNode::I32(1)))
+        );
+    }
+
     #[test]
     fn expr8_test() {
         assert_eq!(
             expr8().parse("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
             Ok(Expr::And(
                 Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
-                Box::new(Expr::Neq(
+                Box::from(Expr::Neq(
                     Box::from(Expr::Integer(IntegerLiteralNode::I32(2))),
                     Box::from(Expr::BitOr(
                         Box::from(Expr::Integer(IntegerLiteralNode::I32(3))),
