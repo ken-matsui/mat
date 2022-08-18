@@ -2,8 +2,22 @@ use crate::parser::ast::{expr9, term, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
+pub(crate) struct Param {
+    constness: bool,
+    name: String,
+    ty: Type,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Stmt {
     Empty,
+
+    DefFn {
+        name: String,
+        args: Vec<Param>,
+        ret_ty: Type,
+        body: Box<Stmt>,
+    },
 
     DefVar {
         constness: bool,
@@ -50,6 +64,43 @@ pub(crate) enum Stmt {
 
 fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
     text::ident().padded()
+}
+
+// name1: type1
+fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
+    text::keyword("mut")
+        .or_not()
+        .padded()
+        .then(ident())
+        .then_ignore(just(':'))
+        .then(typeref())
+        .map(|((mt, name), ty)| Param {
+            constness: mt.is_none(),
+            name,
+            ty,
+        })
+}
+
+// fn name(...) -> type {}
+fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    text::keyword("fn")
+        .padded()
+        .then(ident())
+        .then(
+            param()
+                .padded()
+                .separated_by(just(','))
+                .delimited_by(just('('), just(')')),
+        )
+        .then_ignore(just("->"))
+        .then(typeref())
+        .then(block())
+        .map(|(((((), name), args), ty), body)| Stmt::DefFn {
+            name,
+            args,
+            ret_ty: ty,
+            body: Box::new(body),
+        })
 }
 
 // let mut var: type = expr;
