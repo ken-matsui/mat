@@ -1,4 +1,4 @@
-use crate::parser::ast::{expr9, term, Expr};
+use crate::parser::ast::{expr9, term, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -8,7 +8,7 @@ pub(crate) enum Stmt {
     DefVar {
         constness: bool,
         name: String,
-        type_ref: String,
+        type_ref: Type,
         expr: Expr,
     },
 
@@ -59,7 +59,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .then(just("mut").or_not())
         .then(ident())
         .then_ignore(just(':'))
-        .then(ident())
+        .then(typeref())
         .then_ignore(just('='))
         .padded()
         .then(expr9())
@@ -176,13 +176,13 @@ mod tests {
                 Stmt::DefVar {
                     constness: true,
                     name: "var1".to_string(),
-                    type_ref: "type".to_string(),
+                    type_ref: Type::User("type".to_string()),
                     expr: Expr::Int(Int::I32(10)),
                 },
                 Stmt::DefVar {
                     constness: false,
                     name: "var2".to_string(),
-                    type_ref: "type".to_string(),
+                    type_ref: Type::User("type".to_string()),
                     expr: Expr::Int(Int::I32(10)),
                 }
             ]))
@@ -202,7 +202,7 @@ mod tests {
             Ok(Stmt::DefVar {
                 constness: true,
                 name: "var".to_string(),
-                type_ref: "type".to_string(),
+                type_ref: Type::User("type".to_string()),
                 expr: Expr::Int(Int::I32(10)),
             })
         );
@@ -211,7 +211,7 @@ mod tests {
             Ok(Stmt::DefVar {
                 constness: false,
                 name: "var".to_string(),
-                type_ref: "type".to_string(),
+                type_ref: Type::User("type".to_string()),
                 expr: Expr::Int(Int::I32(10)),
             })
         );

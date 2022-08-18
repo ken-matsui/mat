@@ -1,11 +1,5 @@
-use crate::parser::ast::{character, integer, string, variable, Int};
+use crate::parser::ast::{character, integer, string, typeref, variable, Int, Type};
 use chumsky::prelude::*;
-
-#[derive(Debug, PartialEq, Clone)]
-pub(crate) struct CastNode {
-    type_node: String, // TODO: TypeNode
-    expr: Box<Expr>,
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Expr {
@@ -59,7 +53,10 @@ pub(crate) enum Expr {
         args: Vec<Expr>,
     },
 
-    Cast(CastNode),
+    Cast {
+        cast: Type,
+        expr: Box<Expr>,
+    },
 
     /// Atom
     String(String),
@@ -179,20 +176,21 @@ pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
+// (cast)suffix
 pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
-    suffix()
-    // TODO: ident -> type
-    // (text::ident()
+    // TODO: Link fails
+    // typeref()
     //     .delimited_by(just("("), just(")"))
-    //     .padded()
-    //     .then(term())
-    //     .map(|(ty, expr)| {
-    //         Cast(CastNode {
-    //             type_node: ty.to_string(),
+    //     .or_not()
+    //     .then(suffix())
+    //     .map(|(cast, expr)| match cast {
+    //         Some(cast) => Expr::Cast {
+    //             cast,
     //             expr: Box::new(expr),
-    //         })
-    //     }))
-    // .or(suffix())
+    //         },
+    //         None => expr,
+    //     })
+    suffix()
 }
 
 // fn(a1, a2)(a1, a2)
