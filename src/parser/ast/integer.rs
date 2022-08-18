@@ -15,63 +15,63 @@ pub(crate) enum Int {
 pub(crate) fn integer() -> impl Parser<char, Int, Error = Simple<char>> + Clone {
     let dec = text::int::<_, Simple<char>>(10);
 
-    choice((
-        // // With suffix
-        // dec.then_ignore(just("i8"))
-        //     .try_map(|s, span| {
-        //         s.parse::<i8>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::I8),
-        // dec.then_ignore(just("i16"))
-        //     .try_map(|s, span| {
-        //         s.parse::<i16>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::I16),
-        // dec.then_ignore(just("i32"))
-        //     .try_map(|s, span| {
-        //         s.parse::<i32>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::I32),
-        // dec.then_ignore(just("i64"))
-        //     .try_map(|s, span| {
-        //         s.parse::<i64>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::I64),
-        // dec.then_ignore(just("u8"))
-        //     .try_map(|s, span| {
-        //         s.parse::<u8>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::U8),
-        // dec.then_ignore(just("u16"))
-        //     .try_map(|s, span| {
-        //         s.parse::<u16>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::U16),
-        // dec.then_ignore(just("u32"))
-        //     .try_map(|s, span| {
-        //         s.parse::<u32>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::U32),
-        // dec.then_ignore(just("u64"))
-        //     .try_map(|s, span| {
-        //         s.parse::<u64>()
-        //             .map_err(|e| Simple::custom(span, format!("{}", e)))
-        //     })
-        //     .map(Int::U64),
-        // No suffix
-        dec.try_map(|s, span| {
-            s.parse::<i32>()
-                .map_err(|e| Simple::custom(span, format!("{}", e)))
-        })
-        .map(Int::I32),
-    ))
+    // No suffix
+    dec.try_map(|s, span| {
+        s.parse::<i32>()
+            .map_err(|e| Simple::custom(span, format!("{}", e)))
+    })
+    .map(Int::I32)
+    // choice((
+    //     // // With suffix
+    //     // dec.then_ignore(just("i8"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<i8>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::I8),
+    //     // dec.then_ignore(just("i16"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<i16>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::I16),
+    //     // dec.then_ignore(just("i32"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<i32>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::I32),
+    //     // dec.then_ignore(just("i64"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<i64>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::I64),
+    //     // dec.then_ignore(just("u8"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<u8>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::U8),
+    //     // dec.then_ignore(just("u16"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<u16>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::U16),
+    //     // dec.then_ignore(just("u32"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<u32>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::U32),
+    //     // dec.then_ignore(just("u64"))
+    //     //     .try_map(|s, span| {
+    //     //         s.parse::<u64>()
+    //     //             .map_err(|e| Simple::custom(span, format!("{}", e)))
+    //     //     })
+    //     //     .map(Int::U64),
+    // ))
     .padded()
 }
 
