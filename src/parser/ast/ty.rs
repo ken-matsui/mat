@@ -1,5 +1,5 @@
-use crate::parser::ast::Stmt;
 /// Type Node
+use crate::parser::ast::Stmt;
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -37,9 +37,9 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
 pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("type")
         .padded()
-        .then(text::ident::<_, Simple<char>>())
+        .then(text::ident::<_, Simple<char>>().padded())
         .then_ignore(just('='))
-        .then(typeref())
+        .then(typeref().padded())
         .then_ignore(just(';'))
         .map(|(((), new), old)| Stmt::TypeDef { new, old })
 }
@@ -47,7 +47,6 @@ pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Int;
     use chumsky::Parser;
 
     #[test]
@@ -64,5 +63,52 @@ mod tests {
         assert_eq!(typeref().parse("u64"), Ok(Type::U64));
         assert_eq!(typeref().parse("type"), Ok(Type::User("type".to_string())));
         assert!(typeref().parse("1type").is_err());
+    }
+
+    #[test]
+    fn typedef_test() {
+        assert_eq!(
+            typedef().parse("type new = i8;"),
+            Ok(Stmt::TypeDef {
+                new: "new".to_string(),
+                old: Type::I8
+            })
+        );
+        assert_eq!(
+            typedef().parse("type new=i8;"),
+            Ok(Stmt::TypeDef {
+                new: "new".to_string(),
+                old: Type::I8
+            })
+        );
+        assert_eq!(
+            typedef().parse("type new=i8  ;"),
+            Ok(Stmt::TypeDef {
+                new: "new".to_string(),
+                old: Type::I8
+            })
+        );
+        assert_eq!(
+            typedef().parse("type new = old;"),
+            Ok(Stmt::TypeDef {
+                new: "new".to_string(),
+                old: Type::User("old".to_string()),
+            })
+        );
+        // TODO: For now, this is allowed (will be an error at semantic analysis),
+        //   but it would be better to ban at parse time.
+        assert_eq!(
+            typedef().parse("type i8 = old;"),
+            Ok(Stmt::TypeDef {
+                new: "i8".to_string(),
+                old: Type::User("old".to_string()),
+            })
+        );
+        assert!(typedef().parse("type foo = bar").is_err());
+        assert!(typedef().parse("type foo = ;").is_err());
+        assert!(typedef().parse("type foo bar;").is_err());
+        assert!(typedef().parse("type = bar;").is_err());
+        assert!(typedef().parse("foo = bar;").is_err());
+        assert!(typedef().parse("typefoo = bar;").is_err());
     }
 }
