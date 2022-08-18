@@ -176,9 +176,10 @@ pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
 
+// TODO: Cast can be applied only once. (Do we really do double cast?)
 // (cast)suffix
 pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
-    // TODO: Link fails
+    // TODO: Stack overflow
     // typeref()
     //     .delimited_by(just("("), just(")"))
     //     .or_not()
@@ -193,7 +194,8 @@ pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     suffix()
 }
 
-// fn(a1, a2)(a1, a2)
+// TODO: That function arguments can be passed only once will prevent to call curried function.
+// fn(a1, a2)
 pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     // TODO: Stack overflow on args_test and other tests
     // recursive(|_| {
