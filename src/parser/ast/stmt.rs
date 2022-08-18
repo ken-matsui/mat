@@ -2,13 +2,26 @@ use crate::parser::ast::{expr9, term, Expr};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
+pub(crate) struct DefVar {
+    constness: bool,
+    name: String,
+    type_ref: String,
+    expr: Expr,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub(crate) struct Block {
+    vars: Vec<DefVar>,
+    stmts: Vec<Stmt>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Stmt {
-    DefVar {
-        constness: bool,
-        name: String,
-        type_ref: String,
-        expr: Expr,
-    },
+    Empty,
+
+    DefVar(DefVar),
+
+    Block(Block),
 
     Return(Option<Expr>),
 
@@ -43,7 +56,7 @@ fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
 }
 
 // let mut var: type = expr;
-fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn defvar() -> impl Parser<char, DefVar, Error = Simple<char>> + Clone {
     text::keyword("let")
         .padded()
         .then(just("mut").or_not())
@@ -54,7 +67,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .then(expr9())
         .then_ignore(just(';'))
-        .map(|(((((), mt), nm), ty), expr)| Stmt::DefVar {
+        .map(|(((((), mt), nm), ty), expr)| DefVar {
             constness: mt.is_none(),
             name: nm,
             type_ref: ty,
@@ -64,10 +77,40 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
 }
 
-// pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
-//
-// pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
-//
+pub(crate) fn block() -> impl Parser<char, Block, Error = Simple<char>> + Clone {
+    defvar()
+        .map(Stmt::DefVar)
+        .or(stmt())
+        .repeated()
+        .padded()
+        .delimited_by(just('{'), just('}'))
+        .map(|stmts| {
+            let mut vars: Vec<DefVar> = vec![];
+            let mut other_stmts: Vec<Stmt> = vec![];
+            for stmt in stmts.into_iter() {
+                match stmt {
+                    Stmt::DefVar(var) => vars.push(var),
+                    other => other_stmts.push(other),
+                }
+            }
+            Block {
+                vars,
+                stmts: other_stmts,
+            }
+        })
+}
+
+pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    recursive(|_| {
+        choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            block().map(Stmt::Block),
+            return_stmt(),
+        ))
+    })
+}
+
 // pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
 
 pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -110,10 +153,60 @@ mod tests {
     use chumsky::Parser;
 
     #[test]
+    fn block_test1() {
+        assert_eq!(
+            block().parse("{}"),
+            Ok(Block {
+                vars: vec![],
+                stmts: vec![]
+            })
+        );
+        assert_eq!(
+            block().parse("{     }"),
+            Ok(Block {
+                vars: vec![],
+                stmts: vec![]
+            })
+        );
+        assert_eq!(
+            block().parse(
+                r#"{
+                let var1: type = 10;
+
+                let mut var2: type = 10;
+            }"#
+            ),
+            Ok(Block {
+                vars: vec![
+                    DefVar {
+                        constness: true,
+                        name: "var1".to_string(),
+                        type_ref: "type".to_string(),
+                        expr: Expr::Int(Int::I32(10)),
+                    },
+                    DefVar {
+                        constness: false,
+                        name: "var2".to_string(),
+                        type_ref: "type".to_string(),
+                        expr: Expr::Int(Int::I32(10)),
+                    }
+                ],
+                stmts: vec![],
+            })
+        );
+    }
+    #[test]
+    fn block_test2() {
+        assert!(block().parse("{     ").is_err());
+        assert!(block().parse("  }").is_err());
+        assert!(block().parse("let var: type = 10;").is_err());
+    }
+
+    #[test]
     fn defvar_test() {
         assert_eq!(
             defvar().parse("let var: type = 10;"),
-            Ok(Stmt::DefVar {
+            Ok(DefVar {
                 constness: true,
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
@@ -122,7 +215,7 @@ mod tests {
         );
         assert_eq!(
             defvar().parse("let mut var: type = 10;"),
-            Ok(Stmt::DefVar {
+            Ok(DefVar {
                 constness: false,
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
