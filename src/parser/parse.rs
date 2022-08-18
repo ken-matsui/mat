@@ -129,61 +129,6 @@ fn import_stmts() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clon
     import_stmt().repeated()
 }
 
-#[derive(Debug, PartialEq)]
-struct DefinedVariable {
-    name: String,
-    type_ref: String,
-    expr: String,
-}
-
-// let mut var: type = expr;
-fn defvar() -> impl Parser<char, DefinedVariable, Error = Simple<char>> + Clone {
-    text::keyword("let")
-        .padded()
-        .then_ignore(just("mut"))
-        .then(ident())
-        .then_ignore(just(':'))
-        .then(ident())
-        .then_ignore(just('='))
-        .padded()
-        .then(text::digits(10))
-        .then_ignore(just(';'))
-        .map(|((((), nm), ty), expr)| DefinedVariable {
-            name: nm,
-            type_ref: ty,
-            expr,
-        })
-        .labelled("variable")
-        .padded()
-}
-
-#[derive(Debug, PartialEq)]
-struct Constant {
-    name: String,
-    type_ref: String,
-    expr: String,
-}
-
-// let var: type = expr;
-// TODO: Merging into defvar would much clearer?
-fn defconst() -> impl Parser<char, Constant, Error = Simple<char>> + Clone {
-    text::keyword("let")
-        .then(ident())
-        .then_ignore(just(':'))
-        .then(ident())
-        .then_ignore(just('='))
-        .padded()
-        .then(text::digits(10))
-        .then_ignore(just(';'))
-        .map(|((((), nm), ty), expr)| Constant {
-            name: nm,
-            type_ref: ty,
-            expr,
-        })
-        .labelled("constant")
-        .padded()
-}
-
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
     // Vec<(Expr, Span)>
     // let ident = text::ident().padded();
@@ -281,7 +226,6 @@ fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
 }
 
 pub(crate) fn parse(src: String) -> Result<Vec<Import>, Vec<Simple<char>>> {
-    println!("{:?}", defvar().parse("let mut hoge: type = 10;"));
     parser().parse(src)
 }
 
@@ -340,35 +284,5 @@ mod tests {
                 }
             ])
         );
-    }
-
-    #[test]
-    fn defvar_test() {
-        assert_eq!(
-            defvar().parse("let mut var: type = 10;"),
-            Ok(DefinedVariable {
-                name: "var".to_string(),
-                type_ref: "type".to_string(),
-                expr: "10".to_string(),
-            })
-        );
-        assert!(defvar().parse("let mut var: type = 10").is_err());
-        assert!(defvar().parse("let var: type = 10;").is_err());
-        assert!(defvar().parse("let mut var := 10;").is_err());
-    }
-
-    #[test]
-    fn defconst_test() {
-        assert_eq!(
-            defconst().parse("let var: type = 10;"),
-            Ok(Constant {
-                name: "var".to_string(),
-                type_ref: "type".to_string(),
-                expr: "10".to_string(),
-            })
-        );
-        assert!(defconst().parse("let var: type = 10").is_err());
-        assert!(defconst().parse("let mut var: type = 10;").is_err());
-        assert!(defconst().parse("let mut var := 10;").is_err());
     }
 }

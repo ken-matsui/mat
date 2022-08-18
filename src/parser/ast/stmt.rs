@@ -3,6 +3,13 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Stmt {
+    DefVar {
+        constness: bool,
+        name: String,
+        type_ref: String,
+        expr: Expr,
+    },
+
     Return(Option<Expr>),
 
     /// =
@@ -30,6 +37,38 @@ pub(crate) enum Stmt {
 
     Expr(Expr),
 }
+
+fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
+    text::ident().padded()
+}
+
+// let mut var: type = expr;
+fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    text::keyword("let")
+        .padded()
+        .then(just("mut").or_not())
+        .then(ident())
+        .then_ignore(just(':'))
+        .then(ident())
+        .then_ignore(just('='))
+        .padded()
+        .then(expr9())
+        .then_ignore(just(';'))
+        .map(|(((((), mt), nm), ty), expr)| Stmt::DefVar {
+            constness: mt.is_none(),
+            name: nm,
+            type_ref: ty,
+            expr,
+        })
+        .labelled("variable")
+        .padded()
+}
+
+// pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
+//
+// pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
+//
+// pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
 
 pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("return")
@@ -69,6 +108,34 @@ mod tests {
     use super::*;
     use crate::parser::ast::IntegerLiteralNode;
     use chumsky::Parser;
+
+    #[test]
+    fn defvar_test() {
+        assert_eq!(
+            defvar().parse("let var: type = 10;"),
+            Ok(Stmt::DefVar {
+                constness: true,
+                name: "var".to_string(),
+                type_ref: "type".to_string(),
+                expr: Expr::Integer(IntegerLiteralNode::I32(10)),
+            })
+        );
+        assert_eq!(
+            defvar().parse("let mut var: type = 10;"),
+            Ok(Stmt::DefVar {
+                constness: false,
+                name: "var".to_string(),
+                type_ref: "type".to_string(),
+                expr: Expr::Integer(IntegerLiteralNode::I32(10)),
+            })
+        );
+
+        assert!(defvar().parse("let var: type = 10").is_err());
+        assert!(defvar().parse("let mut var: type = 10").is_err());
+
+        assert!(defvar().parse("let var := 10;").is_err());
+        assert!(defvar().parse("let mut var := 10;").is_err());
+    }
 
     #[test]
     fn return_stmt_test() {
