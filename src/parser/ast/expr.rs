@@ -9,30 +9,35 @@ pub(crate) struct CastNode {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum Expr {
-    /// =
-    Assign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// +=
-    AddAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// -=
-    SubAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// *=
-    MulAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// /=
-    DivAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// %=
-    RemAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// &=
-    BitAndAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// |=
-    BitOrAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// ^=
-    BitXorAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// <<=
-    ShlAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
-    /// >>=
-    ShrAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
+pub(crate) enum Stmt {
+    Expr(Expr),
 
+    /// =
+    Assign(Expr, Expr),
+    /// +=
+    AddAssign(Expr, Expr),
+    /// -=
+    SubAssign(Expr, Expr),
+    /// *=
+    MulAssign(Expr, Expr),
+    /// /=
+    DivAssign(Expr, Expr),
+    /// %=
+    RemAssign(Expr, Expr),
+    /// &=
+    BitAndAssign(Expr, Expr),
+    /// |=
+    BitOrAssign(Expr, Expr),
+    /// ^=
+    BitXorAssign(Expr, Expr),
+    /// <<=
+    ShlAssign(Expr, Expr),
+    /// >>=
+    ShrAssign(Expr, Expr),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub(crate) enum Expr {
     /// ||
     Or(Box<Expr>, Box<Expr>),
 
@@ -95,27 +100,27 @@ pub(crate) fn args() -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clo
     expr9().separated_by(just(','))
 }
 
-pub(crate) fn assign_stmt() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     choice((
         term()
             .then(
                 just('=')
-                    .to(Expr::Assign as fn(_, _) -> _)
-                    .or(just("+=").to(Expr::AddAssign as fn(_, _) -> _))
-                    .or(just("-=").to(Expr::SubAssign as fn(_, _) -> _))
-                    .or(just("*=").to(Expr::MulAssign as fn(_, _) -> _))
-                    .or(just("/=").to(Expr::DivAssign as fn(_, _) -> _))
-                    .or(just("%=").to(Expr::RemAssign as fn(_, _) -> _))
-                    .or(just("&=").to(Expr::BitAndAssign as fn(_, _) -> _))
-                    .or(just("|=").to(Expr::BitOrAssign as fn(_, _) -> _))
-                    .or(just("^=").to(Expr::BitXorAssign as fn(_, _) -> _))
-                    .or(just("<<=").to(Expr::ShlAssign as fn(_, _) -> _))
-                    .or(just(">>=").to(Expr::ShrAssign as fn(_, _) -> _))
+                    .to(Stmt::Assign as fn(_, _) -> _)
+                    .or(just("+=").to(Stmt::AddAssign as fn(_, _) -> _))
+                    .or(just("-=").to(Stmt::SubAssign as fn(_, _) -> _))
+                    .or(just("*=").to(Stmt::MulAssign as fn(_, _) -> _))
+                    .or(just("/=").to(Stmt::DivAssign as fn(_, _) -> _))
+                    .or(just("%=").to(Stmt::RemAssign as fn(_, _) -> _))
+                    .or(just("&=").to(Stmt::BitAndAssign as fn(_, _) -> _))
+                    .or(just("|=").to(Stmt::BitOrAssign as fn(_, _) -> _))
+                    .or(just("^=").to(Stmt::BitXorAssign as fn(_, _) -> _))
+                    .or(just("<<=").to(Stmt::ShlAssign as fn(_, _) -> _))
+                    .or(just(">>=").to(Stmt::ShrAssign as fn(_, _) -> _))
                     // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
                     .then(expr9()),
             )
-            .map(|(lhs, (op, rhs))| op(Box::new(lhs), Box::new(rhs))),
-        expr9(),
+            .map(|(lhs, (op, rhs))| op(lhs, rhs)),
+        expr9().map(Stmt::Expr),
     ))
 }
 
@@ -325,19 +330,16 @@ mod tests {
     fn assign_stmt_test1() {
         assert_eq!(
             assign_stmt().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::Assign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
-            ))
+            Ok(Stmt::Assign(Expr::Variable("var".to_string()), big_expr(),))
         );
     }
     #[test]
     fn assign_stmt_test2() {
         assert_eq!(
             assign_stmt().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::AddAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::AddAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -345,9 +347,9 @@ mod tests {
     fn assign_stmt_test3() {
         assert_eq!(
             assign_stmt().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::SubAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::SubAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -355,9 +357,9 @@ mod tests {
     fn assign_stmt_test4() {
         assert_eq!(
             assign_stmt().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::MulAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::MulAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -365,9 +367,9 @@ mod tests {
     fn assign_stmt_test5() {
         assert_eq!(
             assign_stmt().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::DivAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::DivAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -375,9 +377,9 @@ mod tests {
     fn assign_stmt_test6() {
         assert_eq!(
             assign_stmt().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::RemAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::RemAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -385,9 +387,9 @@ mod tests {
     fn assign_stmt_test7() {
         assert_eq!(
             assign_stmt().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::BitAndAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::BitAndAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -395,9 +397,9 @@ mod tests {
     fn assign_stmt_test8() {
         assert_eq!(
             assign_stmt().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::BitOrAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::BitOrAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -405,9 +407,9 @@ mod tests {
     fn assign_stmt_test9() {
         assert_eq!(
             assign_stmt().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::BitXorAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::BitXorAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -415,9 +417,9 @@ mod tests {
     fn assign_stmt_test10() {
         assert_eq!(
             assign_stmt().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::ShlAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::ShlAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -425,9 +427,9 @@ mod tests {
     fn assign_stmt_test11() {
         assert_eq!(
             assign_stmt().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::ShrAssign(
-                Box::from(Expr::Variable("var".to_string())),
-                Box::from(big_expr()),
+            Ok(Stmt::ShrAssign(
+                Expr::Variable("var".to_string()),
+                big_expr(),
             ))
         );
     }
@@ -435,7 +437,7 @@ mod tests {
     fn assign_stmt_test12() {
         assert_eq!(
             assign_stmt().parse("1"),
-            Ok(Expr::Integer(IntegerLiteralNode::I32(1)))
+            Ok(Stmt::Expr(Expr::Integer(IntegerLiteralNode::I32(1))))
         );
     }
 
