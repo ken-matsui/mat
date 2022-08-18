@@ -93,15 +93,16 @@ pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 pub(crate) fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr6()
         .then(
-            just("!=")
-                .to(Expr::Neq as fn(_, _) -> _)
-                .or(just("==").to(Expr::Eq as fn(_, _) -> _))
-                .or(just(">=").to(Expr::Gte as fn(_, _) -> _))
-                .or(just("<=").to(Expr::Lte as fn(_, _) -> _))
-                .or(just('>').to(Expr::Gt as fn(_, _) -> _))
-                .or(just('<').to(Expr::Lt as fn(_, _) -> _))
-                .then(expr6())
-                .repeated(),
+            choice((
+                just("!=").to(Expr::Neq as fn(_, _) -> _),
+                just("==").to(Expr::Eq as fn(_, _) -> _),
+                just(">=").to(Expr::Gte as fn(_, _) -> _),
+                just("<=").to(Expr::Lte as fn(_, _) -> _),
+                just('>').to(Expr::Gt as fn(_, _) -> _),
+                just('<').to(Expr::Lt as fn(_, _) -> _),
+            ))
+            .then(expr6())
+            .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
 }
