@@ -72,14 +72,14 @@ pub(crate) enum Stmt {
 // import std.io;
 pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("import")
-        .then(
+        .ignore_then(
             ident()
                 .repeated()
                 .separated_by(just('.'))
                 .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
         )
         .then_ignore(just(';'))
-        .map(|((), id)| Stmt::Import(id))
+        .map(|id| Stmt::Import(id))
         .labelled("import")
         .padded()
         .boxed()
@@ -109,7 +109,7 @@ fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
 fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("fn")
         .padded()
-        .then(ident())
+        .ignore_then(ident())
         .then(
             param()
                 .padded()
@@ -120,7 +120,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .then_ignore(just("->"))
         .then(typeref().padded())
         .then(block())
-        .map(|(((((), name), args), ty), body)| Stmt::DefFn {
+        .map(|(((name, args), ty), body)| Stmt::DefFn {
             name,
             args,
             ret_ty: ty,
@@ -133,7 +133,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("let")
         .padded()
-        .then(just("mut").or_not())
+        .ignore_then(just("mut").or_not())
         .then(ident())
         .then_ignore(just(':'))
         .then(typeref().padded())
@@ -141,7 +141,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .then(expr9())
         .then_ignore(just(';'))
-        .map(|(((((), mt), nm), ty), expr)| Stmt::DefVar {
+        .map(|(((mt, nm), ty), expr)| Stmt::DefVar {
             constness: mt.is_none(),
             name: nm,
             type_ref: ty,
@@ -182,6 +182,7 @@ pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         just(';').padded().to(Stmt::Empty),
         assign_stmt(),
         // block(),
+        // recursive(|_| if_stmt()),
         return_stmt(),
     ))
     .boxed()
@@ -194,13 +195,13 @@ pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("if")
         .padded()
-        .then(expr9())
+        .ignore_then(expr9())
         .then(block())
-        .then(text::keyword("else").then(block()).or_not())
-        .map(|((((), cond), then), els)| Stmt::If {
+        .then(text::keyword("else").ignore_then(block()).or_not())
+        .map(|((cond, then), els)| Stmt::If {
             cond: Box::new(cond),
             then: Box::new(then),
-            els: els.map(|((), stmt)| Box::new(stmt)),
+            els: els.map(Box::new),
         })
         .boxed()
 }
@@ -208,8 +209,8 @@ pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
 pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("return")
         .padded()
-        .then(expr9().or_not())
-        .map(|((), expr)| Stmt::Return(expr.map(Box::new)))
+        .ignore_then(expr9().or_not())
+        .map(|expr| Stmt::Return(expr.map(Box::new)))
         .then_ignore(just(';'))
         .boxed()
 }

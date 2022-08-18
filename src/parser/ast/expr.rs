@@ -210,11 +210,12 @@ pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone 
     // recursive(|_| {
     //     primary()
     //         .then(args().delimited_by(just('('), just(')')).repeated())
-    //         .foldl(|lhs, args| FnCall {
+    //         .foldl(|lhs, args| Expr::FnCall {
     //             name: Box::new(lhs),
     //             args,
     //         })
     // })
+    // .boxed()
     primary().boxed()
 }
 

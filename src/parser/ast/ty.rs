@@ -38,11 +38,11 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
 pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("type")
         .padded()
-        .then(ident().padded())
+        .ignore_then(ident().padded())
         .then_ignore(just('='))
         .then(typeref().padded())
         .then_ignore(just(';'))
-        .map(|(((), new), old)| Stmt::TypeDef { new, old })
+        .map(|(new, old)| Stmt::TypeDef { new, old })
         .boxed()
 }
 
