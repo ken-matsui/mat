@@ -7,6 +7,7 @@ pub(crate) fn string() -> impl Parser<char, String, Error = Simple<char>> + Clon
         .repeated()
         .delimited_by(just('"'), just('"'))
         .collect::<String>()
+        .boxed()
 }
 
 #[cfg(test)]

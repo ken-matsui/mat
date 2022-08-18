@@ -82,10 +82,11 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .map(|((), id)| Stmt::Import(id))
         .labelled("import")
         .padded()
+        .boxed()
 }
 
 pub(crate) fn top_defs() -> impl Parser<char, Vec<Stmt>, Error = Simple<char>> + Clone {
-    choice((defvar(), defn(), typedef())).repeated()
+    choice((defvar(), defn(), typedef())).repeated().boxed()
 }
 
 // name1: type1
@@ -101,6 +102,7 @@ fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
             name,
             ty,
         })
+        .boxed()
 }
 
 // fn name(...) -> type {}
@@ -124,6 +126,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
             ret_ty: ty,
             body: Box::new(body),
         })
+        .boxed()
 }
 
 // let mut var: type = expr;
@@ -146,6 +149,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         })
         .labelled("variable")
         .padded()
+        .boxed()
 }
 
 // TODO: defstruct
@@ -161,6 +165,7 @@ pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .delimited_by(just('{'), just('}'))
         .map(Stmt::Block)
+        .boxed()
 }
 
 pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -179,6 +184,7 @@ pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         // block(),
         return_stmt(),
     ))
+    .boxed()
 }
 
 // if expr {
@@ -196,6 +202,7 @@ pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
             then: Box::new(then),
             els: els.map(|((), stmt)| Box::new(stmt)),
         })
+        .boxed()
 }
 
 pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -204,6 +211,7 @@ pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .then(expr9().or_not())
         .map(|((), expr)| Stmt::Return(expr.map(Box::new)))
         .then_ignore(just(';'))
+        .boxed()
 }
 
 pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -229,6 +237,7 @@ pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         expr9().map(|expr| Stmt::Expr(Box::new(expr))),
     ))
     .then_ignore(just(';'))
+    .boxed()
 }
 
 #[cfg(test)]
@@ -257,41 +266,40 @@ mod tests {
         assert!(import_stmt().parse("use std.io;").is_err());
     }
 
-    // TODO: signal: 11, SIGSEGV: invalid memory reference
-    // #[test]
-    // fn block_test1() {
-    //     assert_eq!(block().parse("{}"), Ok(Stmt::Block(vec![])));
-    //     assert_eq!(block().parse("{     }"), Ok(Stmt::Block(vec![])));
-    //     assert_eq!(
-    //         block().parse(
-    //             r#"{
-    //             let var1: type = 10;
-    //
-    //             let mut var2: type = 10;
-    //         }"#
-    //         ),
-    //         Ok(Stmt::Block(vec![
-    //             Stmt::DefVar {
-    //                 constness: true,
-    //                 name: "var1".to_string(),
-    //                 type_ref: Type::User("type".to_string()),
-    //                 expr: Expr::Int(Int::I32(10)),
-    //             },
-    //             Stmt::DefVar {
-    //                 constness: false,
-    //                 name: "var2".to_string(),
-    //                 type_ref: Type::User("type".to_string()),
-    //                 expr: Expr::Int(Int::I32(10)),
-    //             }
-    //         ]))
-    //     );
-    // }
-    // #[test]
-    // fn block_test2() {
-    //     assert!(block().parse("{     ").is_err());
-    //     assert!(block().parse("  }").is_err());
-    //     assert!(block().parse("let var: type = 10;").is_err());
-    // }
+    #[test]
+    fn block_test1() {
+        assert_eq!(block().parse("{}"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block().parse("{     }"), Ok(Stmt::Block(vec![])));
+        assert_eq!(
+            block().parse(
+                r#"{
+                let var1: type = 10;
+    
+                let mut var2: type = 10;
+            }"#
+            ),
+            Ok(Stmt::Block(vec![
+                Stmt::DefVar {
+                    constness: true,
+                    name: "var1".to_string(),
+                    type_ref: Type::User("type".to_string()),
+                    expr: Box::new(Expr::Int(Int::I32(10))),
+                },
+                Stmt::DefVar {
+                    constness: false,
+                    name: "var2".to_string(),
+                    type_ref: Type::User("type".to_string()),
+                    expr: Box::new(Expr::Int(Int::I32(10))),
+                }
+            ]))
+        );
+    }
+    #[test]
+    fn block_test2() {
+        assert!(block().parse("{     ").is_err());
+        assert!(block().parse("  }").is_err());
+        assert!(block().parse("let var: type = 10;").is_err());
+    }
 
     #[test]
     fn defvar_test() {
@@ -321,18 +329,17 @@ mod tests {
         assert!(defvar().parse("let mut var := 10;").is_err());
     }
 
-    // TODO: invalid memory reference
-    // #[test]
-    // fn if_stmt_test() {
-    //     assert_eq!(
-    //         if_stmt().parse("if foo {;}"),
-    //         Ok(Stmt::If {
-    //             cond: Box::new(Expr::Variable("foo".to_string())),
-    //             then: Box::new(Stmt::Empty),
-    //             els: None,
-    //         })
-    //     );
-    // }
+    #[test]
+    fn if_stmt_test() {
+        assert_eq!(
+            if_stmt().parse("if foo {}"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![])),
+                els: None,
+            })
+        );
+    }
 
     #[test]
     fn return_stmt_test() {

@@ -2,7 +2,7 @@ use crate::parser::ast::ident;
 use chumsky::prelude::*;
 
 pub(crate) fn variable() -> impl Parser<char, String, Error = Simple<char>> + Clone {
-    ident()
+    ident().boxed()
 }
 
 #[cfg(test)]

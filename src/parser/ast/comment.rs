@@ -9,7 +9,7 @@ pub(crate) fn comment() -> impl Parser<char, (), Error = Simple<char>> + Clone {
         .then(take_until(just("*/")))
         .ignored();
 
-    single_line_comment.or(multi_line_comment)
+    single_line_comment.or(multi_line_comment).boxed()
 }
 
 #[cfg(test)]

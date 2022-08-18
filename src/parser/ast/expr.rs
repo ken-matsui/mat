@@ -65,7 +65,7 @@ pub(crate) enum Expr {
 }
 
 pub(crate) fn args() -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone {
-    expr9().separated_by(just(','))
+    expr9().separated_by(just(',')).boxed()
 }
 
 pub(crate) fn expr9() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -77,6 +77,7 @@ pub(crate) fn expr9() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -88,6 +89,7 @@ pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -105,6 +107,7 @@ pub(crate) fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -116,6 +119,7 @@ pub(crate) fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -127,6 +131,7 @@ pub(crate) fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -138,6 +143,7 @@ pub(crate) fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -150,6 +156,7 @@ pub(crate) fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -162,6 +169,7 @@ pub(crate) fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -175,6 +183,7 @@ pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
                 .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .boxed()
 }
 
 // TODO: Cast can be applied only once. (Do we really do double cast?)
@@ -192,7 +201,7 @@ pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     //         },
     //         None => expr,
     //     })
-    suffix()
+    suffix().boxed()
 }
 
 // TODO: That function arguments can be passed only once will prevent to call curried function.
@@ -207,7 +216,7 @@ pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone 
     //             args,
     //         })
     // })
-    primary()
+    primary().boxed()
 }
 
 pub(crate) fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
@@ -218,6 +227,7 @@ pub(crate) fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone
         variable().map(Expr::Variable),
     ))
     .padded()
+    .boxed()
 }
 
 #[cfg(test)]

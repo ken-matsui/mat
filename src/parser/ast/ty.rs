@@ -31,6 +31,7 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
         text::keyword("u64").to(Type::U64),
         ident().map(Type::User),
     ))
+    .boxed()
 }
 
 /// type new = old;
@@ -42,6 +43,7 @@ pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
         .then(typeref().padded())
         .then_ignore(just(';'))
         .map(|(((), new), old)| Stmt::TypeDef { new, old })
+        .boxed()
 }
 
 #[cfg(test)]

@@ -30,4 +30,5 @@ pub(crate) fn compilation_unit() -> impl Parser<char, Ast, Error = Simple<char>>
         .then(top_defs())
         .then_ignore(end())
         .map(|(imports, defs)| Ast { imports, defs })
+        .boxed()
 }
