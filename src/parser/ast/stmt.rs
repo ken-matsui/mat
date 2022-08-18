@@ -106,7 +106,7 @@ pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::IntegerLiteralNode;
+    use crate::parser::ast::IntegerLiteral;
     use chumsky::Parser;
 
     #[test]
@@ -117,7 +117,7 @@ mod tests {
                 constness: true,
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
-                expr: Expr::Integer(IntegerLiteralNode::I32(10)),
+                expr: Expr::Integer(IntegerLiteral::I32(10)),
             })
         );
         assert_eq!(
@@ -126,7 +126,7 @@ mod tests {
                 constness: false,
                 name: "var".to_string(),
                 type_ref: "type".to_string(),
-                expr: Expr::Integer(IntegerLiteralNode::I32(10)),
+                expr: Expr::Integer(IntegerLiteral::I32(10)),
             })
         );
 
@@ -142,15 +142,13 @@ mod tests {
         assert_eq!(
             return_stmt().parse("return 1 + 2;"),
             Ok(Stmt::Return(Some(Expr::Add(
-                Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
-                Box::from(Expr::Integer(IntegerLiteralNode::I32(2)))
+                Box::from(Expr::Integer(IntegerLiteral::I32(1))),
+                Box::from(Expr::Integer(IntegerLiteral::I32(2)))
             ))))
         );
         assert_eq!(
             return_stmt().parse("return 1;"),
-            Ok(Stmt::Return(Some(Expr::Integer(IntegerLiteralNode::I32(
-                1
-            )))))
+            Ok(Stmt::Return(Some(Expr::Integer(IntegerLiteral::I32(1)))))
         );
         assert_eq!(return_stmt().parse("return ;"), Ok(Stmt::Return(None)));
         assert!(return_stmt().parse("return").is_err());
@@ -159,24 +157,24 @@ mod tests {
 
     fn big_expr() -> Expr {
         Expr::Or(
-            Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
+            Box::from(Expr::Integer(IntegerLiteral::I32(1))),
             Box::from(Expr::And(
-                Box::from(Expr::Integer(IntegerLiteralNode::I32(2))),
+                Box::from(Expr::Integer(IntegerLiteral::I32(2))),
                 Box::from(Expr::Neq(
-                    Box::from(Expr::Integer(IntegerLiteralNode::I32(3))),
+                    Box::from(Expr::Integer(IntegerLiteral::I32(3))),
                     Box::from(Expr::BitOr(
-                        Box::from(Expr::Integer(IntegerLiteralNode::I32(4))),
+                        Box::from(Expr::Integer(IntegerLiteral::I32(4))),
                         Box::from(Expr::BitXor(
-                            Box::from(Expr::Integer(IntegerLiteralNode::I32(5))),
+                            Box::from(Expr::Integer(IntegerLiteral::I32(5))),
                             Box::from(Expr::BitAnd(
-                                Box::from(Expr::Integer(IntegerLiteralNode::I32(6))),
+                                Box::from(Expr::Integer(IntegerLiteral::I32(6))),
                                 Box::from(Expr::Shl(
-                                    Box::from(Expr::Integer(IntegerLiteralNode::I32(7))),
+                                    Box::from(Expr::Integer(IntegerLiteral::I32(7))),
                                     Box::from(Expr::Add(
-                                        Box::from(Expr::Integer(IntegerLiteralNode::I32(8))),
+                                        Box::from(Expr::Integer(IntegerLiteral::I32(8))),
                                         Box::from(Expr::Mul(
-                                            Box::from(Expr::Integer(IntegerLiteralNode::I32(9))),
-                                            Box::from(Expr::Integer(IntegerLiteralNode::I32(10))),
+                                            Box::from(Expr::Integer(IntegerLiteral::I32(9))),
+                                            Box::from(Expr::Integer(IntegerLiteral::I32(10))),
                                         )),
                                     )),
                                 )),
@@ -298,7 +296,7 @@ mod tests {
     fn assign_stmt_test12() {
         assert_eq!(
             assign_stmt().parse("1 ;"),
-            Ok(Stmt::Expr(Expr::Integer(IntegerLiteralNode::I32(1))))
+            Ok(Stmt::Expr(Expr::Integer(IntegerLiteral::I32(1))))
         );
     }
     #[test]

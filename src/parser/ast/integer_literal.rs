@@ -1,7 +1,7 @@
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum IntegerLiteralNode {
+pub(crate) enum IntegerLiteral {
     I8(i8),
     I16(i16),
     I32(i32),
@@ -12,7 +12,7 @@ pub(crate) enum IntegerLiteralNode {
     U64(u64),
 }
 
-pub(crate) fn integer() -> impl Parser<char, IntegerLiteralNode, Error = Simple<char>> + Clone {
+pub(crate) fn integer() -> impl Parser<char, IntegerLiteral, Error = Simple<char>> + Clone {
     let dec = text::int::<_, Simple<char>>(10);
 
     choice((
@@ -71,14 +71,14 @@ pub(crate) fn integer() -> impl Parser<char, IntegerLiteralNode, Error = Simple<
                 .map_err(|e| Simple::custom(span, format!("{}", e)))
         })
         .padded()
-        .map(IntegerLiteralNode::I32),
+        .map(IntegerLiteral::I32),
     ))
 }
 
-pub(crate) fn character() -> impl Parser<char, IntegerLiteralNode, Error = Simple<char>> + Clone {
+pub(crate) fn character() -> impl Parser<char, IntegerLiteral, Error = Simple<char>> + Clone {
     filter(|c: &char| c.is_ascii())
         .delimited_by(just('\''), just('\''))
-        .map(|c| IntegerLiteralNode::I8(c as i8))
+        .map(|c| IntegerLiteral::I8(c as i8))
 }
 
 #[cfg(test)]
@@ -88,10 +88,10 @@ mod tests {
 
     #[test]
     fn integer_test() {
-        assert_eq!(integer().parse("0"), Ok(IntegerLiteralNode::I32(0)));
+        assert_eq!(integer().parse("0"), Ok(IntegerLiteral::I32(0)));
         assert_eq!(
             integer().parse("2147483647"),
-            Ok(IntegerLiteralNode::I32(2147483647))
+            Ok(IntegerLiteral::I32(2147483647))
         );
         assert!(integer().parse("2147483648").is_err());
 
@@ -156,9 +156,9 @@ mod tests {
 
     #[test]
     fn character_test() {
-        assert_eq!(character().parse("'a'"), Ok(IntegerLiteralNode::I8(97)));
-        assert_eq!(character().parse("'1'"), Ok(IntegerLiteralNode::I8(49)));
-        assert_eq!(character().parse("'\n'"), Ok(IntegerLiteralNode::I8(10)));
+        assert_eq!(character().parse("'a'"), Ok(IntegerLiteral::I8(97)));
+        assert_eq!(character().parse("'1'"), Ok(IntegerLiteral::I8(49)));
+        assert_eq!(character().parse("'\n'"), Ok(IntegerLiteral::I8(10)));
         assert!(character().parse("'a").is_err());
         assert!(character().parse("a'").is_err());
         assert!(character().parse("a").is_err());
