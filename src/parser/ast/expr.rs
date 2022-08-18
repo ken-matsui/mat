@@ -4,58 +4,58 @@ use chumsky::prelude::*;
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Expr {
     /// ||
-    Or(Box<Expr>, Box<Expr>),
+    Or(Box<Self>, Box<Self>),
 
     /// &&
-    And(Box<Expr>, Box<Expr>),
+    And(Box<Self>, Box<Self>),
 
     /// <
-    Lt(Box<Expr>, Box<Expr>),
+    Lt(Box<Self>, Box<Self>),
     /// >
-    Gt(Box<Expr>, Box<Expr>),
+    Gt(Box<Self>, Box<Self>),
     /// <=
-    Lte(Box<Expr>, Box<Expr>),
+    Lte(Box<Self>, Box<Self>),
     /// >=
-    Gte(Box<Expr>, Box<Expr>),
+    Gte(Box<Self>, Box<Self>),
     /// ==
-    Eq(Box<Expr>, Box<Expr>),
+    Eq(Box<Self>, Box<Self>),
     /// !=
-    Neq(Box<Expr>, Box<Expr>),
+    Neq(Box<Self>, Box<Self>),
 
     /// |
-    BitOr(Box<Expr>, Box<Expr>),
+    BitOr(Box<Self>, Box<Self>),
 
     /// ^
-    BitXor(Box<Expr>, Box<Expr>),
+    BitXor(Box<Self>, Box<Self>),
 
     /// &
-    BitAnd(Box<Expr>, Box<Expr>),
+    BitAnd(Box<Self>, Box<Self>),
 
     /// <<
-    Shl(Box<Expr>, Box<Expr>),
+    Shl(Box<Self>, Box<Self>),
     /// >>
-    Shr(Box<Expr>, Box<Expr>),
+    Shr(Box<Self>, Box<Self>),
 
     /// +
-    Add(Box<Expr>, Box<Expr>),
+    Add(Box<Self>, Box<Self>),
     /// -
-    Sub(Box<Expr>, Box<Expr>),
+    Sub(Box<Self>, Box<Self>),
 
     /// *
-    Mul(Box<Expr>, Box<Expr>),
+    Mul(Box<Self>, Box<Self>),
     /// /
-    Div(Box<Expr>, Box<Expr>),
+    Div(Box<Self>, Box<Self>),
     /// %
-    Rem(Box<Expr>, Box<Expr>),
+    Rem(Box<Self>, Box<Self>),
 
     FnCall {
-        name: Box<Expr>,
-        args: Vec<Expr>,
+        name: Box<Self>,
+        args: Vec<Self>,
     },
 
     Cast {
         cast: Type,
-        expr: Box<Expr>,
+        expr: Box<Self>,
     },
 
     /// Atom
@@ -313,160 +313,54 @@ mod tests {
 
     #[test]
     fn expr7_test() {
-        assert_eq!(
-            expr7().parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Neq(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
+        let expr = Box::new(Expr::BitOr(
+            Box::new(Expr::Int(Int::I32(2))),
+            Box::new(Expr::BitXor(
+                Box::new(Expr::Int(Int::I32(3))),
+                Box::new(Expr::BitAnd(
+                    Box::new(Expr::Int(Int::I32(4))),
+                    Box::new(Expr::Shl(
+                        Box::new(Expr::Int(Int::I32(5))),
+                        Box::new(Expr::Add(
+                            Box::new(Expr::Int(Int::I32(6))),
+                            Box::new(Expr::Mul(
+                                Box::new(Expr::Int(Int::I32(7))),
+                                Box::new(Expr::Int(Int::I32(8))),
                             )),
                         )),
                     )),
                 )),
-            ))
+            )),
+        ));
+
+        assert_eq!(
+            expr7().parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            Ok(Expr::Neq(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
         );
 
         assert_eq!(
             expr7().parse("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Eq(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
-            ))
+            Ok(Expr::Eq(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
         );
 
         assert_eq!(
             expr7().parse("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Gte(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
-            ))
+            Ok(Expr::Gte(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
         );
 
         assert_eq!(
             expr7().parse("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Lte(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
-            ))
+            Ok(Expr::Lte(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
         );
 
         assert_eq!(
             expr7().parse("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Gt(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
-            ))
+            Ok(Expr::Gt(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
         );
 
         assert_eq!(
             expr7().parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Lt(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitOr(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitXor(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitAnd(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Shl(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Add(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Mul(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Int(Int::I32(8)))
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
-            ))
+            Ok(Expr::Lt(Box::new(Expr::Int(Int::I32(1))), expr))
         );
 
         assert_eq!(expr7().parse("1"), Ok(Expr::Int(Int::I32(1))));

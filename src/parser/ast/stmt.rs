@@ -18,14 +18,14 @@ pub(crate) enum Stmt {
         name: String,
         args: Vec<Param>,
         ret_ty: Type,
-        body: Box<Stmt>,
+        body: Box<Self>,
     },
 
     DefVar {
         constness: bool,
         name: String,
         type_ref: Type,
-        expr: Expr,
+        expr: Box<Expr>,
     },
 
     TypeDef {
@@ -33,40 +33,40 @@ pub(crate) enum Stmt {
         old: Type,
     },
 
-    Block(Vec<Stmt>),
+    Block(Vec<Self>),
 
     If {
-        cond: Expr,
-        then: Box<Stmt>,
-        els: Option<Box<Stmt>>,
+        cond: Box<Expr>,
+        then: Box<Self>,
+        els: Option<Box<Self>>,
     },
 
-    Return(Option<Expr>),
+    Return(Option<Box<Expr>>),
 
     /// =
-    Assign(Expr, Expr),
+    Assign(Box<Expr>, Box<Expr>),
     /// +=
-    AddAssign(Expr, Expr),
+    AddAssign(Box<Expr>, Box<Expr>),
     /// -=
-    SubAssign(Expr, Expr),
+    SubAssign(Box<Expr>, Box<Expr>),
     /// *=
-    MulAssign(Expr, Expr),
+    MulAssign(Box<Expr>, Box<Expr>),
     /// /=
-    DivAssign(Expr, Expr),
+    DivAssign(Box<Expr>, Box<Expr>),
     /// %=
-    RemAssign(Expr, Expr),
+    RemAssign(Box<Expr>, Box<Expr>),
     /// &=
-    BitAndAssign(Expr, Expr),
+    BitAndAssign(Box<Expr>, Box<Expr>),
     /// |=
-    BitOrAssign(Expr, Expr),
+    BitOrAssign(Box<Expr>, Box<Expr>),
     /// ^=
-    BitXorAssign(Expr, Expr),
+    BitXorAssign(Box<Expr>, Box<Expr>),
     /// <<=
-    ShlAssign(Expr, Expr),
+    ShlAssign(Box<Expr>, Box<Expr>),
     /// >>=
-    ShrAssign(Expr, Expr),
+    ShrAssign(Box<Expr>, Box<Expr>),
 
-    Expr(Expr),
+    Expr(Box<Expr>),
 }
 
 fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
@@ -145,7 +145,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
             constness: mt.is_none(),
             name: nm,
             type_ref: ty,
-            expr,
+            expr: Box::new(expr),
         })
         .labelled("variable")
         .padded()
@@ -195,7 +195,7 @@ pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
         .then(block())
         .then(text::keyword("else").then(block()).or_not())
         .map(|((((), cond), then), els)| Stmt::If {
-            cond,
+            cond: Box::new(cond),
             then: Box::new(then),
             els: match els {
                 Some(((), stmt)) => Some(Box::new(stmt)),
@@ -208,7 +208,7 @@ pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
     text::keyword("return")
         .padded()
         .then(expr9().or_not())
-        .map(|((), expr)| Stmt::Return(expr))
+        .map(|((), expr)| Stmt::Return(expr.map(Box::new)))
         .then_ignore(just(';'))
 }
 
@@ -231,8 +231,8 @@ pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
                     // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
                     .then(expr9()),
             )
-            .map(|(lhs, (op, rhs))| op(lhs, rhs)),
-        expr9().map(Stmt::Expr),
+            .map(|(lhs, (op, rhs))| op(Box::new(lhs), Box::new(rhs))),
+        expr9().map(|expr| Stmt::Expr(Box::new(expr))),
     ))
     .then_ignore(just(';'))
 }
@@ -307,7 +307,7 @@ mod tests {
                 constness: true,
                 name: "var".to_string(),
                 type_ref: Type::User("type".to_string()),
-                expr: Expr::Int(Int::I32(10)),
+                expr: Box::new(Expr::Int(Int::I32(10))),
             })
         );
         assert_eq!(
@@ -316,7 +316,7 @@ mod tests {
                 constness: false,
                 name: "var".to_string(),
                 type_ref: Type::User("type".to_string()),
-                expr: Expr::Int(Int::I32(10)),
+                expr: Box::new(Expr::Int(Int::I32(10))),
             })
         );
 
@@ -331,22 +331,22 @@ mod tests {
     fn return_stmt_test() {
         assert_eq!(
             return_stmt().parse("return 1 + 2;"),
-            Ok(Stmt::Return(Some(Expr::Add(
+            Ok(Stmt::Return(Some(Box::new(Expr::Add(
                 Box::new(Expr::Int(Int::I32(1))),
                 Box::new(Expr::Int(Int::I32(2)))
-            ))))
+            )))))
         );
         assert_eq!(
             return_stmt().parse("return 1;"),
-            Ok(Stmt::Return(Some(Expr::Int(Int::I32(1)))))
+            Ok(Stmt::Return(Some(Box::new(Expr::Int(Int::I32(1))))))
         );
         assert_eq!(return_stmt().parse("return ;"), Ok(Stmt::Return(None)));
         assert!(return_stmt().parse("return").is_err());
         assert!(return_stmt().parse("return 1 + 2").is_err());
     }
 
-    fn big_expr() -> Expr {
-        Expr::Or(
+    fn big_expr() -> Box<Expr> {
+        Box::new(Expr::Or(
             Box::new(Expr::Int(Int::I32(1))),
             Box::new(Expr::And(
                 Box::new(Expr::Int(Int::I32(2))),
@@ -373,13 +373,16 @@ mod tests {
                     )),
                 )),
             )),
-        )
+        ))
     }
     #[test]
     fn assign_stmt_test1() {
         assert_eq!(
             assign_stmt().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10 ;"),
-            Ok(Stmt::Assign(Expr::Variable("var".to_string()), big_expr(),))
+            Ok(Stmt::Assign(
+                Box::new(Expr::Variable("var".to_string())),
+                big_expr()
+            ))
         );
     }
     #[test]
@@ -387,7 +390,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::AddAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -397,7 +400,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::SubAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -407,7 +410,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::MulAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -417,7 +420,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::DivAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -427,7 +430,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::RemAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -437,7 +440,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitAndAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -447,7 +450,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitOrAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -457,7 +460,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitXorAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -467,7 +470,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::ShlAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -477,7 +480,7 @@ mod tests {
         assert_eq!(
             assign_stmt().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::ShrAssign(
-                Expr::Variable("var".to_string()),
+                Box::new(Expr::Variable("var".to_string())),
                 big_expr(),
             ))
         );
@@ -486,7 +489,7 @@ mod tests {
     fn assign_stmt_test12() {
         assert_eq!(
             assign_stmt().parse("1 ;"),
-            Ok(Stmt::Expr(Expr::Int(Int::I32(1))))
+            Ok(Stmt::Expr(Box::new(Expr::Int(Int::I32(1)))))
         );
     }
     #[test]

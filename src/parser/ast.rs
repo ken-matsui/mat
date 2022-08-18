@@ -16,14 +16,18 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct AST {
-    imports: Vec<Stmt>,
-    defs: Stmt,
+    imports: Vec<Box<Stmt>>,
+    defs: Box<Stmt>,
 }
 
 pub(crate) fn compilation_unit() -> impl Parser<char, AST, Error = Simple<char>> + Clone {
     import_stmt()
+        .map(Box::new)
         .repeated()
         .then(top_defs())
         .then_ignore(end())
-        .map(|(imports, defs)| AST { imports, defs })
+        .map(|(imports, defs)| AST {
+            imports,
+            defs: Box::new(defs),
+        })
 }
