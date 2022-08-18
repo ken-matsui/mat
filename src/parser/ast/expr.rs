@@ -1,3 +1,4 @@
+use crate::parser::ast::Expr::FnCall;
 use crate::parser::ast::{character, integer, string, variable, IntegerLiteralNode};
 use chumsky::prelude::*;
 
@@ -77,10 +78,17 @@ pub(crate) enum Expr {
     /// %
     Rem(Box<Expr>, Box<Expr>),
 
-    Integer(IntegerLiteralNode),
+    FnCall {
+        name: Box<Expr>,
+        args: Vec<Expr>,
+    },
+
+    Cast(CastNode),
+
+    /// Atom
     String(String),
     Variable(String),
-    Cast(CastNode),
+    Integer(IntegerLiteralNode),
 }
 
 pub(crate) fn args() -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone {
@@ -235,9 +243,18 @@ pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     // .or(suffix())
 }
 
+// fn(a1, a2)(a1, a2)
 pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+    // TODO: Stack overflow on assign_stmt_tests
+    // recursive(|_| {
+    //     primary()
+    //         .then(args().delimited_by(just('('), just(')')).repeated())
+    //         .foldl(|lhs, args| FnCall {
+    //             name: Box::new(lhs),
+    //             args,
+    //         })
+    // })
     primary()
-    // or(FnCall)
 }
 
 pub(crate) fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
