@@ -1,3 +1,4 @@
+use crate::parser::ast::Stmt;
 /// Type Node
 use chumsky::prelude::*;
 
@@ -32,19 +33,13 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
     ))
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub(crate) struct TypeDef {
-    new: String,
-    old: Type,
-}
-
 /// type new = old;
-pub(crate) fn typedef() -> impl Parser<char, TypeDef, Error = Simple<char>> + Clone {
+pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("type")
         .padded()
         .then(text::ident::<_, Simple<char>>())
         .then_ignore(just('='))
         .then(typeref())
         .then_ignore(just(';'))
-        .map(|(((), new), old)| TypeDef { new, old })
+        .map(|(((), new), old)| Stmt::TypeDef { new, old })
 }

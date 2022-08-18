@@ -1,4 +1,4 @@
-use crate::parser::ast::{expr9, term, typeref, Expr, Type};
+use crate::parser::ast::{expr9, term, typedef, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -24,6 +24,11 @@ pub(crate) enum Stmt {
         name: String,
         type_ref: Type,
         expr: Expr,
+    },
+
+    TypeDef {
+        new: String,
+        old: Type,
     },
 
     Block(Vec<Stmt>),
@@ -64,6 +69,10 @@ pub(crate) enum Stmt {
 
 fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
     text::ident().padded()
+}
+
+fn top_defs() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    choice((defvar(), defn(), typedef()))
 }
 
 // name1: type1
@@ -124,6 +133,12 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .labelled("variable")
         .padded()
 }
+
+// TODO: defstruct
+// struct name {
+//     member: type,
+//     ...
+// }
 
 pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     defvar()
