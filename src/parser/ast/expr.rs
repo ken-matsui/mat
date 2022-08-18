@@ -250,7 +250,7 @@ pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 
 // fn(a1, a2)(a1, a2)
 pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
-    // TODO: Stack overflow on assign_stmt_tests
+    // TODO: Stack overflow on args_test and other tests
     // recursive(|_| {
     //     primary()
     //         .then(args().delimited_by(just('('), just(')')).repeated())
