@@ -1,2 +1,32 @@
 import std.io;
 import stdio;
+
+let fuga: i32 = 1;
+
+type newint = i32;
+type User = newint;
+
+struct User {
+    active: u8,
+    username: char,
+    email: char,
+    sign_in_count: u64,
+}
+
+fn f1(arg: char, arg2: u64) -> u32 {
+    return (u64)arg + arg2;
+}
+
+fn main() -> i32 {
+    let mut hoge: User = 12;
+    //boo = 23; // unresolved reference: boo
+    //hoge(1, 2, 3); // calling object is not a function
+    //1 = 2 + 4; // invalid lhs expression
+    if (hoge) {
+        return 1;
+    } else if (fuga) {
+        return (i32)f1((char)fuga, (u64)hoge);
+    } else {
+        return 1 + 2 + 2 - 1i64 * hoge;
+    }
+}

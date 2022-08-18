@@ -15,10 +15,10 @@ fn comment() -> impl Parser<char, (), Error = Simple<char>> + Clone {
     single_line_comment.or(multi_line_comment)
 }
 
-pub(crate) fn parse(src: String) -> Result<AST, Vec<Simple<char>>> {
+pub(crate) fn parse(src: String) -> (Option<AST>, Vec<Simple<char>>) {
     compilation_unit()
         .padded_by(comment().padded().repeated())
-        .parse(src)
+        .parse_recovery(src)
 }
 
 #[cfg(test)]
