@@ -230,8 +230,8 @@ mod tests {
                 Expr::Int(Int::I32(1)),
                 Expr::Variable("var".to_string()),
                 Expr::Add(
-                    Box::from(Expr::Int(Int::I32(1))),
-                    Box::from(Expr::Int(Int::I32(1))),
+                    Box::new(Expr::Int(Int::I32(1))),
+                    Box::new(Expr::Int(Int::I32(1))),
                 )
             ])
         );
@@ -243,24 +243,24 @@ mod tests {
         assert_eq!(
             expr9().parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::Or(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::And(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Neq(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitOr(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::BitXor(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::BitAnd(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Shl(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Add(
-                                            Box::from(Expr::Int(Int::I32(8))),
-                                            Box::from(Expr::Mul(
-                                                Box::from(Expr::Int(Int::I32(9))),
-                                                Box::from(Expr::Int(Int::I32(10)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::And(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Neq(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitOr(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::BitXor(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::BitAnd(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Shl(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Add(
+                                            Box::new(Expr::Int(Int::I32(8))),
+                                            Box::new(Expr::Mul(
+                                                Box::new(Expr::Int(Int::I32(9))),
+                                                Box::new(Expr::Int(Int::I32(10)))
                                             )),
                                         )),
                                     )),
@@ -280,22 +280,22 @@ mod tests {
         assert_eq!(
             expr8().parse("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
             Ok(Expr::And(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Neq(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitOr(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitXor(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::BitAnd(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Shl(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Add(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Mul(
-                                            Box::from(Expr::Int(Int::I32(8))),
-                                            Box::from(Expr::Int(Int::I32(9)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Neq(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitOr(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitXor(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::BitAnd(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Shl(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Add(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Mul(
+                                            Box::new(Expr::Int(Int::I32(8))),
+                                            Box::new(Expr::Int(Int::I32(9)))
                                         )),
                                     )),
                                 )),
@@ -314,20 +314,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Neq(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -340,20 +340,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Eq(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -366,20 +366,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Gte(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -392,20 +392,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Lte(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -418,20 +418,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Gt(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -444,20 +444,20 @@ mod tests {
         assert_eq!(
             expr7().parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Expr::Lt(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitOr(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitXor(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::BitAnd(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Shl(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Add(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Mul(
-                                        Box::from(Expr::Int(Int::I32(7))),
-                                        Box::from(Expr::Int(Int::I32(8)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitOr(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitXor(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::BitAnd(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Shl(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Add(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Mul(
+                                        Box::new(Expr::Int(Int::I32(7))),
+                                        Box::new(Expr::Int(Int::I32(8)))
                                     )),
                                 )),
                             )),
@@ -475,18 +475,18 @@ mod tests {
         assert_eq!(
             expr6().parse("1 | 2 ^ 3 & 4 << 5 + 6*7"),
             Ok(Expr::BitOr(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitXor(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::BitAnd(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::Shl(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Add(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Mul(
-                                    Box::from(Expr::Int(Int::I32(6))),
-                                    Box::from(Expr::Int(Int::I32(7)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitXor(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::BitAnd(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::Shl(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Add(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Mul(
+                                    Box::new(Expr::Int(Int::I32(6))),
+                                    Box::new(Expr::Int(Int::I32(7)))
                                 )),
                             )),
                         )),
@@ -503,16 +503,16 @@ mod tests {
         assert_eq!(
             expr5().parse("1 ^ 2 & 3 << 4 + 5*6"),
             Ok(Expr::BitXor(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::BitAnd(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Shl(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::Add(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Mul(
-                                Box::from(Expr::Int(Int::I32(5))),
-                                Box::from(Expr::Int(Int::I32(6)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::BitAnd(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Shl(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::Add(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Mul(
+                                Box::new(Expr::Int(Int::I32(5))),
+                                Box::new(Expr::Int(Int::I32(6)))
                             )),
                         )),
                     )),
@@ -528,14 +528,14 @@ mod tests {
         assert_eq!(
             expr4().parse("1 & 2 << 3 + 4*5"),
             Ok(Expr::BitAnd(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Shl(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Add(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::Mul(
-                            Box::from(Expr::Int(Int::I32(4))),
-                            Box::from(Expr::Int(Int::I32(5)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Shl(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Add(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::Mul(
+                            Box::new(Expr::Int(Int::I32(4))),
+                            Box::new(Expr::Int(Int::I32(5)))
                         )),
                     )),
                 )),
@@ -550,12 +550,12 @@ mod tests {
         assert_eq!(
             expr3().parse("1 << 2 + 3*4"),
             Ok(Expr::Shl(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Add(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Mul(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::Int(Int::I32(4)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Add(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Mul(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::Int(Int::I32(4)))
                     )),
                 )),
             ))
@@ -564,12 +564,12 @@ mod tests {
         assert_eq!(
             expr3().parse("1 >> 2 + 3*4"),
             Ok(Expr::Shr(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Add(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Mul(
-                        Box::from(Expr::Int(Int::I32(3))),
-                        Box::from(Expr::Int(Int::I32(4)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Add(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Mul(
+                        Box::new(Expr::Int(Int::I32(3))),
+                        Box::new(Expr::Int(Int::I32(4)))
                     )),
                 )),
             ))
@@ -583,10 +583,10 @@ mod tests {
         assert_eq!(
             expr2().parse("1 + 2*3"),
             Ok(Expr::Add(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Mul(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Int(Int::I32(3)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Int(Int::I32(3)))
                 )),
             ))
         );
@@ -594,10 +594,10 @@ mod tests {
         assert_eq!(
             expr2().parse("1 - 2*3"),
             Ok(Expr::Sub(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Mul(
-                    Box::from(Expr::Int(Int::I32(2))),
-                    Box::from(Expr::Int(Int::I32(3)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Int(Int::I32(2))),
+                    Box::new(Expr::Int(Int::I32(3)))
                 )),
             ))
         );
@@ -605,13 +605,13 @@ mod tests {
         assert_eq!(
             expr2().parse("1*2 + 3*4"),
             Ok(Expr::Add(
-                Box::from(Expr::Mul(
-                    Box::from(Expr::Int(Int::I32(1))),
-                    Box::from(Expr::Int(Int::I32(2)))
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Int(Int::I32(1))),
+                    Box::new(Expr::Int(Int::I32(2)))
                 )),
-                Box::from(Expr::Mul(
-                    Box::from(Expr::Int(Int::I32(3))),
-                    Box::from(Expr::Int(Int::I32(4)))
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Int(Int::I32(3))),
+                    Box::new(Expr::Int(Int::I32(4)))
                 )),
             ))
         );
@@ -624,36 +624,36 @@ mod tests {
         assert_eq!(
             expr1().parse("1*1"),
             Ok(Expr::Mul(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(1))),
             ))
         );
         assert_eq!(
             expr1().parse("1 / 1"),
             Ok(Expr::Div(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(1))),
             ))
         );
         assert_eq!(
             expr1().parse("1 %2"),
             Ok(Expr::Rem(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Int(Int::I32(2))),
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(2))),
             ))
         );
 
         assert_eq!(
             expr1().parse("1 % 2 / 3 * 4"),
             Ok(Expr::Mul(
-                Box::from(Expr::Div(
-                    Box::from(Expr::Rem(
-                        Box::from(Expr::Int(Int::I32(1))),
-                        Box::from(Expr::Int(Int::I32(2)))
+                Box::new(Expr::Div(
+                    Box::new(Expr::Rem(
+                        Box::new(Expr::Int(Int::I32(1))),
+                        Box::new(Expr::Int(Int::I32(2)))
                     )),
-                    Box::from(Expr::Int(Int::I32(3)))
+                    Box::new(Expr::Int(Int::I32(3)))
                 )),
-                Box::from(Expr::Int(Int::I32(4))),
+                Box::new(Expr::Int(Int::I32(4))),
             ))
         );
 
