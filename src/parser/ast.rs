@@ -16,7 +16,7 @@ pub(crate) use string::*;
 pub(crate) use ty::*;
 pub(crate) use variable::*;
 
-use chumsky::prelude::*;
+use chumsky::prelude::{end, Parser, Simple};
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {

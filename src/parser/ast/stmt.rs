@@ -3,7 +3,7 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Param {
-    constness: bool,
+    is_mut: bool,
     name: String,
     ty: Type,
 }
@@ -22,7 +22,7 @@ pub(crate) enum Stmt {
     },
 
     DefVar {
-        constness: bool,
+        is_mut: bool,
         name: String,
         type_ref: Type,
         expr: Box<Expr>,
@@ -79,7 +79,7 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
                 .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
         )
         .then_ignore(just(';'))
-        .map(|id| Stmt::Import(id))
+        .map(Stmt::Import)
         .labelled("import")
         .padded()
         .boxed()
@@ -98,7 +98,7 @@ fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
         .then_ignore(just(':'))
         .then(typeref().padded())
         .map(|((mt, name), ty)| Param {
-            constness: mt.is_none(),
+            is_mut: mt.is_some(),
             name,
             ty,
         })
@@ -142,7 +142,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .then(expr9())
         .then_ignore(just(';'))
         .map(|(((mt, nm), ty), expr)| Stmt::DefVar {
-            constness: mt.is_none(),
+            is_mut: mt.is_some(),
             name: nm,
             type_ref: ty,
             expr: Box::new(expr),
@@ -158,7 +158,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 //     ...
 // }
 
-pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     defvar()
         .or(stmt())
         .repeated()
@@ -168,7 +168,7 @@ pub(crate) fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     // TODO: Stack overflow on block tests
     // recursive(|_| {
     //     choice((
@@ -192,7 +192,7 @@ pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 // } else if expr {
 // } else {
 // }
-pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("if")
         .padded()
         .ignore_then(expr9())
@@ -206,7 +206,7 @@ pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
         .boxed()
 }
 
-pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("return")
         .padded()
         .ignore_then(expr9().or_not())
@@ -215,24 +215,25 @@ pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .boxed()
 }
 
-pub(crate) fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     choice((
         term()
             .then(
-                just('=')
-                    .to(Stmt::Assign as fn(_, _) -> _)
-                    .or(just("+=").to(Stmt::AddAssign as fn(_, _) -> _))
-                    .or(just("-=").to(Stmt::SubAssign as fn(_, _) -> _))
-                    .or(just("*=").to(Stmt::MulAssign as fn(_, _) -> _))
-                    .or(just("/=").to(Stmt::DivAssign as fn(_, _) -> _))
-                    .or(just("%=").to(Stmt::RemAssign as fn(_, _) -> _))
-                    .or(just("&=").to(Stmt::BitAndAssign as fn(_, _) -> _))
-                    .or(just("|=").to(Stmt::BitOrAssign as fn(_, _) -> _))
-                    .or(just("^=").to(Stmt::BitXorAssign as fn(_, _) -> _))
-                    .or(just("<<=").to(Stmt::ShlAssign as fn(_, _) -> _))
-                    .or(just(">>=").to(Stmt::ShrAssign as fn(_, _) -> _))
-                    // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
-                    .then(expr9()),
+                choice((
+                    just('=').to(Stmt::Assign as fn(_, _) -> _),
+                    just("+=").to(Stmt::AddAssign as fn(_, _) -> _),
+                    just("-=").to(Stmt::SubAssign as fn(_, _) -> _),
+                    just("*=").to(Stmt::MulAssign as fn(_, _) -> _),
+                    just("/=").to(Stmt::DivAssign as fn(_, _) -> _),
+                    just("%=").to(Stmt::RemAssign as fn(_, _) -> _),
+                    just("&=").to(Stmt::BitAndAssign as fn(_, _) -> _),
+                    just("|=").to(Stmt::BitOrAssign as fn(_, _) -> _),
+                    just("^=").to(Stmt::BitXorAssign as fn(_, _) -> _),
+                    just("<<=").to(Stmt::ShlAssign as fn(_, _) -> _),
+                    just(">>=").to(Stmt::ShrAssign as fn(_, _) -> _),
+                ))
+                // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
+                .then(expr9()),
             )
             .map(|(lhs, (op, rhs))| op(Box::new(lhs), Box::new(rhs))),
         expr9().map(|expr| Stmt::Expr(Box::new(expr))),
@@ -281,13 +282,13 @@ mod tests {
             ),
             Ok(Stmt::Block(vec![
                 Stmt::DefVar {
-                    constness: true,
+                    is_mut: false,
                     name: "var1".to_string(),
                     type_ref: Type::User("type".to_string()),
                     expr: Box::new(Expr::Int(Int::I32(10))),
                 },
                 Stmt::DefVar {
-                    constness: false,
+                    is_mut: true,
                     name: "var2".to_string(),
                     type_ref: Type::User("type".to_string()),
                     expr: Box::new(Expr::Int(Int::I32(10))),
@@ -307,7 +308,7 @@ mod tests {
         assert_eq!(
             defvar().parse("let var: type = 10;"),
             Ok(Stmt::DefVar {
-                constness: true,
+                is_mut: false,
                 name: "var".to_string(),
                 type_ref: Type::User("type".to_string()),
                 expr: Box::new(Expr::Int(Int::I32(10))),
@@ -316,7 +317,7 @@ mod tests {
         assert_eq!(
             defvar().parse("let mut var: type = 10;"),
             Ok(Stmt::DefVar {
-                constness: false,
+                is_mut: true,
                 name: "var".to_string(),
                 type_ref: Type::User("type".to_string()),
                 expr: Box::new(Expr::Int(Int::I32(10))),

@@ -80,7 +80,7 @@ pub(crate) fn expr9() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr7()
         .then(
             just("&&")
@@ -92,7 +92,7 @@ pub(crate) fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr6()
         .then(
             choice((
@@ -110,7 +110,7 @@ pub(crate) fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr5()
         .then(
             just('|')
@@ -122,7 +122,7 @@ pub(crate) fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr4()
         .then(
             just('^')
@@ -134,7 +134,7 @@ pub(crate) fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr3()
         .then(
             just('&')
@@ -146,7 +146,7 @@ pub(crate) fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr2()
         .then(
             just("<<")
@@ -159,7 +159,7 @@ pub(crate) fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr1()
         .then(
             just('+')
@@ -172,7 +172,7 @@ pub(crate) fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     term()
         .then(
             just('*')
@@ -205,7 +205,7 @@ pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 
 // TODO: That function arguments can be passed only once will prevent to call curried function.
 // fn(a1, a2)
-pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     // TODO: Stack overflow on args_test and other tests
     // recursive(|_| {
     //     primary()
@@ -219,7 +219,7 @@ pub(crate) fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone 
     primary().boxed()
 }
 
-pub(crate) fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     choice((
         integer().map(Expr::Int),
         character().map(Expr::Int),
