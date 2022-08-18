@@ -10,27 +10,27 @@ pub(crate) struct CastNode {
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Expr {
     /// =
-    Assign(Box<Expr>, Box<Expr>),
+    Assign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// +=
-    AddAssign(Box<Expr>, Box<Expr>),
+    AddAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// -=
-    SubAssign(Box<Expr>, Box<Expr>),
+    SubAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// *=
-    MulAssign(Box<Expr>, Box<Expr>),
+    MulAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// /=
-    DivAssign(Box<Expr>, Box<Expr>),
+    DivAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// %=
-    RemAssign(Box<Expr>, Box<Expr>),
+    RemAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// &=
-    BitAndAssign(Box<Expr>, Box<Expr>),
+    BitAndAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// |=
-    BitOrAssign(Box<Expr>, Box<Expr>),
+    BitOrAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// ^=
-    BitXorAssign(Box<Expr>, Box<Expr>),
+    BitXorAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// <<=
-    ShlAssign(Box<Expr>, Box<Expr>),
+    ShlAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
     /// >>=
-    ShrAssign(Box<Expr>, Box<Expr>),
+    ShrAssign(Box<Expr>, Box<Expr>), // TODO: lhs shouldn't be Expr
 
     /// ||
     Or(Box<Expr>, Box<Expr>),
