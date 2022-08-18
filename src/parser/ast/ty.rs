@@ -43,3 +43,26 @@ pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
         .then_ignore(just(';'))
         .map(|(((), new), old)| Stmt::TypeDef { new, old })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::ast::Int;
+    use chumsky::Parser;
+
+    #[test]
+    fn typeref_test() {
+        assert_eq!(typeref().parse("void"), Ok(Type::Void));
+        assert_eq!(typeref().parse("char"), Ok(Type::I8));
+        assert_eq!(typeref().parse("i8"), Ok(Type::I8));
+        assert_eq!(typeref().parse("i16"), Ok(Type::I16));
+        assert_eq!(typeref().parse("i32"), Ok(Type::I32));
+        assert_eq!(typeref().parse("i64"), Ok(Type::I64));
+        assert_eq!(typeref().parse("u8"), Ok(Type::U8));
+        assert_eq!(typeref().parse("u16"), Ok(Type::U16));
+        assert_eq!(typeref().parse("u32"), Ok(Type::U32));
+        assert_eq!(typeref().parse("u64"), Ok(Type::U64));
+        assert_eq!(typeref().parse("type"), Ok(Type::User("type".to_string())));
+        assert!(typeref().parse("1type").is_err());
+    }
+}
