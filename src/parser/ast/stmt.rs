@@ -321,6 +321,19 @@ mod tests {
         assert!(defvar().parse("let mut var := 10;").is_err());
     }
 
+    // TODO: invalid memory reference
+    // #[test]
+    // fn if_stmt_test() {
+    //     assert_eq!(
+    //         if_stmt().parse("if foo {;}"),
+    //         Ok(Stmt::If {
+    //             cond: Box::new(Expr::Variable("foo".to_string())),
+    //             then: Box::new(Stmt::Empty),
+    //             els: None,
+    //         })
+    //     );
+    // }
+
     #[test]
     fn return_stmt_test() {
         assert_eq!(
