@@ -14,6 +14,12 @@ pub(crate) enum Stmt {
 
     Block(Vec<Stmt>),
 
+    If {
+        cond: Expr,
+        then: Box<Stmt>,
+        els: Option<Box<Stmt>>,
+    },
+
     Return(Option<Expr>),
 
     /// =
@@ -95,7 +101,25 @@ pub(crate) fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     ))
 }
 
-// pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {}
+// if expr {
+// } else if expr {
+// } else {
+// }
+pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    text::keyword("if")
+        .padded()
+        .then(expr9())
+        .then(block())
+        .then(text::keyword("else").then(block()).or_not())
+        .map(|((((), cond), then), els)| Stmt::If {
+            cond,
+            then: Box::new(then),
+            els: match els {
+                Some(((), stmt)) => Some(Box::new(stmt)),
+                None => None,
+            },
+        })
+}
 
 pub(crate) fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("return")
