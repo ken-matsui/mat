@@ -6,15 +6,9 @@ let fuga: i32 = 1;
 type newint = i32;
 type User = newint;
 
-struct User {
-    active: u8,
-    username: char,
-    email: char,
-    sign_in_count: u64,
-}
 
 fn f1(arg: char, arg2: u64) -> u32 {
-    return (u64)arg + arg2;
+    return arg + arg2;
 }
 
 fn main() -> i32 {

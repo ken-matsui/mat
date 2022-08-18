@@ -88,8 +88,8 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .padded()
 }
 
-pub(crate) fn top_defs() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
-    choice((defvar(), defn(), typedef()))
+pub(crate) fn top_defs() -> impl Parser<char, Vec<Stmt>, Error = Simple<char>> + Clone {
+    choice((defvar(), defn(), typedef())).repeated()
 }
 
 // name1: type1
@@ -99,7 +99,7 @@ fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
         .padded()
         .then(ident())
         .then_ignore(just(':'))
-        .then(typeref())
+        .then(typeref().padded())
         .map(|((mt, name), ty)| Param {
             constness: mt.is_none(),
             name,
@@ -118,8 +118,9 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
                 .separated_by(just(','))
                 .delimited_by(just('('), just(')')),
         )
+        .padded()
         .then_ignore(just("->"))
-        .then(typeref())
+        .then(typeref().padded())
         .then(block())
         .map(|(((((), name), args), ty), body)| Stmt::DefFn {
             name,
