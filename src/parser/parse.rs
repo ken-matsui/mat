@@ -1,4 +1,4 @@
-use crate::parser::ast::{compilation_unit, AST};
+use crate::parser::ast::{compilation_unit, Ast};
 use chumsky::prelude::*;
 
 pub type Span = std::ops::Range<usize>;
@@ -15,7 +15,7 @@ fn comment() -> impl Parser<char, (), Error = Simple<char>> + Clone {
     single_line_comment.or(multi_line_comment)
 }
 
-pub(crate) fn parse(src: String) -> (Option<AST>, Vec<Simple<char>>) {
+pub(crate) fn parse(src: String) -> (Option<Ast>, Vec<Simple<char>>) {
     compilation_unit()
         .padded_by(comment().padded().repeated())
         .parse_recovery(src)

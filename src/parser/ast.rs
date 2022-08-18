@@ -15,18 +15,17 @@ pub(crate) use variable::*;
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) struct AST {
-    imports: Vec<Box<Stmt>>,
+pub(crate) struct Ast {
+    imports: Vec<Stmt>,
     defs: Box<Stmt>,
 }
 
-pub(crate) fn compilation_unit() -> impl Parser<char, AST, Error = Simple<char>> + Clone {
+pub(crate) fn compilation_unit() -> impl Parser<char, Ast, Error = Simple<char>> + Clone {
     import_stmt()
-        .map(Box::new)
         .repeated()
         .then(top_defs())
         .then_ignore(end())
-        .map(|(imports, defs)| AST {
+        .map(|(imports, defs)| Ast {
             imports,
             defs: Box::new(defs),
         })

@@ -197,10 +197,7 @@ pub(crate) fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone
         .map(|((((), cond), then), els)| Stmt::If {
             cond: Box::new(cond),
             then: Box::new(then),
-            els: match els {
-                Some(((), stmt)) => Some(Box::new(stmt)),
-                None => None,
-            },
+            els: els.map(|((), stmt)| Box::new(stmt)),
         })
 }
 
