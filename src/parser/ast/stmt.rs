@@ -12,6 +12,8 @@ pub(crate) struct Param {
 pub(crate) enum Stmt {
     Empty,
 
+    Import(String),
+
     DefFn {
         name: String,
         args: Vec<Param>,
@@ -69,6 +71,21 @@ pub(crate) enum Stmt {
 
 fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
     text::ident().padded()
+}
+
+// import std.io;
+fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+    text::keyword("import")
+        .then(
+            ident()
+                .repeated()
+                .separated_by(just('.'))
+                .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
+        )
+        .then_ignore(just(';'))
+        .map(|((), id)| Stmt::Import(id))
+        .labelled("import")
+        .padded()
 }
 
 fn top_defs() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -225,6 +242,26 @@ mod tests {
     use super::*;
     use crate::parser::ast::Int;
     use chumsky::Parser;
+
+    #[test]
+    fn import_stmt_test() {
+        assert_eq!(
+            import_stmt().parse("import std.io;"),
+            Ok(Stmt::Import("std.io".to_string()))
+        );
+        assert_eq!(
+            import_stmt().parse("import     std  .   io   ;"),
+            Ok(Stmt::Import("std.io".to_string()))
+        );
+        assert_eq!(
+            import_stmt().parse("import stdio;"),
+            Ok(Stmt::Import("stdio".to_string()))
+        );
+        assert!(import_stmt().parse("import 1std.io;").is_err());
+        assert!(import_stmt().parse("import std.1io;").is_err());
+        assert!(import_stmt().parse("import std.io").is_err());
+        assert!(import_stmt().parse("use std.io;").is_err());
+    }
 
     #[test]
     fn block_test1() {
