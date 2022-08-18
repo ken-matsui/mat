@@ -85,7 +85,11 @@ pub(crate) enum Expr {
     Rem(Box<Expr>, Box<Expr>),
 }
 
-pub(crate) fn expr() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+pub(crate) fn args() -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone {
+    expr9().separated_by(just(','))
+}
+
+pub(crate) fn assign_stmt() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     choice((
         term()
             .then(
@@ -253,6 +257,25 @@ mod tests {
     use super::*;
     use chumsky::Parser;
 
+    #[test]
+    fn args_test() {
+        assert_eq!(
+            args().parse("1, var, 1 +1"),
+            Ok(vec![
+                Expr::Integer(IntegerLiteralNode::I32(1)),
+                Expr::Variable(VariableNode("var".to_string())),
+                Expr::Add(
+                    Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
+                    Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
+                )
+            ])
+        );
+        assert_eq!(
+            args().parse("1"),
+            Ok(vec![Expr::Integer(IntegerLiteralNode::I32(1))])
+        );
+    }
+
     fn big_expr() -> Expr {
         Expr::Or(
             Box::from(Expr::Integer(IntegerLiteralNode::I32(1))),
@@ -284,9 +307,9 @@ mod tests {
         )
     }
     #[test]
-    fn expr_test1() {
+    fn assign_stmt_test1() {
         assert_eq!(
-            expr().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::Assign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -294,9 +317,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test2() {
+    fn assign_stmt_test2() {
         assert_eq!(
-            expr().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::AddAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -304,9 +327,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test3() {
+    fn assign_stmt_test3() {
         assert_eq!(
-            expr().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::SubAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -314,9 +337,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test4() {
+    fn assign_stmt_test4() {
         assert_eq!(
-            expr().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::MulAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -324,9 +347,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test5() {
+    fn assign_stmt_test5() {
         assert_eq!(
-            expr().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::DivAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -334,9 +357,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test6() {
+    fn assign_stmt_test6() {
         assert_eq!(
-            expr().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::RemAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -344,9 +367,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test7() {
+    fn assign_stmt_test7() {
         assert_eq!(
-            expr().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::BitAndAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -354,9 +377,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test8() {
+    fn assign_stmt_test8() {
         assert_eq!(
-            expr().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::BitOrAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -364,9 +387,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test9() {
+    fn assign_stmt_test9() {
         assert_eq!(
-            expr().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::BitXorAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -374,9 +397,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test10() {
+    fn assign_stmt_test10() {
         assert_eq!(
-            expr().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::ShlAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -384,9 +407,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test11() {
+    fn assign_stmt_test11() {
         assert_eq!(
-            expr().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            assign_stmt().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::ShrAssign(
                 Box::from(Expr::Variable(VariableNode("var".to_string()))),
                 Box::from(big_expr()),
@@ -394,9 +417,9 @@ mod tests {
         );
     }
     #[test]
-    fn expr_test12() {
+    fn assign_stmt_test12() {
         assert_eq!(
-            expr().parse("1"),
+            assign_stmt().parse("1"),
             Ok(Expr::Integer(IntegerLiteralNode::I32(1)))
         );
     }
