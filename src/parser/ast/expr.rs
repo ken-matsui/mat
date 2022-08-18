@@ -189,19 +189,18 @@ pub(crate) fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 // TODO: Cast can be applied only once. (Do we really do double cast?)
 // (cast)suffix
 pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
-    // TODO: Stack overflow
-    // typeref()
-    //     .delimited_by(just("("), just(")"))
-    //     .or_not()
-    //     .then(suffix())
-    //     .map(|(cast, expr)| match cast {
-    //         Some(cast) => Expr::Cast {
-    //             cast,
-    //             expr: Box::new(expr),
-    //         },
-    //         None => expr,
-    //     })
-    suffix().boxed()
+    typeref()
+        .delimited_by(just("("), just(")"))
+        .or_not()
+        .then(suffix())
+        .map(|(cast, expr)| match cast {
+            Some(cast) => Expr::Cast {
+                cast,
+                expr: Box::new(expr),
+            },
+            None => expr,
+        })
+        .boxed()
 }
 
 // TODO: That function arguments can be passed only once will prevent to call curried function.
@@ -565,6 +564,30 @@ mod tests {
         );
 
         assert_eq!(expr1().parse("1"), Ok(Expr::Int(Int::I32(1))));
+    }
+
+    #[test]
+    fn term_test() {
+        assert_eq!(
+            term().parse("(cast)var"),
+            Ok(Expr::Cast {
+                cast: Type::User("cast".to_string()),
+                expr: Box::new(Expr::Variable("var".to_string())),
+            })
+        );
+        assert_eq!(
+            term().parse("(u8)127"),
+            Ok(Expr::Cast {
+                cast: Type::U8,
+                expr: Box::new(Expr::Int(Int::I32(127))),
+            })
+        );
+
+        // term should parse parse as well
+        assert_eq!(term().parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(term().parse("'a'"), Ok(Expr::Int(Int::I8(97))));
+        assert_eq!(term().parse("\"a\""), Ok(Expr::String("a".to_string())));
+        assert_eq!(term().parse("var"), Ok(Expr::Variable("var".to_string())));
     }
 
     #[test]
