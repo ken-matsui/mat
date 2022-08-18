@@ -332,8 +332,8 @@ mod tests {
         assert_eq!(
             return_stmt().parse("return 1 + 2;"),
             Ok(Stmt::Return(Some(Expr::Add(
-                Box::from(Expr::Int(Int::I32(1))),
-                Box::from(Expr::Int(Int::I32(2)))
+                Box::new(Expr::Int(Int::I32(1))),
+                Box::new(Expr::Int(Int::I32(2)))
             ))))
         );
         assert_eq!(
@@ -347,24 +347,24 @@ mod tests {
 
     fn big_expr() -> Expr {
         Expr::Or(
-            Box::from(Expr::Int(Int::I32(1))),
-            Box::from(Expr::And(
-                Box::from(Expr::Int(Int::I32(2))),
-                Box::from(Expr::Neq(
-                    Box::from(Expr::Int(Int::I32(3))),
-                    Box::from(Expr::BitOr(
-                        Box::from(Expr::Int(Int::I32(4))),
-                        Box::from(Expr::BitXor(
-                            Box::from(Expr::Int(Int::I32(5))),
-                            Box::from(Expr::BitAnd(
-                                Box::from(Expr::Int(Int::I32(6))),
-                                Box::from(Expr::Shl(
-                                    Box::from(Expr::Int(Int::I32(7))),
-                                    Box::from(Expr::Add(
-                                        Box::from(Expr::Int(Int::I32(8))),
-                                        Box::from(Expr::Mul(
-                                            Box::from(Expr::Int(Int::I32(9))),
-                                            Box::from(Expr::Int(Int::I32(10))),
+            Box::new(Expr::Int(Int::I32(1))),
+            Box::new(Expr::And(
+                Box::new(Expr::Int(Int::I32(2))),
+                Box::new(Expr::Neq(
+                    Box::new(Expr::Int(Int::I32(3))),
+                    Box::new(Expr::BitOr(
+                        Box::new(Expr::Int(Int::I32(4))),
+                        Box::new(Expr::BitXor(
+                            Box::new(Expr::Int(Int::I32(5))),
+                            Box::new(Expr::BitAnd(
+                                Box::new(Expr::Int(Int::I32(6))),
+                                Box::new(Expr::Shl(
+                                    Box::new(Expr::Int(Int::I32(7))),
+                                    Box::new(Expr::Add(
+                                        Box::new(Expr::Int(Int::I32(8))),
+                                        Box::new(Expr::Mul(
+                                            Box::new(Expr::Int(Int::I32(9))),
+                                            Box::new(Expr::Int(Int::I32(10))),
                                         )),
                                     )),
                                 )),
