@@ -1,6 +1,4 @@
-use crate::parser::ast::{
-    character, integer, string, variable, IntegerLiteralNode, StringLiteralNode,
-};
+use crate::parser::ast::{character, integer, string, variable, IntegerLiteralNode};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -80,7 +78,7 @@ pub(crate) enum Expr {
     Rem(Box<Expr>, Box<Expr>),
 
     Integer(IntegerLiteralNode),
-    String(StringLiteralNode),
+    String(String),
     Variable(String),
     Cast(CastNode),
 }
@@ -887,10 +885,7 @@ mod tests {
             primary().parse("'a'"),
             Ok(Expr::Integer(IntegerLiteralNode::I8(97)))
         );
-        assert_eq!(
-            primary().parse("\"a\""),
-            Ok(Expr::String(StringLiteralNode("a".to_string())))
-        );
+        assert_eq!(primary().parse("\"a\""), Ok(Expr::String("a".to_string())));
         assert_eq!(
             primary().parse("var"),
             Ok(Expr::Variable("var".to_string()))
