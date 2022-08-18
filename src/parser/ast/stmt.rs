@@ -74,7 +74,7 @@ fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
 }
 
 // import std.io;
-fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("import")
         .then(
             ident()
@@ -88,7 +88,7 @@ fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
 }
 
-fn top_defs() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+pub(crate) fn top_defs() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     choice((defvar(), defn(), typedef()))
 }
 
