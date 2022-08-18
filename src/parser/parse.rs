@@ -76,31 +76,6 @@ pub type Span = std::ops::Range<usize>;
 //     Mut,
 // }
 
-#[derive(Debug)]
-pub(crate) enum Expr {
-    Num(i32),
-    Var(String),
-
-    Neg(Box<Expr>),
-    Add(Box<Expr>, Box<Expr>),
-    Sub(Box<Expr>, Box<Expr>),
-    Mul(Box<Expr>, Box<Expr>),
-    Div(Box<Expr>, Box<Expr>),
-
-    Call(String, Vec<Expr>),
-    Let {
-        name: String,
-        rhs: Box<Expr>,
-        then: Box<Expr>,
-    },
-    Fn {
-        name: String,
-        args: Vec<String>,
-        body: Box<Expr>,
-        then: Box<Expr>,
-    },
-}
-
 fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
     text::ident().padded()
 }
@@ -130,98 +105,6 @@ fn import_stmts() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clon
 }
 
 fn parser() -> impl Parser<char, Vec<Import>, Error = Simple<char>> + Clone {
-    // Vec<(Expr, Span)>
-    // let ident = text::ident().padded();
-
-    // let expr = recursive(|expr| {
-    //     let int = text::int(10)
-    //         .map(|s: String| Expr::Num(s.parse().unwrap()))
-    //         .padded();
-    //
-    //     let call = ident
-    //         .then(
-    //             expr.clone()
-    //                 .separated_by(just(','))
-    //                 .allow_trailing()
-    //                 .delimited_by(just('('), just(')')),
-    //         )
-    //         .map(|(f, args)| Expr::Call(f, args));
-    //
-    //     let atom = int
-    //         .or(expr.delimited_by(just('('), just(')')))
-    //         .or(call)
-    //         .or(ident.map(Expr::Var));
-    //
-    //     let op = |c| just(c).padded();
-    //
-    //     let unary = op('-')
-    //         .repeated()
-    //         .then(atom)
-    //         .foldr(|_op, rhs| Expr::Neg(Box::new(rhs)));
-    //
-    //     let product = unary
-    //         .clone()
-    //         .then(
-    //             op('*')
-    //                 .to(Expr::Mul as fn(_, _) -> _)
-    //                 .or(op('/').to(Expr::Div as fn(_, _) -> _))
-    //                 .then(unary)
-    //                 .repeated(),
-    //         )
-    //         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)));
-    //
-    //     let sum = product
-    //         .clone()
-    //         .then(
-    //             op('+')
-    //                 .to(Expr::Add as fn(_, _) -> _)
-    //                 .or(op('-').to(Expr::Sub as fn(_, _) -> _))
-    //                 .then(product)
-    //                 .repeated(),
-    //         )
-    //         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)));
-    //
-    //     sum
-    // });
-    //
-    // let compilation_unit = recursive(|decl| {
-    //     let import = text::keyword("let")
-    //         .ignore_then(ident)
-    //         .then_ignore(just('='))
-    //         .then(expr.clone())
-    //         .then_ignore(just(';'))
-    //         .then(decl.clone())
-    //         .map(|((name, rhs), then)| Expr::Let {
-    //             name,
-    //             rhs: Box::new(rhs),
-    //             then: Box::new(then),
-    //         });
-    //
-    //     // let r#fn = text::keyword("fn")
-    //     //     .ignore_then(ident)
-    //     //     .then(ident.repeated())
-    //     //     .then_ignore(just('='))
-    //     //     .then(expr.clone())
-    //     //     .then_ignore(just(';'))
-    //     //     .then(decl)
-    //     //     .map(|(((name, args), body), then)| Expr::Fn {
-    //     //         name,
-    //     //         args,
-    //     //         body: Box::new(body),
-    //     //         then: Box::new(then),
-    //     //     });
-    //
-    //     import.padded()
-    // });
-
-    // compilation_unit
-    //     .then_ignore(end())
-    // .map_with_span(|tok, span| (tok, span))
-
-    // let int = text::int(10)
-    //     .map(|s: String| Expr::Num(s.parse::<i32>().unwrap()))
-    //     .padded();
-
     import_stmts().then_ignore(end())
 }
 
