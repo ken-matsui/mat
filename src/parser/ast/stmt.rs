@@ -1,4 +1,4 @@
-use crate::parser::ast::{expr9, term, typedef, typeref, Expr, Type};
+use crate::parser::ast::{expr9, ident, term, typedef, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -67,10 +67,6 @@ pub(crate) enum Stmt {
     ShrAssign(Box<Expr>, Box<Expr>),
 
     Expr(Box<Expr>),
-}
-
-fn ident() -> impl Parser<char, String, Error = Simple<char>> + Clone {
-    text::ident().padded()
 }
 
 // import std.io;

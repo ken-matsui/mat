@@ -1,5 +1,5 @@
 /// Type Node
-use crate::parser::ast::Stmt;
+use crate::parser::ast::{ident, Stmt};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -29,7 +29,7 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
         text::keyword("u16").to(Type::U16),
         text::keyword("u32").to(Type::U32),
         text::keyword("u64").to(Type::U64),
-        text::ident().map(Type::User),
+        ident().map(Type::User),
     ))
 }
 
@@ -37,7 +37,7 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
 pub(crate) fn typedef() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("type")
         .padded()
-        .then(text::ident::<_, Simple<char>>().padded())
+        .then(ident().padded())
         .then_ignore(just('='))
         .then(typeref().padded())
         .then_ignore(just(';'))

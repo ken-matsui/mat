@@ -1,11 +1,15 @@
+mod comment;
 mod expr;
+mod ident;
 mod integer;
 mod stmt;
 mod string;
 mod ty;
 mod variable;
 
+pub(crate) use comment::*;
 pub(crate) use expr::*;
+pub(crate) use ident::*;
 pub(crate) use integer::*;
 pub(crate) use stmt::*;
 pub(crate) use string::*;

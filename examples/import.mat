@@ -16,9 +16,9 @@ fn main() -> i32 {
     //boo = 23; // unresolved reference: boo
     //hoge(1, 2, 3); // calling object is not a function
     //1 = 2 + 4; // invalid lhs expression
-    if (hoge) {
+    if hoge {
         return 1;
-    } else if (fuga) {
+    } else if fuga {
         return (i32)f1((char)fuga, (u64)hoge);
     } else {
         return 1 + 2 + 2 - 1i64 * hoge;
