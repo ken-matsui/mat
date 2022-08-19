@@ -69,10 +69,10 @@ type RecSuffix<'a> = Recursive<'a, char, Expr, Simple<char>>;
 pub(crate) fn args(
     suffix: Option<RecSuffix>,
 ) -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone + '_ {
-    expr9(suffix).separated_by(just(',')).boxed()
+    expr(suffix).separated_by(just(',')).boxed()
 }
 
-pub(crate) fn expr9(
+pub(crate) fn expr(
     suffix: Option<RecSuffix>,
 ) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
     expr8(suffix.clone())
@@ -239,9 +239,9 @@ mod tests {
     }
 
     #[test]
-    fn expr9_test() {
+    fn expr_test() {
         assert_eq!(
-            expr9(None).parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            expr(None).parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Expr::Or(
                 Box::new(Expr::Int(Int::I32(1))),
                 Box::new(Expr::And(
@@ -272,7 +272,7 @@ mod tests {
             ))
         );
 
-        assert_eq!(expr9(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(expr(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
     }
 
     #[test]
@@ -595,6 +595,18 @@ mod tests {
                 ]
             })
         );
+        // assert_eq!(
+        //     suffix().parse("fun((char)a1, (u64)a2)"),
+        //     Ok(Expr::FnCall {
+        //         name: Box::new(Expr::Variable("fun".to_string())),
+        //         args: vec![
+        //             Expr::Int(Int::I32(1)),
+        //             Expr::Variable("a2".to_string()),
+        //             Expr::Int(Int::I8(51)),
+        //             Expr::String("4".to_string()),
+        //         ]
+        //     })
+        // );
 
         assert_eq!(suffix().parse("1"), Ok(Expr::Int(Int::I32(1))));
         assert_eq!(suffix().parse("'a'"), Ok(Expr::Int(Int::I8(97))));

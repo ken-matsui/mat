@@ -1,4 +1,4 @@
-use crate::parser::ast::{comment, expr9, ident, term, typedef, typeref, Expr, Type};
+use crate::parser::ast::{comment, expr, ident, term, typedef, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -139,7 +139,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .then(typeref().padded())
         .then_ignore(just('='))
         .padded()
-        .then(expr9(None))
+        .then(expr(None))
         .then_ignore(just(';'))
         .map(|(((mt, nm), ty), expr)| Stmt::DefVar {
             is_mut: mt.is_some(),
@@ -202,7 +202,7 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     recursive(|if_stmt| {
         text::keyword("if")
             .padded()
-            .ignore_then(expr9(None))
+            .ignore_then(expr(None))
             .then(block(Some(if_stmt.clone())))
             .then(
                 text::keyword("else")
@@ -222,7 +222,7 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     text::keyword("return")
         .padded()
-        .ignore_then(expr9(None).or_not())
+        .ignore_then(expr(None).or_not())
         .map(|expr| Stmt::Return(expr.map(Box::new)))
         .then_ignore(just(';'))
         .boxed()
@@ -246,10 +246,10 @@ fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
                     just(">>=").to(Stmt::ShrAssign as fn(_, _) -> _),
                 ))
                 // Here, this is not expr() because I would not allow multiple assignments like a = b = c;
-                .then(expr9(None)),
+                .then(expr(None)),
             )
             .map(|(lhs, (op, rhs))| op(Box::new(lhs), Box::new(rhs))),
-        expr9(None).map(|expr| Stmt::Expr(Box::new(expr))),
+        expr(None).map(|expr| Stmt::Expr(Box::new(expr))),
     ))
     .then_ignore(just(';'))
     .boxed()
