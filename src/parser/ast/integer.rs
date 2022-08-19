@@ -31,16 +31,16 @@ pub(crate) fn integer() -> impl Parser<char, Int, Error = Simple<char>> + Clone 
         .try_map(|(num, suf), span| {
             match suf {
                 // With suffix
-                Some("i8") => num.parse::<i8>().map(Int::I8),
-                Some("i16") => num.parse::<i16>().map(Int::I16),
-                Some("i32") => num.parse::<i32>().map(Int::I32),
-                Some("i64") => num.parse::<i64>().map(Int::I64),
-                Some("u8") => num.parse::<u8>().map(Int::U8),
-                Some("u16") => num.parse::<u16>().map(Int::U16),
-                Some("u32") => num.parse::<u32>().map(Int::U32),
-                Some("u64") => num.parse::<u64>().map(Int::U64),
+                Some("i8") => num.parse().map(Int::I8),
+                Some("i16") => num.parse().map(Int::I16),
+                Some("i32") => num.parse().map(Int::I32),
+                Some("i64") => num.parse().map(Int::I64),
+                Some("u8") => num.parse().map(Int::U8),
+                Some("u16") => num.parse().map(Int::U16),
+                Some("u32") => num.parse().map(Int::U32),
+                Some("u64") => num.parse().map(Int::U64),
                 // No suffix
-                _ => num.parse::<i32>().map(Int::I32),
+                _ => num.parse().map(Int::I32),
             }
             .map_err(|e| Simple::custom(span, format!("{}", e)))
         })
