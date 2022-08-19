@@ -70,24 +70,14 @@ pub(crate) fn args() -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clo
 
 pub(crate) fn expr9() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr8()
-        .then(
-            just("||")
-                .to(Expr::Or as fn(_, _) -> _)
-                .then(expr8())
-                .repeated(),
-        )
+        .then(just("||").to(Expr::Or).then(expr8()).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
 fn expr8() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr7()
-        .then(
-            just("&&")
-                .to(Expr::And as fn(_, _) -> _)
-                .then(expr7())
-                .repeated(),
-        )
+        .then(just("&&").to(Expr::And).then(expr7()).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
@@ -112,36 +102,21 @@ fn expr7() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 
 fn expr6() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr5()
-        .then(
-            just('|')
-                .to(Expr::BitOr as fn(_, _) -> _)
-                .then(expr5())
-                .repeated(),
-        )
+        .then(just('|').to(Expr::BitOr).then(expr5()).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
 fn expr5() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr4()
-        .then(
-            just('^')
-                .to(Expr::BitXor as fn(_, _) -> _)
-                .then(expr4())
-                .repeated(),
-        )
+        .then(just('^').to(Expr::BitXor).then(expr4()).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
 fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr3()
-        .then(
-            just('&')
-                .to(Expr::BitAnd as fn(_, _) -> _)
-                .then(expr3())
-                .repeated(),
-        )
+        .then(just('&').to(Expr::BitAnd).then(expr3()).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
@@ -189,7 +164,6 @@ fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-// TODO: Cast can be applied only once. (Do we really do double cast?)
 // (cast)suffix
 pub(crate) fn term() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     typeref()
