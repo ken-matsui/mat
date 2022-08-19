@@ -119,7 +119,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .then_ignore(just("->"))
         .then(typeref().padded())
-        .then(block(None))
+        .then(block_impl(None))
         .map(|(((name, args), ty), body)| Stmt::DefFn {
             name,
             args,
@@ -160,7 +160,9 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 
 type RecIfStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
 
-fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
+fn block_impl(
+    if_stmt: Option<RecIfStmt>,
+) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
     defvar()
         .or(stmt(if_stmt))
         .repeated()
@@ -199,11 +201,11 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         text::keyword("if")
             .padded()
             .ignore_then(expr9())
-            .then(block(Some(if_stmt.clone())))
+            .then(block_impl(Some(if_stmt.clone())))
             .then(
                 text::keyword("else")
                     .padded()
-                    .ignore_then(block(Some(if_stmt.clone())).or(if_stmt))
+                    .ignore_then(block_impl(Some(if_stmt.clone())).or(if_stmt))
                     .or_not(),
             )
             .map(|((cond, then), els)| Stmt::If {
@@ -278,11 +280,11 @@ mod tests {
     }
 
     #[test]
-    fn block_test1() {
-        assert_eq!(block(None).parse("{}"), Ok(Stmt::Block(vec![])));
-        assert_eq!(block(None).parse("{     }"), Ok(Stmt::Block(vec![])));
+    fn block_impl_test() {
+        assert_eq!(block_impl(None).parse("{}"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block_impl(None).parse("{     }"), Ok(Stmt::Block(vec![])));
         assert_eq!(
-            block(None).parse(
+            block_impl(None).parse(
                 r#"{
                 let var1: type = 10;
     
@@ -304,12 +306,9 @@ mod tests {
                 }
             ]))
         );
-    }
-    #[test]
-    fn block_test2() {
-        assert!(block(None).parse("{     ").is_err());
-        assert!(block(None).parse("  }").is_err());
-        assert!(block(None).parse("let var: type = 10;").is_err());
+        assert!(block_impl(None).parse("{     ").is_err());
+        assert!(block_impl(None).parse("  }").is_err());
+        assert!(block_impl(None).parse("let var: type = 10;").is_err());
     }
 
     #[test]
@@ -491,7 +490,7 @@ mod tests {
         ))
     }
     #[test]
-    fn assign_stmt_test1() {
+    fn assign_stmt_test() {
         assert_eq!(
             assign_stmt().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10 ;"),
             Ok(Stmt::Assign(
@@ -499,9 +498,6 @@ mod tests {
                 big_expr()
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test2() {
         assert_eq!(
             assign_stmt().parse("var += 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::AddAssign(
@@ -509,9 +505,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test3() {
         assert_eq!(
             assign_stmt().parse("var -= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::SubAssign(
@@ -519,9 +512,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test4() {
         assert_eq!(
             assign_stmt().parse("var *= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::MulAssign(
@@ -529,9 +519,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test5() {
         assert_eq!(
             assign_stmt().parse("var /= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::DivAssign(
@@ -539,9 +526,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test6() {
         assert_eq!(
             assign_stmt().parse("var %= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::RemAssign(
@@ -549,9 +533,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test7() {
         assert_eq!(
             assign_stmt().parse("var &= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitAndAssign(
@@ -559,9 +540,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test8() {
         assert_eq!(
             assign_stmt().parse("var |= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitOrAssign(
@@ -569,9 +547,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test9() {
         assert_eq!(
             assign_stmt().parse("var ^= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::BitXorAssign(
@@ -579,9 +554,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test10() {
         assert_eq!(
             assign_stmt().parse("var <<= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::ShlAssign(
@@ -589,9 +561,6 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test11() {
         assert_eq!(
             assign_stmt().parse("var >>= 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10;"),
             Ok(Stmt::ShrAssign(
@@ -599,16 +568,10 @@ mod tests {
                 big_expr(),
             ))
         );
-    }
-    #[test]
-    fn assign_stmt_test12() {
         assert_eq!(
             assign_stmt().parse("1 ;"),
             Ok(Stmt::Expr(Box::new(Expr::Int(Int::I32(1)))))
         );
-    }
-    #[test]
-    fn assign_stmt_test13() {
         assert!(assign_stmt().parse("1 ").is_err());
     }
 }
