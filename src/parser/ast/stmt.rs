@@ -119,7 +119,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .then_ignore(just("->"))
         .then(typeref().padded())
-        .then(block())
+        .then(block(None))
         .map(|(((name, args), ty), body)| Stmt::DefFn {
             name,
             args,
@@ -158,9 +158,11 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 //     ...
 // }
 
-fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+type RecIfStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
+
+fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
     defvar()
-        .or(stmt())
+        .or(stmt(if_stmt))
         .repeated()
         .padded()
         .delimited_by(just('{'), just('}'))
@@ -168,24 +170,24 @@ fn block() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .boxed()
 }
 
-fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
-    // TODO: Stack overflow on block tests
-    // recursive(|_| {
-    //     choice((
-    //         just(';').padded().to(Stmt::Empty),
-    //         assign_stmt(),
-    //         block(),
-    //         return_stmt(),
-    //     ))
-    // })
-    choice((
-        just(';').padded().to(Stmt::Empty),
-        assign_stmt(),
-        // block(),
-        // recursive(|_| if_stmt()),
-        return_stmt(),
-    ))
-    .boxed()
+fn stmt(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
+    match if_stmt {
+        Some(if_stmt) => choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            // TODO: block(),
+            if_stmt,
+            return_stmt(),
+        ))
+        .boxed(),
+        None => choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            // block(),
+            return_stmt(),
+        ))
+        .boxed(),
+    }
 }
 
 // if expr {
@@ -197,11 +199,11 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         text::keyword("if")
             .padded()
             .ignore_then(expr9())
-            .then(block())
+            .then(block(Some(if_stmt.clone())))
             .then(
                 text::keyword("else")
                     .padded()
-                    .ignore_then(block().or(if_stmt))
+                    .ignore_then(block(Some(if_stmt.clone())).or(if_stmt))
                     .or_not(),
             )
             .map(|((cond, then), els)| Stmt::If {
@@ -277,10 +279,10 @@ mod tests {
 
     #[test]
     fn block_test1() {
-        assert_eq!(block().parse("{}"), Ok(Stmt::Block(vec![])));
-        assert_eq!(block().parse("{     }"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block(None).parse("{}"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block(None).parse("{     }"), Ok(Stmt::Block(vec![])));
         assert_eq!(
-            block().parse(
+            block(None).parse(
                 r#"{
                 let var1: type = 10;
     
@@ -305,9 +307,9 @@ mod tests {
     }
     #[test]
     fn block_test2() {
-        assert!(block().parse("{     ").is_err());
-        assert!(block().parse("  }").is_err());
-        assert!(block().parse("let var: type = 10;").is_err());
+        assert!(block(None).parse("{     ").is_err());
+        assert!(block(None).parse("  }").is_err());
+        assert!(block(None).parse("let var: type = 10;").is_err());
     }
 
     #[test]
@@ -347,6 +349,18 @@ mod tests {
                 then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
                     Int::I32(1)
                 )))])),
+                els: None,
+            })
+        );
+        assert_eq!(
+            if_stmt().parse("if foo { if bar {} }"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![Stmt::If {
+                    cond: Box::new(Expr::Variable("bar".to_string())),
+                    then: Box::new(Stmt::Block(vec![])),
+                    els: None,
+                }])),
                 els: None,
             })
         );
