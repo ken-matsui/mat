@@ -17,6 +17,7 @@ pub(crate) use ty::*;
 pub(crate) use variable::*;
 
 use chumsky::prelude::{end, Parser, Simple};
+use chumsky::text::TextParser;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {
@@ -28,6 +29,7 @@ pub(crate) fn compilation_unit() -> impl Parser<char, Ast, Error = Simple<char>>
     import_stmt()
         .repeated()
         .then(top_defs())
+        .padded()
         .then_ignore(end())
         .map(|(imports, defs)| Ast { imports, defs })
         .boxed()

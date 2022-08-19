@@ -85,7 +85,6 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .boxed()
 }
 
-// TODO: Add test
 pub(crate) fn top_defs() -> impl Parser<char, Vec<Stmt>, Error = Simple<char>> + Clone {
     choice((defvar(), defn(), typedef())).repeated().boxed()
 }
@@ -281,6 +280,38 @@ mod tests {
         assert!(import_stmt().parse("import std.1io;").is_err());
         assert!(import_stmt().parse("import std.io").is_err());
         assert!(import_stmt().parse("use std.io;").is_err());
+    }
+
+    #[test]
+    fn top_defs_test() {
+        assert_eq!(top_defs().parse(""), Ok(vec![]));
+        assert_eq!(
+            top_defs().parse(
+                r#"
+                let foo: i8 = 1; type newint = i32;
+
+                fn f1() -> u32 {}
+        "#
+            ),
+            Ok(vec![
+                Stmt::DefVar {
+                    is_mut: false,
+                    name: "foo".to_string(),
+                    type_ref: Type::I8,
+                    expr: Box::new(Expr::Int(Int::I32(1))),
+                },
+                Stmt::TypeDef {
+                    new: "newint".to_string(),
+                    old: Type::I32,
+                },
+                Stmt::DefFn {
+                    name: "f1".to_string(),
+                    args: vec![],
+                    ret_ty: Type::U32,
+                    body: Box::new(Stmt::Block(vec![])),
+                }
+            ])
+        );
     }
 
     #[test]
