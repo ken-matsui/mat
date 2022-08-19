@@ -193,17 +193,24 @@ fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 // } else {
 // }
 fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
-    text::keyword("if")
-        .padded()
-        .ignore_then(expr9())
-        .then(block())
-        .then(text::keyword("else").padded().ignore_then(block()).or_not())
-        .map(|((cond, then), els)| Stmt::If {
-            cond: Box::new(cond),
-            then: Box::new(then),
-            els: els.map(Box::new),
-        })
-        .boxed()
+    recursive(|if_| {
+        text::keyword("if")
+            .padded()
+            .ignore_then(expr9())
+            .then(block())
+            .then(
+                text::keyword("else")
+                    .padded()
+                    .ignore_then(block().or(if_))
+                    .or_not(),
+            )
+            .map(|((cond, then), els)| Stmt::If {
+                cond: Box::new(cond),
+                then: Box::new(then),
+                els: els.map(Box::new),
+            })
+    })
+    .boxed()
 }
 
 fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
@@ -355,24 +362,69 @@ mod tests {
                 ))]))),
             })
         );
-        // assert_eq!(
-        //     if_stmt().parse("if foo { 1; } else if bar { 2; } else { 3; }"),
-        //     Ok(Stmt::If {
-        //         cond: Box::new(Expr::Variable("foo".to_string())),
-        //         then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
-        //             Int::I32(1)
-        //         )))])),
-        //         els: Some(Box::new(Stmt::If {
-        //             cond: Box::new(Expr::Variable("bar".to_string())),
-        //             then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
-        //                 Int::I32(2)
-        //             )))])),
-        //             els: Some(Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(
-        //                 Expr::Int(Int::I32(3))
-        //             ))])))
-        //         })),
-        //     })
-        // );
+        assert_eq!(
+            if_stmt().parse("if foo { 1; } else if bar { 2; } else { 3; }"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                    Int::I32(1)
+                )))])),
+                els: Some(Box::new(Stmt::If {
+                    cond: Box::new(Expr::Variable("bar".to_string())),
+                    then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                        Int::I32(2)
+                    )))])),
+                    els: Some(Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(
+                        Expr::Int(Int::I32(3))
+                    ))])))
+                })),
+            })
+        );
+        assert_eq!(
+            if_stmt().parse("if foo { 1; } else if bar { 2; }"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                    Int::I32(1)
+                )))])),
+                els: Some(Box::new(Stmt::If {
+                    cond: Box::new(Expr::Variable("bar".to_string())),
+                    then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                        Int::I32(2)
+                    )))])),
+                    els: None,
+                })),
+            })
+        );
+        assert_eq!(
+            if_stmt()
+                .parse("if foo { 1; } else if bar { 2; } else if baz { 3; } else if qux { 4; }"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                    Int::I32(1)
+                )))])),
+                els: Some(Box::new(Stmt::If {
+                    cond: Box::new(Expr::Variable("bar".to_string())),
+                    then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                        Int::I32(2)
+                    )))])),
+                    els: Some(Box::new(Stmt::If {
+                        cond: Box::new(Expr::Variable("baz".to_string())),
+                        then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                            Int::I32(3)
+                        )))])),
+                        els: Some(Box::new(Stmt::If {
+                            cond: Box::new(Expr::Variable("qux".to_string())),
+                            then: Box::new(Stmt::Block(vec![Stmt::Expr(Box::new(Expr::Int(
+                                Int::I32(4)
+                            )))])),
+                            els: None,
+                        })),
+                    })),
+                })),
+            })
+        );
         assert!(if_stmt().parse("if foo { 1 }").is_err());
     }
 
