@@ -1,4 +1,4 @@
-use crate::parser::ast::{expr9, ident, term, typedef, typeref, Expr, Type};
+use crate::parser::ast::{comment, expr9, ident, term, typedef, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -163,6 +163,7 @@ type RecIfStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
 fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
     defvar()
         .or(stmt(if_stmt))
+        .padded_by(comment().padded().repeated())
         .repeated()
         .padded()
         .delimited_by(just('{'), just('}'))
@@ -290,7 +291,7 @@ mod tests {
                 let var1: type = 10;
     
                 let mut var2: type = 10;
-
+                // comment
                 if var1 {}
             }"#
             ),
