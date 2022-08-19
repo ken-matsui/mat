@@ -8,7 +8,7 @@ type User = newint;
 
 
 fn f1(arg: char, arg2: u64) -> u32 {
-    return (u64)arg + arg2;
+    return arg as u64 + arg2;
 }
 
 fn main() -> i32 {
@@ -19,7 +19,7 @@ fn main() -> i32 {
     if hoge {
         return 1;
     } else if fuga {
-        return (i32)f1((char)fuga, (u64)hoge);
+        return f1(fuga as char, hoge as u64) as i32;
     } else {
         return 1 + 2 + 2 - 1i64 * hoge;
     }

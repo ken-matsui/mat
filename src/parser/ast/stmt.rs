@@ -1,4 +1,4 @@
-use crate::parser::ast::{comment, expr, ident, term, typedef, typeref, Expr, Type};
+use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -230,7 +230,7 @@ fn return_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 
 fn assign_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
     choice((
-        term(None)
+        cast(None)
             .then(
                 choice((
                     just('=').to(Stmt::Assign as fn(_, _) -> _),

@@ -48,14 +48,12 @@ pub(crate) enum Expr {
     /// %
     Rem(Box<Self>, Box<Self>),
 
+    /// as
+    As(Box<Self>, Type),
+
     FnCall {
         name: Box<Self>,
         args: Vec<Self>,
-    },
-
-    Cast {
-        cast: Type,
-        expr: Box<Self>,
     },
 
     /// Atom
@@ -64,32 +62,32 @@ pub(crate) enum Expr {
     Int(Int),
 }
 
-type RecSuffix<'a> = Recursive<'a, char, Expr, Simple<char>>;
+type RecFnCall<'a> = Recursive<'a, char, Expr, Simple<char>>;
 
 pub(crate) fn args(
-    suffix: Option<RecSuffix>,
+    fn_call: Option<RecFnCall>,
 ) -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone + '_ {
-    expr(suffix).separated_by(just(',')).boxed()
+    expr(fn_call).separated_by(just(',')).boxed()
 }
 
 pub(crate) fn expr(
-    suffix: Option<RecSuffix>,
+    fn_call: Option<RecFnCall>,
 ) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr8(suffix.clone())
-        .then(just("||").to(Expr::Or).then(expr8(suffix)).repeated())
+    expr8(fn_call.clone())
+        .then(just("||").to(Expr::Or).then(expr8(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr8(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr7(suffix.clone())
-        .then(just("&&").to(Expr::And).then(expr7(suffix)).repeated())
+fn expr8(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr7(fn_call.clone())
+        .then(just("&&").to(Expr::And).then(expr7(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr7(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr6(suffix.clone())
+fn expr7(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr6(fn_call.clone())
         .then(
             choice((
                 just("!=").to(Expr::Neq as fn(_, _) -> _),
@@ -99,102 +97,101 @@ fn expr7(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<ch
                 just('>').to(Expr::Gt as fn(_, _) -> _),
                 just('<').to(Expr::Lt as fn(_, _) -> _),
             ))
-            .then(expr6(suffix))
+            .then(expr6(fn_call))
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr6(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr5(suffix.clone())
-        .then(just('|').to(Expr::BitOr).then(expr5(suffix)).repeated())
+fn expr6(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr5(fn_call.clone())
+        .then(just('|').to(Expr::BitOr).then(expr5(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr5(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr4(suffix.clone())
-        .then(just('^').to(Expr::BitXor).then(expr4(suffix)).repeated())
+fn expr5(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr4(fn_call.clone())
+        .then(just('^').to(Expr::BitXor).then(expr4(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr4(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr3(suffix.clone())
-        .then(just('&').to(Expr::BitAnd).then(expr3(suffix)).repeated())
+fn expr4(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr3(fn_call.clone())
+        .then(just('&').to(Expr::BitAnd).then(expr3(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr3(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr2(suffix.clone())
+fn expr3(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr2(fn_call.clone())
         .then(
             choice((
                 just("<<").to(Expr::Shl as fn(_, _) -> _),
                 just(">>").to(Expr::Shr as fn(_, _) -> _),
             ))
-            .then(expr2(suffix))
+            .then(expr2(fn_call))
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr2(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    expr1(suffix.clone())
+fn expr2(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    expr1(fn_call.clone())
         .then(
             choice((
                 just('+').to(Expr::Add as fn(_, _) -> _),
                 just('-').to(Expr::Sub as fn(_, _) -> _),
             ))
-            .then(expr1(suffix))
+            .then(expr1(fn_call))
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr1(suffix: Option<RecSuffix>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    term(suffix.clone())
+fn expr1(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+    cast(fn_call.clone())
         .then(
             choice((
                 just('*').to(Expr::Mul as fn(_, _) -> _),
                 just('/').to(Expr::Div as fn(_, _) -> _),
                 just('%').to(Expr::Rem as fn(_, _) -> _),
             ))
-            .then(term(suffix))
+            .then(cast(fn_call))
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-// (cast)suffix
-pub(crate) fn term(
-    suffix_rec: Option<RecSuffix>,
+// cast expr: expr as type as type
+pub(crate) fn cast(
+    fn_call_rec: Option<RecFnCall>,
 ) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
-    let cast = typeref().delimited_by(just("("), just(")")).or_not();
-    let make_cast = |(cast, expr)| match cast {
-        Some(cast) => Expr::Cast {
-            cast,
-            expr: Box::new(expr),
-        },
-        None => expr,
-    };
+    let as_expr = just("as").to(Expr::As).then(typeref().padded()).repeated();
 
-    match suffix_rec {
-        None => cast.then(suffix()).map(make_cast).boxed(),
-        Some(suffix_rec) => cast.then(suffix_rec).map(make_cast).boxed(),
+    match fn_call_rec {
+        None => fn_call()
+            .then(as_expr)
+            .foldl(|lhs, (op, rhs)| op(Box::new(lhs), rhs))
+            .boxed(),
+        Some(fn_call_rec) => fn_call_rec
+            .then(as_expr)
+            .foldl(|lhs, (op, rhs)| op(Box::new(lhs), rhs))
+            .boxed(),
     }
 }
 
 // fn(a1, a2)
-fn suffix() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
-    recursive(|suffix| {
+fn fn_call() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+    recursive(|fn_call| {
         primary()
             .then(
-                args(Some(suffix))
+                args(Some(fn_call))
                     .delimited_by(just('('), just(')'))
                     .repeated(),
             )
@@ -555,36 +552,33 @@ mod tests {
     }
 
     #[test]
-    fn term_test() {
+    fn cast_test() {
         assert_eq!(
-            term(None).parse("(cast)var"),
-            Ok(Expr::Cast {
-                cast: Type::User("cast".to_string()),
-                expr: Box::new(Expr::Variable("var".to_string())),
-            })
+            cast(None).parse("var as cast"),
+            Ok(Expr::As(
+                Box::new(Expr::Variable("var".to_string())),
+                Type::User("cast".to_string())
+            ))
         );
         assert_eq!(
-            term(None).parse("(u8)127"),
-            Ok(Expr::Cast {
-                cast: Type::U8,
-                expr: Box::new(Expr::Int(Int::I32(127))),
-            })
+            cast(None).parse("127 as u8"),
+            Ok(Expr::As(Box::new(Expr::Int(Int::I32(127))), Type::U8))
         );
 
-        // term should parse parse as well
-        assert_eq!(term(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
-        assert_eq!(term(None).parse("'a'"), Ok(Expr::Int(Int::I8(97))));
-        assert_eq!(term(None).parse("\"a\""), Ok(Expr::String("a".to_string())));
+        // cast should parse fn_call as well
+        assert_eq!(cast(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(cast(None).parse("'a'"), Ok(Expr::Int(Int::I8(97))));
+        assert_eq!(cast(None).parse("\"a\""), Ok(Expr::String("a".to_string())));
         assert_eq!(
-            term(None).parse("var"),
+            cast(None).parse("var"),
             Ok(Expr::Variable("var".to_string()))
         );
     }
 
     #[test]
-    fn suffix_test() {
+    fn fn_call_test() {
         assert_eq!(
-            suffix().parse("fun(1, a2, '3', \"4\")"),
+            fn_call().parse("fun(1, a2, '3', \"4\")"),
             Ok(Expr::FnCall {
                 name: Box::new(Expr::Variable("fun".to_string())),
                 args: vec![
@@ -595,23 +589,24 @@ mod tests {
                 ]
             })
         );
-        // assert_eq!(
-        //     suffix().parse("fun((char)a1, (u64)a2)"),
-        //     Ok(Expr::FnCall {
-        //         name: Box::new(Expr::Variable("fun".to_string())),
-        //         args: vec![
-        //             Expr::Int(Int::I32(1)),
-        //             Expr::Variable("a2".to_string()),
-        //             Expr::Int(Int::I8(51)),
-        //             Expr::String("4".to_string()),
-        //         ]
-        //     })
-        // );
+        assert_eq!(
+            fn_call().parse("fun(a1 as char, a2 as u64)"),
+            Ok(Expr::FnCall {
+                name: Box::new(Expr::Variable("fun".to_string())),
+                args: vec![
+                    Expr::As(Box::new(Expr::Variable("a1".to_string())), Type::I8),
+                    Expr::As(Box::new(Expr::Variable("a2".to_string())), Type::U64),
+                ]
+            })
+        );
 
-        assert_eq!(suffix().parse("1"), Ok(Expr::Int(Int::I32(1))));
-        assert_eq!(suffix().parse("'a'"), Ok(Expr::Int(Int::I8(97))));
-        assert_eq!(suffix().parse("\"a\""), Ok(Expr::String("a".to_string())));
-        assert_eq!(suffix().parse("var"), Ok(Expr::Variable("var".to_string())));
+        assert_eq!(fn_call().parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(fn_call().parse("'a'"), Ok(Expr::Int(Int::I8(97))));
+        assert_eq!(fn_call().parse("\"a\""), Ok(Expr::String("a".to_string())));
+        assert_eq!(
+            fn_call().parse("var"),
+            Ok(Expr::Variable("var".to_string()))
+        );
     }
 
     #[test]
