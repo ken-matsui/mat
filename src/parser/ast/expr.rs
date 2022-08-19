@@ -149,11 +149,12 @@ fn expr4() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr2()
         .then(
-            just("<<")
-                .to(Expr::Shl as fn(_, _) -> _)
-                .or(just(">>").to(Expr::Shr as fn(_, _) -> _))
-                .then(expr2())
-                .repeated(),
+            choice((
+                just("<<").to(Expr::Shl as fn(_, _) -> _),
+                just(">>").to(Expr::Shr as fn(_, _) -> _),
+            ))
+            .then(expr2())
+            .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
@@ -162,11 +163,12 @@ fn expr3() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     expr1()
         .then(
-            just('+')
-                .to(Expr::Add as fn(_, _) -> _)
-                .or(just('-').to(Expr::Sub as fn(_, _) -> _))
-                .then(expr1())
-                .repeated(),
+            choice((
+                just('+').to(Expr::Add as fn(_, _) -> _),
+                just('-').to(Expr::Sub as fn(_, _) -> _),
+            ))
+            .then(expr1())
+            .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
@@ -175,12 +177,13 @@ fn expr2() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 fn expr1() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     term()
         .then(
-            just('*')
-                .to(Expr::Mul as fn(_, _) -> _)
-                .or(just('/').to(Expr::Div as fn(_, _) -> _))
-                .or(just('%').to(Expr::Rem as fn(_, _) -> _))
-                .then(term())
-                .repeated(),
+            choice((
+                just('*').to(Expr::Mul as fn(_, _) -> _),
+                just('/').to(Expr::Div as fn(_, _) -> _),
+                just('%').to(Expr::Rem as fn(_, _) -> _),
+            ))
+            .then(term())
+            .repeated(),
         )
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
