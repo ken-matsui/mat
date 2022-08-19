@@ -193,7 +193,7 @@ fn stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 // } else {
 // }
 fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
-    recursive(|if_| {
+    recursive(|if_stmt| {
         text::keyword("if")
             .padded()
             .ignore_then(expr9())
@@ -201,7 +201,7 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
             .then(
                 text::keyword("else")
                     .padded()
-                    .ignore_then(block().or(if_))
+                    .ignore_then(block().or(if_stmt))
                     .or_not(),
             )
             .map(|((cond, then), els)| Stmt::If {
