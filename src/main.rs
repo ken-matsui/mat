@@ -57,7 +57,7 @@ fn main() {
     let src = read_to_string(source_id.clone()).expect("Failed to read file");
 
     match parser::parse::parse(src.clone()) {
-        (Some(ast), _) => println!("{:?}", ast),
+        (Some(ast), _) => println!("{:#?}", ast),
         (None, errs) => {
             for e in errs {
                 let message = match e.reason() {
