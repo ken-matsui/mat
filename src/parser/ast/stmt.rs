@@ -85,6 +85,7 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
         .boxed()
 }
 
+// TODO: Add test
 pub(crate) fn top_defs() -> impl Parser<char, Vec<Stmt>, Error = Simple<char>> + Clone {
     choice((defvar(), defn(), typedef())).repeated().boxed()
 }
@@ -171,6 +172,7 @@ fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<c
         .boxed()
 }
 
+// TODO: Add test
 fn stmt(
     if_stmt_rec: Option<RecIfStmt>,
 ) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
@@ -282,6 +284,82 @@ mod tests {
     }
 
     #[test]
+    fn param_test() {
+        assert_eq!(
+            param().parse("name: i8"),
+            Ok(Param {
+                is_mut: false,
+                name: "name".to_string(),
+                ty: Type::I8
+            })
+        );
+        assert_eq!(
+            param().parse("mut name: i8"),
+            Ok(Param {
+                is_mut: true,
+                name: "name".to_string(),
+                ty: Type::I8
+            })
+        );
+    }
+
+    #[test]
+    fn defn_test() {
+        assert_eq!(
+            defn().parse("fn name() -> i16 {}"),
+            Ok(Stmt::DefFn {
+                name: "name".to_string(),
+                args: vec![],
+                ret_ty: Type::I16,
+                body: Box::new(Stmt::Block(vec![])),
+            })
+        );
+        assert_eq!(
+            defn().parse("fn name(a1: i8) -> i16 {}"),
+            Ok(Stmt::DefFn {
+                name: "name".to_string(),
+                args: vec![Param {
+                    is_mut: false,
+                    name: "a1".to_string(),
+                    ty: Type::I8
+                }],
+                ret_ty: Type::I16,
+                body: Box::new(Stmt::Block(vec![])),
+            })
+        );
+
+        assert!(defn().parse("fn name(): i16 {}").is_err());
+    }
+
+    #[test]
+    fn defvar_test() {
+        assert_eq!(
+            defvar().parse("let var: type = 10;"),
+            Ok(Stmt::DefVar {
+                is_mut: false,
+                name: "var".to_string(),
+                type_ref: Type::User("type".to_string()),
+                expr: Box::new(Expr::Int(Int::I32(10))),
+            })
+        );
+        assert_eq!(
+            defvar().parse("let mut var: type = 10;"),
+            Ok(Stmt::DefVar {
+                is_mut: true,
+                name: "var".to_string(),
+                type_ref: Type::User("type".to_string()),
+                expr: Box::new(Expr::Int(Int::I32(10))),
+            })
+        );
+
+        assert!(defvar().parse("let var: type = 10").is_err());
+        assert!(defvar().parse("let mut var: type = 10").is_err());
+
+        assert!(defvar().parse("let var := 10;").is_err());
+        assert!(defvar().parse("let mut var := 10;").is_err());
+    }
+
+    #[test]
     fn block_impl_test() {
         assert_eq!(block(None).parse("{}"), Ok(Stmt::Block(vec![])));
         assert_eq!(block(None).parse("{     }"), Ok(Stmt::Block(vec![])));
@@ -318,34 +396,6 @@ mod tests {
         assert!(block(None).parse("{     ").is_err());
         assert!(block(None).parse("  }").is_err());
         assert!(block(None).parse("let var: type = 10;").is_err());
-    }
-
-    #[test]
-    fn defvar_test() {
-        assert_eq!(
-            defvar().parse("let var: type = 10;"),
-            Ok(Stmt::DefVar {
-                is_mut: false,
-                name: "var".to_string(),
-                type_ref: Type::User("type".to_string()),
-                expr: Box::new(Expr::Int(Int::I32(10))),
-            })
-        );
-        assert_eq!(
-            defvar().parse("let mut var: type = 10;"),
-            Ok(Stmt::DefVar {
-                is_mut: true,
-                name: "var".to_string(),
-                type_ref: Type::User("type".to_string()),
-                expr: Box::new(Expr::Int(Int::I32(10))),
-            })
-        );
-
-        assert!(defvar().parse("let var: type = 10").is_err());
-        assert!(defvar().parse("let mut var: type = 10").is_err());
-
-        assert!(defvar().parse("let var := 10;").is_err());
-        assert!(defvar().parse("let mut var := 10;").is_err());
     }
 
     #[test]

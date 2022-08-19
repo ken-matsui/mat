@@ -564,6 +564,10 @@ mod tests {
             cast(None).parse("127 as u8"),
             Ok(Expr::As(Box::new(Expr::Int(Int::I32(127))), Type::U8))
         );
+        // TODO: This should also work
+        // assert_eq!(
+        //     cast(None).parse("fun(a1 as char, a2 as u64) as u8"), todo!()
+        // );
 
         // cast should parse fn_call as well
         assert_eq!(cast(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
