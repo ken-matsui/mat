@@ -175,28 +175,17 @@ pub(crate) fn term(
     suffix_rec: Option<RecSuffix>,
 ) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
     let cast = typeref().delimited_by(just("("), just(")")).or_not();
+    let make_cast = |(cast, expr)| match cast {
+        Some(cast) => Expr::Cast {
+            cast,
+            expr: Box::new(expr),
+        },
+        None => expr,
+    };
 
     match suffix_rec {
-        None => cast
-            .then(suffix())
-            .map(|(cast, expr)| match cast {
-                Some(cast) => Expr::Cast {
-                    cast,
-                    expr: Box::new(expr),
-                },
-                None => expr,
-            })
-            .boxed(),
-        Some(suffix_rec) => cast
-            .then(suffix_rec)
-            .map(|(cast, expr)| match cast {
-                Some(cast) => Expr::Cast {
-                    cast,
-                    expr: Box::new(expr),
-                },
-                None => expr,
-            })
-            .boxed(),
+        None => cast.then(suffix()).map(make_cast).boxed(),
+        Some(suffix_rec) => cast.then(suffix_rec).map(make_cast).boxed(),
     }
 }
 
