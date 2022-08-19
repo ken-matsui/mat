@@ -119,7 +119,7 @@ fn defn() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         .padded()
         .then_ignore(just("->"))
         .then(typeref().padded())
-        .then(block_impl(None))
+        .then(block(None))
         .map(|(((name, args), ty), body)| Stmt::DefFn {
             name,
             args,
@@ -160,9 +160,7 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 
 type RecIfStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
 
-fn block_impl(
-    if_stmt: Option<RecIfStmt>,
-) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
+fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
     defvar()
         .or(stmt(if_stmt))
         .repeated()
@@ -172,20 +170,23 @@ fn block_impl(
         .boxed()
 }
 
-fn stmt(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
-    match if_stmt {
-        Some(if_stmt) => choice((
-            just(';').padded().to(Stmt::Empty),
-            assign_stmt(),
-            // TODO: block(),
-            if_stmt,
-            return_stmt(),
-        ))
-        .boxed(),
+fn stmt(
+    if_stmt_rec: Option<RecIfStmt>,
+) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
+    match if_stmt_rec {
         None => choice((
             just(';').padded().to(Stmt::Empty),
             assign_stmt(),
             // block(),
+            if_stmt(),
+            return_stmt(),
+        ))
+        .boxed(),
+        Some(if_stmt_rec) => choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            // TODO: block(),
+            if_stmt_rec,
             return_stmt(),
         ))
         .boxed(),
@@ -201,11 +202,11 @@ fn if_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
         text::keyword("if")
             .padded()
             .ignore_then(expr9())
-            .then(block_impl(Some(if_stmt.clone())))
+            .then(block(Some(if_stmt.clone())))
             .then(
                 text::keyword("else")
                     .padded()
-                    .ignore_then(block_impl(Some(if_stmt.clone())).or(if_stmt))
+                    .ignore_then(block(Some(if_stmt.clone())).or(if_stmt))
                     .or_not(),
             )
             .map(|((cond, then), els)| Stmt::If {
@@ -281,14 +282,16 @@ mod tests {
 
     #[test]
     fn block_impl_test() {
-        assert_eq!(block_impl(None).parse("{}"), Ok(Stmt::Block(vec![])));
-        assert_eq!(block_impl(None).parse("{     }"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block(None).parse("{}"), Ok(Stmt::Block(vec![])));
+        assert_eq!(block(None).parse("{     }"), Ok(Stmt::Block(vec![])));
         assert_eq!(
-            block_impl(None).parse(
+            block(None).parse(
                 r#"{
                 let var1: type = 10;
     
                 let mut var2: type = 10;
+
+                if var1 {}
             }"#
             ),
             Ok(Stmt::Block(vec![
@@ -303,12 +306,17 @@ mod tests {
                     name: "var2".to_string(),
                     type_ref: Type::User("type".to_string()),
                     expr: Box::new(Expr::Int(Int::I32(10))),
+                },
+                Stmt::If {
+                    cond: Box::new(Expr::Variable("var1".to_string())),
+                    then: Box::new(Stmt::Block(vec![])),
+                    els: None,
                 }
             ]))
         );
-        assert!(block_impl(None).parse("{     ").is_err());
-        assert!(block_impl(None).parse("  }").is_err());
-        assert!(block_impl(None).parse("let var: type = 10;").is_err());
+        assert!(block(None).parse("{     ").is_err());
+        assert!(block(None).parse("  }").is_err());
+        assert!(block(None).parse("let var: type = 10;").is_err());
     }
 
     #[test]
