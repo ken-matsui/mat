@@ -1,8 +1,9 @@
 use std::cmp::{max, min};
+use std::fmt;
 use std::ops::{Deref, DerefMut, Range};
 
 /// Range does not implements `Copy` (#27186), so here we use (usize, usize) instead
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub(crate) struct Span(pub(crate) (usize, usize));
 
 impl Span {
@@ -32,7 +33,13 @@ impl Span {
     }
 }
 
-#[derive(Debug, Clone)]
+impl fmt::Debug for Span {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.range())
+    }
+}
+
+#[derive(Clone)]
 pub(crate) struct Spanned<T> {
     value: Box<T>,
     span: Span,
@@ -75,5 +82,15 @@ impl<T: PartialEq> PartialEq for Spanned<T> {
     fn eq(&self, other: &Self) -> bool {
         // Ignore checking Span; nothing makes sense, particularly on tests.
         self.value == other.value
+    }
+}
+
+impl<T: fmt::Debug> fmt::Debug for Spanned<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if f.alternate() {
+            write!(f, "{:#?} @ {:?}", self.value, self.span)
+        } else {
+            write!(f, "{:?} @ {:?}", self.value, self.span)
+        }
     }
 }
