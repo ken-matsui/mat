@@ -33,7 +33,7 @@ pub(crate) fn compilation_unit() -> impl Parser<char, Spanned<Ast>, Error = Simp
         .then(top_defs())
         .padded()
         .then_ignore(end())
-        .map_with_span(|(imports, defs), span| (Ast { imports, defs }, span))
+        .map_with_span(|(imports, defs), span| Spanned::new(Ast { imports, defs }, span))
         .boxed()
 }
 
@@ -74,7 +74,7 @@ fn main() -> i32 {
 }
         "#
             ),
-            Ok((
+            Ok(Spanned::new(
                 Ast {
                     imports: vec![
                         Stmt::Import("std.io".to_string()),
@@ -174,7 +174,7 @@ fn main() -> i32 {
                         },
                     ],
                 },
-                0..507
+                Span::any()
             ))
         );
     }
