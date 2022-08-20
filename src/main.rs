@@ -59,10 +59,11 @@ fn main() {
         content: read_to_string(args.source).expect("Failed to read file"),
     };
 
-    let (ast, errs) = parser::parse::parse(source.content.clone());
+    let (ast, errs) = parser::parse(source.content.clone());
     if let Some(ast) = ast {
         if args.dump_ast {
             println!("{:#?}", ast);
+            return;
         }
     } else {
         emit_errors(errs, source);
