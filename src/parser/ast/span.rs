@@ -41,8 +41,8 @@ impl fmt::Debug for Span {
 
 #[derive(Clone)]
 pub(crate) struct Spanned<T> {
-    value: Box<T>,
-    span: Span,
+    pub(crate) value: Box<T>,
+    pub(crate) span: Span,
 }
 
 impl<T> Spanned<T> {
@@ -51,10 +51,6 @@ impl<T> Spanned<T> {
             value: Box::new(value),
             span: Span::new(span),
         }
-    }
-
-    pub(crate) fn span(&self) -> Span {
-        self.span
     }
 
     /// Bypass equity checks on tests

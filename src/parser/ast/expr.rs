@@ -77,7 +77,7 @@ pub(crate) fn expr(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<E
     expr8(fn_call.clone())
         .then(just("||").to(Expr::Or).then(expr8(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -87,7 +87,7 @@ fn expr8(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
     expr7(fn_call.clone())
         .then(just("&&").to(Expr::And).then(expr7(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -108,7 +108,7 @@ fn expr7(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -118,7 +118,7 @@ fn expr6(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
     expr5(fn_call.clone())
         .then(just('|').to(Expr::BitOr).then(expr5(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -128,7 +128,7 @@ fn expr5(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
     expr4(fn_call.clone())
         .then(just('^').to(Expr::BitXor).then(expr4(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -138,7 +138,7 @@ fn expr4(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
     expr3(fn_call.clone())
         .then(just('&').to(Expr::BitAnd).then(expr3(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -155,7 +155,7 @@ fn expr3(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -172,7 +172,7 @@ fn expr2(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -190,7 +190,7 @@ fn expr1(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_
             .repeated(),
         )
         .foldl(|lhs, (op, rhs)| {
-            let span = lhs.span().union(rhs.span());
+            let span = lhs.span.union(rhs.span);
             Spanned::new(op(lhs, rhs), span)
         })
         .boxed()
@@ -204,14 +204,14 @@ pub(crate) fn cast(fn_call_rec: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spann
         None => fn_call()
             .then(as_expr)
             .foldl(|lhs, (op, rhs)| {
-                let span = lhs.span().union(rhs.span());
+                let span = lhs.span.union(rhs.span);
                 Spanned::new(op(lhs, rhs), span)
             })
             .boxed(),
         Some(fn_call_rec) => fn_call_rec
             .then(as_expr)
             .foldl(|lhs, (op, rhs)| {
-                let span = lhs.span().union(rhs.span());
+                let span = lhs.span.union(rhs.span);
                 Spanned::new(op(lhs, rhs), span)
             })
             .boxed(),
@@ -230,14 +230,14 @@ fn fn_call() -> impl Parser<Spanned<Expr>> {
             .foldl(|name, args| {
                 let span = if let Some(first) = args.first() {
                     // Merge args spans into one span
-                    name.span().union(
+                    name.span.union(
                         args.iter()
-                            .map(|f| f.span())
-                            .fold(first.span(), |acc, xs| Span::new(acc.union(xs))),
+                            .map(|f| f.span)
+                            .fold(first.span, |acc, xs| Span::new(acc.union(xs))),
                     )
                 } else {
                     // No args found
-                    name.span().range()
+                    name.span.range()
                 };
                 Spanned::new(Expr::FnCall { name, args }, span)
             })
