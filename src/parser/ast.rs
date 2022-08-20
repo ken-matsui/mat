@@ -24,7 +24,7 @@ use chumsky::text::TextParser;
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {
     imports: Vec<Spanned<Stmt>>,
-    defs: Vec<Stmt>,
+    defs: Vec<Spanned<Stmt>>,
 }
 
 pub(crate) fn compilation_unit() -> impl Parser<char, Spanned<Ast>, Error = Simple<char>> + Clone {
@@ -80,17 +80,17 @@ fn main() -> i32 {
                     Spanned::any(Stmt::Import("stdio".to_string())),
                 ],
                 defs: vec![
-                    Stmt::DefVar {
+                    Spanned::any(Stmt::DefVar {
                         is_mut: false,
                         name: "fuga".to_string(),
                         type_ref: Type::I32,
                         expr: Box::new(Expr::Int(Int::I32(1))),
-                    },
-                    Stmt::TypeDef {
+                    }),
+                    Spanned::any(Stmt::TypeDef {
                         new: "newint".to_string(),
                         old: Type::I32,
-                    },
-                    Stmt::DefFn {
+                    }),
+                    Spanned::any(Stmt::DefFn {
                         name: "f1".to_string(),
                         args: vec![
                             Param {
@@ -105,34 +105,36 @@ fn main() -> i32 {
                             }
                         ],
                         ret_ty: Type::U32,
-                        body: Box::new(Stmt::Block(vec![Stmt::Return(Some(Box::new(Expr::Add(
-                            Box::new(Expr::As(
-                                Box::new(Expr::Variable("arg".to_string())),
-                                Type::U64
-                            )),
-                            Box::new(Expr::Variable("arg2".to_string()))
-                        ))))])),
-                    },
-                    Stmt::DefFn {
+                        body: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(Some(
+                            Box::new(Expr::Add(
+                                Box::new(Expr::As(
+                                    Box::new(Expr::Variable("arg".to_string())),
+                                    Type::U64
+                                )),
+                                Box::new(Expr::Variable("arg2".to_string()))
+                            ))
+                        )))])),
+                    }),
+                    Spanned::any(Stmt::DefFn {
                         name: "main".to_string(),
                         args: vec![],
                         ret_ty: Type::I32,
-                        body: Box::new(Stmt::Block(vec![
-                            Stmt::DefVar {
+                        body: Spanned::any(Stmt::Block(vec![
+                            Spanned::any(Stmt::DefVar {
                                 is_mut: true,
                                 name: "hoge".to_string(),
                                 type_ref: Type::User("User".to_string()),
                                 expr: Box::new(Expr::Int(Int::I32(12))),
-                            },
-                            Stmt::If {
+                            }),
+                            Spanned::any(Stmt::If {
                                 cond: Box::new(Expr::Variable("hoge".to_string())),
-                                then: Box::new(Stmt::Block(vec![Stmt::Return(Some(Box::new(
-                                    Expr::Int(Int::I32(1))
-                                )))])),
-                                els: Some(Box::new(Stmt::If {
+                                then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(
+                                    Some(Box::new(Expr::Int(Int::I32(1))))
+                                ))])),
+                                els: Some(Spanned::any(Stmt::If {
                                     cond: Box::new(Expr::Variable("fuga".to_string())),
-                                    then: Box::new(Stmt::Block(vec![Stmt::Return(Some(
-                                        Box::new(Expr::FnCall {
+                                    then: Spanned::any(Stmt::Block(vec![Spanned::any(
+                                        Stmt::Return(Some(Box::new(Expr::FnCall {
                                             name: Box::new(Expr::Variable("f1".to_string())),
                                             args: vec![
                                                 Expr::As(
@@ -144,10 +146,10 @@ fn main() -> i32 {
                                                     Type::U64
                                                 )
                                             ]
-                                        })
-                                    ))])),
-                                    els: Some(Box::new(Stmt::Block(vec![Stmt::Return(Some(
-                                        Box::new(Expr::Sub(
+                                        })))
+                                    )])),
+                                    els: Some(Spanned::any(Stmt::Block(vec![Spanned::any(
+                                        Stmt::Return(Some(Box::new(Expr::Sub(
                                             Box::new(Expr::Add(
                                                 Box::new(Expr::Add(
                                                     Box::new(Expr::Int(Int::I32(1))),
@@ -159,12 +161,12 @@ fn main() -> i32 {
                                                 Box::new(Expr::Int(Int::I64(1))),
                                                 Box::new(Expr::Variable("hoge".to_string())),
                                             )),
-                                        )),
-                                    ))]))),
+                                        )),))
+                                    )]))),
                                 }))
-                            }
+                            }),
                         ])),
-                    },
+                    }),
                 ],
             }))
         );
