@@ -23,7 +23,7 @@ use chumsky::text::TextParser;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {
-    imports: Vec<Stmt>,
+    imports: Vec<Spanned<Stmt>>,
     defs: Vec<Stmt>,
 }
 
@@ -74,108 +74,99 @@ fn main() -> i32 {
 }
         "#
             ),
-            Ok(Spanned::new(
-                Ast {
-                    imports: vec![
-                        Stmt::Import("std.io".to_string()),
-                        Stmt::Import("stdio".to_string()),
-                    ],
-                    defs: vec![
-                        Stmt::DefVar {
-                            is_mut: false,
-                            name: "fuga".to_string(),
-                            type_ref: Type::I32,
-                            expr: Box::new(Expr::Int(Int::I32(1))),
-                        },
-                        Stmt::TypeDef {
-                            new: "newint".to_string(),
-                            old: Type::I32,
-                        },
-                        Stmt::DefFn {
-                            name: "f1".to_string(),
-                            args: vec![
-                                Param {
-                                    is_mut: false,
-                                    name: "arg".to_string(),
-                                    ty: Type::I8
-                                },
-                                Param {
-                                    is_mut: true,
-                                    name: "arg2".to_string(),
-                                    ty: Type::U64
-                                }
-                            ],
-                            ret_ty: Type::U32,
-                            body: Box::new(Stmt::Block(vec![Stmt::Return(Some(Box::new(
-                                Expr::Add(
-                                    Box::new(Expr::As(
-                                        Box::new(Expr::Variable("arg".to_string())),
-                                        Type::U64
-                                    )),
-                                    Box::new(Expr::Variable("arg2".to_string()))
-                                )
-                            )))])),
-                        },
-                        Stmt::DefFn {
-                            name: "main".to_string(),
-                            args: vec![],
-                            ret_ty: Type::I32,
-                            body: Box::new(Stmt::Block(vec![
-                                Stmt::DefVar {
-                                    is_mut: true,
-                                    name: "hoge".to_string(),
-                                    type_ref: Type::User("User".to_string()),
-                                    expr: Box::new(Expr::Int(Int::I32(12))),
-                                },
-                                Stmt::If {
-                                    cond: Box::new(Expr::Variable("hoge".to_string())),
+            Ok(Spanned::any(Ast {
+                imports: vec![
+                    Spanned::any(Stmt::Import("std.io".to_string())),
+                    Spanned::any(Stmt::Import("stdio".to_string())),
+                ],
+                defs: vec![
+                    Stmt::DefVar {
+                        is_mut: false,
+                        name: "fuga".to_string(),
+                        type_ref: Type::I32,
+                        expr: Box::new(Expr::Int(Int::I32(1))),
+                    },
+                    Stmt::TypeDef {
+                        new: "newint".to_string(),
+                        old: Type::I32,
+                    },
+                    Stmt::DefFn {
+                        name: "f1".to_string(),
+                        args: vec![
+                            Param {
+                                is_mut: false,
+                                name: "arg".to_string(),
+                                ty: Type::I8
+                            },
+                            Param {
+                                is_mut: true,
+                                name: "arg2".to_string(),
+                                ty: Type::U64
+                            }
+                        ],
+                        ret_ty: Type::U32,
+                        body: Box::new(Stmt::Block(vec![Stmt::Return(Some(Box::new(Expr::Add(
+                            Box::new(Expr::As(
+                                Box::new(Expr::Variable("arg".to_string())),
+                                Type::U64
+                            )),
+                            Box::new(Expr::Variable("arg2".to_string()))
+                        ))))])),
+                    },
+                    Stmt::DefFn {
+                        name: "main".to_string(),
+                        args: vec![],
+                        ret_ty: Type::I32,
+                        body: Box::new(Stmt::Block(vec![
+                            Stmt::DefVar {
+                                is_mut: true,
+                                name: "hoge".to_string(),
+                                type_ref: Type::User("User".to_string()),
+                                expr: Box::new(Expr::Int(Int::I32(12))),
+                            },
+                            Stmt::If {
+                                cond: Box::new(Expr::Variable("hoge".to_string())),
+                                then: Box::new(Stmt::Block(vec![Stmt::Return(Some(Box::new(
+                                    Expr::Int(Int::I32(1))
+                                )))])),
+                                els: Some(Box::new(Stmt::If {
+                                    cond: Box::new(Expr::Variable("fuga".to_string())),
                                     then: Box::new(Stmt::Block(vec![Stmt::Return(Some(
-                                        Box::new(Expr::Int(Int::I32(1)))
+                                        Box::new(Expr::FnCall {
+                                            name: Box::new(Expr::Variable("f1".to_string())),
+                                            args: vec![
+                                                Expr::As(
+                                                    Box::new(Expr::Variable("fuga".to_string())),
+                                                    Type::I8
+                                                ),
+                                                Expr::As(
+                                                    Box::new(Expr::Variable("hoge".to_string())),
+                                                    Type::U64
+                                                )
+                                            ]
+                                        })
                                     ))])),
-                                    els: Some(Box::new(Stmt::If {
-                                        cond: Box::new(Expr::Variable("fuga".to_string())),
-                                        then: Box::new(Stmt::Block(vec![Stmt::Return(Some(
-                                            Box::new(Expr::FnCall {
-                                                name: Box::new(Expr::Variable("f1".to_string())),
-                                                args: vec![
-                                                    Expr::As(
-                                                        Box::new(Expr::Variable(
-                                                            "fuga".to_string()
-                                                        )),
-                                                        Type::I8
-                                                    ),
-                                                    Expr::As(
-                                                        Box::new(Expr::Variable(
-                                                            "hoge".to_string()
-                                                        )),
-                                                        Type::U64
-                                                    )
-                                                ]
-                                            })
-                                        ))])),
-                                        els: Some(Box::new(Stmt::Block(vec![Stmt::Return(Some(
-                                            Box::new(Expr::Sub(
+                                    els: Some(Box::new(Stmt::Block(vec![Stmt::Return(Some(
+                                        Box::new(Expr::Sub(
+                                            Box::new(Expr::Add(
                                                 Box::new(Expr::Add(
-                                                    Box::new(Expr::Add(
-                                                        Box::new(Expr::Int(Int::I32(1))),
-                                                        Box::new(Expr::Int(Int::I32(2))),
-                                                    )),
+                                                    Box::new(Expr::Int(Int::I32(1))),
                                                     Box::new(Expr::Int(Int::I32(2))),
                                                 )),
-                                                Box::new(Expr::Mul(
-                                                    Box::new(Expr::Int(Int::I64(1))),
-                                                    Box::new(Expr::Variable("hoge".to_string())),
-                                                )),
+                                                Box::new(Expr::Int(Int::I32(2))),
                                             )),
-                                        ))]))),
-                                    }))
-                                }
-                            ])),
-                        },
-                    ],
-                },
-                Span::any()
-            ))
+                                            Box::new(Expr::Mul(
+                                                Box::new(Expr::Int(Int::I64(1))),
+                                                Box::new(Expr::Variable("hoge".to_string())),
+                                            )),
+                                        )),
+                                    ))]))),
+                                }))
+                            }
+                        ])),
+                    },
+                ],
+            }))
         );
     }
 }

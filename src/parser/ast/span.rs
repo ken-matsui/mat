@@ -18,11 +18,17 @@ pub(crate) struct Spanned<T> {
 }
 
 impl<T> Spanned<T> {
-    pub fn new(value: T, span: Range<usize>) -> Self {
+    pub(crate) fn new(value: T, span: Range<usize>) -> Self {
         Spanned {
             value: Box::new(value),
             span: Span(span),
         }
+    }
+
+    /// Bypass equity checks on tests
+    #[cfg(test)]
+    pub(crate) fn any(value: T) -> Self {
+        Self::new(value, Span::any())
     }
 }
 

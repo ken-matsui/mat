@@ -1,4 +1,4 @@
-use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Type};
+use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Spanned, Type};
 use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -70,7 +70,7 @@ pub(crate) enum Stmt {
 }
 
 // import std.io;
-pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
+pub(crate) fn import_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
     text::keyword("import")
         .ignore_then(
             ident()
@@ -79,7 +79,7 @@ pub(crate) fn import_stmt() -> impl Parser<char, Stmt, Error = Simple<char>> + C
                 .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
         )
         .then_ignore(just(';'))
-        .map(Stmt::Import)
+        .map_with_span(|import, span| Spanned::new(Stmt::Import(import), span))
         .labelled("import")
         .padded()
         .boxed()
@@ -284,15 +284,15 @@ mod tests {
     fn import_stmt_test() {
         assert_eq!(
             import_stmt().parse("import std.io;"),
-            Ok(Stmt::Import("std.io".to_string()))
+            Ok(Spanned::any(Stmt::Import("std.io".to_string())))
         );
         assert_eq!(
             import_stmt().parse("import     std  .   io   ;"),
-            Ok(Stmt::Import("std.io".to_string()))
+            Ok(Spanned::any(Stmt::Import("std.io".to_string())))
         );
         assert_eq!(
             import_stmt().parse("import stdio;"),
-            Ok(Stmt::Import("stdio".to_string()))
+            Ok(Spanned::any(Stmt::Import("stdio".to_string())))
         );
         assert!(import_stmt().parse("import 1std.io;").is_err());
         assert!(import_stmt().parse("import std.1io;").is_err());
