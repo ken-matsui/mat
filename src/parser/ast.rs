@@ -80,7 +80,7 @@ fn main() -> i32 {
                     Spanned::any(Stmt::DefVar {
                         is_mut: false,
                         name: "fuga".to_string(),
-                        type_ref: Spanned::any(Type::I32),
+                        ty: Spanned::any(Type::I32),
                         expr: Spanned::any(Expr::I32(1)),
                     }),
                     Spanned::any(Stmt::TypeDef {
@@ -120,7 +120,7 @@ fn main() -> i32 {
                             Spanned::any(Stmt::DefVar {
                                 is_mut: true,
                                 name: "hoge".to_string(),
-                                type_ref: Spanned::any(Type::User("User".to_string())),
+                                ty: Spanned::any(Type::User("User".to_string())),
                                 expr: Spanned::any(Expr::I32(12)),
                             }),
                             Spanned::any(Stmt::If {

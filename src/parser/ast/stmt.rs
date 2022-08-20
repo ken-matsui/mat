@@ -24,7 +24,7 @@ pub(crate) enum Stmt {
     DefVar {
         is_mut: bool,
         name: String,
-        type_ref: Spanned<Type>,
+        ty: Spanned<Type>,
         expr: Spanned<Expr>,
     },
 
@@ -151,7 +151,7 @@ fn defvar() -> impl Parser<Spanned<Stmt>> {
                 Stmt::DefVar {
                     is_mut: mt.is_some(),
                     name: nm,
-                    type_ref: ty,
+                    ty,
                     expr,
                 },
                 span,
@@ -311,7 +311,7 @@ mod tests {
                 Spanned::any(Stmt::DefVar {
                     is_mut: false,
                     name: "foo".to_string(),
-                    type_ref: Spanned::any(Type::I8),
+                    ty: Spanned::any(Type::I8),
                     expr: Spanned::any(Expr::I32(1)),
                 }),
                 Spanned::any(Stmt::TypeDef {
@@ -383,7 +383,7 @@ mod tests {
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: false,
                 name: "var".to_string(),
-                type_ref: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::User("type".to_string())),
                 expr: Spanned::any(Expr::I32(10)),
             }))
         );
@@ -392,7 +392,7 @@ mod tests {
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: true,
                 name: "var".to_string(),
-                type_ref: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::User("type".to_string())),
                 expr: Spanned::any(Expr::I32(10)),
             }))
         );
@@ -428,13 +428,13 @@ mod tests {
                 Spanned::any(Stmt::DefVar {
                     is_mut: false,
                     name: "var1".to_string(),
-                    type_ref: Spanned::any(Type::User("type".to_string())),
+                    ty: Spanned::any(Type::User("type".to_string())),
                     expr: Spanned::any(Expr::I32(10)),
                 }),
                 Spanned::any(Stmt::DefVar {
                     is_mut: true,
                     name: "var2".to_string(),
-                    type_ref: Spanned::any(Type::User("type".to_string())),
+                    ty: Spanned::any(Type::User("type".to_string())),
                     expr: Spanned::any(Expr::I32(10)),
                 }),
                 Spanned::any(Stmt::If {
