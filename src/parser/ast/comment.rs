@@ -1,15 +1,21 @@
 use crate::parser::lib::*;
 
-pub(crate) fn comment() -> impl Parser<()> {
-    let single_line_comment = just::<_, _, ParserError>("//")
-        .then_ignore(take_until(text::newline()))
-        .ignored();
+fn single_line_comment() -> impl Parser<()> {
+    just::<_, _, ParserError>("//")
+        .then_ignore(take_until(text::newline().or(end())))
+        .ignored()
+        .boxed()
+}
 
-    let multi_line_comment = just::<_, _, ParserError>("/*")
+fn multi_line_comment() -> impl Parser<()> {
+    just::<_, _, ParserError>("/*")
         .then(take_until(just("*/")))
-        .ignored();
+        .ignored()
+        .boxed()
+}
 
-    single_line_comment.or(multi_line_comment).boxed()
+pub(crate) fn comment() -> impl Parser<()> {
+    single_line_comment().or(multi_line_comment()).boxed()
 }
 
 #[cfg(test)]
@@ -17,10 +23,39 @@ mod tests {
     use super::*;
 
     #[test]
+    fn single_line_comment_test() {
+        assert!(comment().parse("// comment\n").is_ok());
+        assert!(comment().parse("//\n").is_ok());
+        assert!(comment().parse("// comment").is_ok());
+        assert!(comment().parse("/\n").is_err());
+    }
+
+    #[test]
+    fn multi_line_comment() {
+        assert!(comment()
+            .parse(
+                r#"/*
+                comment
+                */
+            "#
+            )
+            .is_ok());
+        assert!(comment().parse("/**/").is_ok());
+        assert!(comment().parse("/**/\n").is_ok());
+        assert!(comment().parse("/* foo */\n").is_ok());
+        assert!(comment().parse("/** *foo **/\n").is_ok());
+        assert!(comment().parse("/* foo */").is_ok());
+        assert!(comment().parse("/* foo *\n").is_err());
+        assert!(comment().parse("/* foo \n").is_err());
+        assert!(comment().parse("* foo */\n").is_err());
+        assert!(comment().parse(" foo */\n").is_err());
+    }
+
+    #[test]
     fn comment_test() {
         assert!(comment().parse("// comment\n").is_ok());
         assert!(comment().parse("//\n").is_ok());
-        assert!(comment().parse("// comment").is_err());
+        assert!(comment().parse("// comment").is_ok());
         assert!(comment().parse("/\n").is_err());
 
         assert!(comment()
@@ -31,6 +66,7 @@ mod tests {
             "#
             )
             .is_ok());
+        assert!(comment().parse("/**/").is_ok());
         assert!(comment().parse("/**/\n").is_ok());
         assert!(comment().parse("/* foo */\n").is_ok());
         assert!(comment().parse("/** *foo **/\n").is_ok());
