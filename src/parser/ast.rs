@@ -26,13 +26,13 @@ pub(crate) struct Ast {
     defs: Vec<Spanned<Stmt>>,
 }
 
-pub(crate) fn compilation_unit() -> impl Parser<Spanned<Ast>> {
+pub(crate) fn compilation_unit() -> impl Parser<Ast> {
     import_stmt()
         .repeated()
         .then(top_defs())
         .padded()
         .then_ignore(end())
-        .map_with_span(|(imports, defs), span| Spanned::new(Ast { imports, defs }, span))
+        .map(|(imports, defs)| Ast { imports, defs })
         .boxed()
 }
 
@@ -71,7 +71,7 @@ fn main() -> i32 {
 }
         "#
             ),
-            Ok(Spanned::any(Ast {
+            Ok(Ast {
                 imports: vec![
                     Spanned::any(Stmt::Import("std.io".to_string())),
                     Spanned::any(Stmt::Import("stdio".to_string())),
@@ -169,7 +169,7 @@ fn main() -> i32 {
                         ])),
                     }),
                 ],
-            }))
+            })
         );
     }
 }
