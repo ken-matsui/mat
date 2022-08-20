@@ -17,7 +17,7 @@ pub(crate) enum Type {
     User(String),
 }
 
-pub(crate) fn typeref() -> impl Parser<Type> {
+pub(crate) fn typeref() -> impl Parser<Spanned<Type>> {
     choice((
         text::keyword("void").to(Type::Void),
         text::keyword("char").to(Type::I8),
@@ -31,6 +31,7 @@ pub(crate) fn typeref() -> impl Parser<Type> {
         text::keyword("u64").to(Type::U64),
         ident().map(Type::User),
     ))
+    .map_with_span(Spanned::new)
     .boxed()
 }
 
@@ -52,17 +53,20 @@ mod tests {
 
     #[test]
     fn typeref_test() {
-        assert_eq!(typeref().parse("void"), Ok(Type::Void));
-        assert_eq!(typeref().parse("char"), Ok(Type::I8));
-        assert_eq!(typeref().parse("i8"), Ok(Type::I8));
-        assert_eq!(typeref().parse("i16"), Ok(Type::I16));
-        assert_eq!(typeref().parse("i32"), Ok(Type::I32));
-        assert_eq!(typeref().parse("i64"), Ok(Type::I64));
-        assert_eq!(typeref().parse("u8"), Ok(Type::U8));
-        assert_eq!(typeref().parse("u16"), Ok(Type::U16));
-        assert_eq!(typeref().parse("u32"), Ok(Type::U32));
-        assert_eq!(typeref().parse("u64"), Ok(Type::U64));
-        assert_eq!(typeref().parse("type"), Ok(Type::User("type".to_string())));
+        assert_eq!(typeref().parse("void"), Ok(Spanned::any(Type::Void)));
+        assert_eq!(typeref().parse("char"), Ok(Spanned::any(Type::I8)));
+        assert_eq!(typeref().parse("i8"), Ok(Spanned::any(Type::I8)));
+        assert_eq!(typeref().parse("i16"), Ok(Spanned::any(Type::I16)));
+        assert_eq!(typeref().parse("i32"), Ok(Spanned::any(Type::I32)));
+        assert_eq!(typeref().parse("i64"), Ok(Spanned::any(Type::I64)));
+        assert_eq!(typeref().parse("u8"), Ok(Spanned::any(Type::U8)));
+        assert_eq!(typeref().parse("u16"), Ok(Spanned::any(Type::U16)));
+        assert_eq!(typeref().parse("u32"), Ok(Spanned::any(Type::U32)));
+        assert_eq!(typeref().parse("u64"), Ok(Spanned::any(Type::U64)));
+        assert_eq!(
+            typeref().parse("type"),
+            Ok(Spanned::any(Type::User("type".to_string())))
+        );
         assert!(typeref().parse("1type").is_err());
     }
 
@@ -72,28 +76,28 @@ mod tests {
             typedef().parse("type new = i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
-                old: Type::I8
+                old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse("type new=i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
-                old: Type::I8
+                old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse("type new=i8  ;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
-                old: Type::I8
+                old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse("type new = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
-                old: Type::User("old".to_string()),
+                old: Spanned::any(Type::User("old".to_string())),
             }))
         );
         // TODO: For now, this is allowed (will be an error at semantic analysis),
@@ -102,7 +106,7 @@ mod tests {
             typedef().parse("type i8 = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "i8".to_string(),
-                old: Type::User("old".to_string()),
+                old: Spanned::any(Type::User("old".to_string())),
             }))
         );
         assert!(typedef().parse("type foo = bar").is_err());

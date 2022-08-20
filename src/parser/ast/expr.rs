@@ -1,59 +1,59 @@
-use crate::parser::ast::{character, integer, string, typeref, variable, Int, Type};
+use crate::parser::ast::{character, integer, string, typeref, variable, Int, Span, Spanned, Type};
 use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Expr {
     /// ||
-    Or(Box<Self>, Box<Self>),
+    Or(Spanned<Self>, Spanned<Self>),
 
     /// &&
-    And(Box<Self>, Box<Self>),
+    And(Spanned<Self>, Spanned<Self>),
 
     /// <
-    Lt(Box<Self>, Box<Self>),
+    Lt(Spanned<Self>, Spanned<Self>),
     /// >
-    Gt(Box<Self>, Box<Self>),
+    Gt(Spanned<Self>, Spanned<Self>),
     /// <=
-    Lte(Box<Self>, Box<Self>),
+    Lte(Spanned<Self>, Spanned<Self>),
     /// >=
-    Gte(Box<Self>, Box<Self>),
+    Gte(Spanned<Self>, Spanned<Self>),
     /// ==
-    Eq(Box<Self>, Box<Self>),
+    Eq(Spanned<Self>, Spanned<Self>),
     /// !=
-    Neq(Box<Self>, Box<Self>),
+    Neq(Spanned<Self>, Spanned<Self>),
 
     /// |
-    BitOr(Box<Self>, Box<Self>),
+    BitOr(Spanned<Self>, Spanned<Self>),
 
     /// ^
-    BitXor(Box<Self>, Box<Self>),
+    BitXor(Spanned<Self>, Spanned<Self>),
 
     /// &
-    BitAnd(Box<Self>, Box<Self>),
+    BitAnd(Spanned<Self>, Spanned<Self>),
 
     /// <<
-    Shl(Box<Self>, Box<Self>),
+    Shl(Spanned<Self>, Spanned<Self>),
     /// >>
-    Shr(Box<Self>, Box<Self>),
+    Shr(Spanned<Self>, Spanned<Self>),
 
     /// +
-    Add(Box<Self>, Box<Self>),
+    Add(Spanned<Self>, Spanned<Self>),
     /// -
-    Sub(Box<Self>, Box<Self>),
+    Sub(Spanned<Self>, Spanned<Self>),
 
     /// *
-    Mul(Box<Self>, Box<Self>),
+    Mul(Spanned<Self>, Spanned<Self>),
     /// /
-    Div(Box<Self>, Box<Self>),
+    Div(Spanned<Self>, Spanned<Self>),
     /// %
-    Rem(Box<Self>, Box<Self>),
+    Rem(Spanned<Self>, Spanned<Self>),
 
     /// as
-    As(Box<Self>, Type),
+    As(Spanned<Self>, Spanned<Type>),
 
     FnCall {
-        name: Box<Self>,
-        args: Vec<Self>,
+        name: Spanned<Self>,
+        args: Vec<Spanned<Self>>,
     },
 
     /// Atom
@@ -62,25 +62,31 @@ pub(crate) enum Expr {
     Int(Int),
 }
 
-pub(crate) fn args(fn_call: Option<Rec<Expr>>) -> impl Parser<Vec<Expr>> + '_ {
+pub(crate) fn args(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Vec<Spanned<Expr>>> + '_ {
     expr(fn_call).separated_by(just(',')).boxed()
 }
 
-pub(crate) fn expr(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+pub(crate) fn expr(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr8(fn_call.clone())
         .then(just("||").to(Expr::Or).then(expr8(fn_call)).repeated())
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr8(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr8(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr7(fn_call.clone())
         .then(just("&&").to(Expr::And).then(expr7(fn_call)).repeated())
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr7(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr7(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr6(fn_call.clone())
         .then(
             choice((
@@ -94,32 +100,44 @@ fn expr7(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
             .then(expr6(fn_call))
             .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr6(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr6(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr5(fn_call.clone())
         .then(just('|').to(Expr::BitOr).then(expr5(fn_call)).repeated())
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr5(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr5(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr4(fn_call.clone())
         .then(just('^').to(Expr::BitXor).then(expr4(fn_call)).repeated())
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr4(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr4(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr3(fn_call.clone())
         .then(just('&').to(Expr::BitAnd).then(expr3(fn_call)).repeated())
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr3(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr3(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr2(fn_call.clone())
         .then(
             choice((
@@ -129,11 +147,14 @@ fn expr3(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
             .then(expr2(fn_call))
             .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr2(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr2(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     expr1(fn_call.clone())
         .then(
             choice((
@@ -143,11 +164,14 @@ fn expr2(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
             .then(expr1(fn_call))
             .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
-fn expr1(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+fn expr1(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     cast(fn_call.clone())
         .then(
             choice((
@@ -158,28 +182,37 @@ fn expr1(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
             .then(cast(fn_call))
             .repeated(),
         )
-        .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
+        .foldl(|lhs, (op, rhs)| {
+            let span = lhs.span().union(rhs.span());
+            Spanned::new(op(lhs, rhs), span)
+        })
         .boxed()
 }
 
 // cast expr: expr as type as type
-pub(crate) fn cast(fn_call_rec: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
+pub(crate) fn cast(fn_call_rec: Option<Rec<Spanned<Expr>>>) -> impl Parser<Spanned<Expr>> + '_ {
     let as_expr = just("as").to(Expr::As).then(typeref().padded()).repeated();
 
     match fn_call_rec {
         None => fn_call()
             .then(as_expr)
-            .foldl(|lhs, (op, rhs)| op(Box::new(lhs), rhs))
+            .foldl(|lhs, (op, rhs)| {
+                let span = lhs.span().union(rhs.span());
+                Spanned::new(op(lhs, rhs), span)
+            })
             .boxed(),
         Some(fn_call_rec) => fn_call_rec
             .then(as_expr)
-            .foldl(|lhs, (op, rhs)| op(Box::new(lhs), rhs))
+            .foldl(|lhs, (op, rhs)| {
+                let span = lhs.span().union(rhs.span());
+                Spanned::new(op(lhs, rhs), span)
+            })
             .boxed(),
     }
 }
 
 // fn(a1, a2)
-fn fn_call() -> impl Parser<Expr> {
+fn fn_call() -> impl Parser<Spanned<Expr>> {
     recursive(|fn_call| {
         primary()
             .then(
@@ -187,15 +220,25 @@ fn fn_call() -> impl Parser<Expr> {
                     .delimited_by(just('('), just(')'))
                     .repeated(),
             )
-            .foldl(|lhs, args| Expr::FnCall {
-                name: Box::new(lhs),
-                args,
+            .foldl(|name, args| {
+                let span = if let Some(first) = args.first() {
+                    // Merge args spans into one span
+                    name.span().union(
+                        args.iter()
+                            .map(|f| f.span())
+                            .fold(first.span(), |acc, xs| Span::new(acc.union(xs))),
+                    )
+                } else {
+                    // No args found
+                    name.span().range()
+                };
+                Spanned::new(Expr::FnCall { name, args }, span)
             })
     })
     .boxed()
 }
 
-fn primary() -> impl Parser<Expr> {
+fn primary() -> impl Parser<Spanned<Expr>> {
     choice((
         integer().map(Expr::Int),
         character().map(Expr::Int),
@@ -203,6 +246,7 @@ fn primary() -> impl Parser<Expr> {
         variable().map(Expr::Variable),
     ))
     .padded()
+    .map_with_span(Spanned::new) // TODO: remove this once items in choice support `Spanned`
     .boxed()
 }
 
@@ -215,40 +259,43 @@ mod tests {
         assert_eq!(
             args(None).parse("1, var, 1 +1"),
             Ok(vec![
-                Expr::Int(Int::I32(1)),
-                Expr::Variable("var".to_string()),
-                Expr::Add(
-                    Box::new(Expr::Int(Int::I32(1))),
-                    Box::new(Expr::Int(Int::I32(1))),
-                )
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Variable("var".to_string())),
+                Spanned::any(Expr::Add(
+                    Spanned::any(Expr::Int(Int::I32(1))),
+                    Spanned::any(Expr::Int(Int::I32(1))),
+                )),
             ])
         );
-        assert_eq!(args(None).parse("1"), Ok(vec![Expr::Int(Int::I32(1))]));
+        assert_eq!(
+            args(None).parse("1"),
+            Ok(vec![Spanned::any(Expr::Int(Int::I32(1)))])
+        );
     }
 
     #[test]
     fn expr_test() {
         assert_eq!(
             expr(None).parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
-            Ok(Expr::Or(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::And(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Neq(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitOr(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::BitXor(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::BitAnd(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Shl(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Add(
-                                            Box::new(Expr::Int(Int::I32(8))),
-                                            Box::new(Expr::Mul(
-                                                Box::new(Expr::Int(Int::I32(9))),
-                                                Box::new(Expr::Int(Int::I32(10)))
+            Ok(Spanned::any(Expr::Or(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::And(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Neq(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::BitOr(
+                            Spanned::any(Expr::Int(Int::I32(4))),
+                            Spanned::any(Expr::BitXor(
+                                Spanned::any(Expr::Int(Int::I32(5))),
+                                Spanned::any(Expr::BitAnd(
+                                    Spanned::any(Expr::Int(Int::I32(6))),
+                                    Spanned::any(Expr::Shl(
+                                        Spanned::any(Expr::Int(Int::I32(7))),
+                                        Spanned::any(Expr::Add(
+                                            Spanned::any(Expr::Int(Int::I32(8))),
+                                            Spanned::any(Expr::Mul(
+                                                Spanned::any(Expr::Int(Int::I32(9))),
+                                                Spanned::any(Expr::Int(Int::I32(10)))
                                             )),
                                         )),
                                     )),
@@ -257,33 +304,36 @@ mod tests {
                         )),
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr8_test() {
         assert_eq!(
             expr8(None).parse("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
-            Ok(Expr::And(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Neq(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitOr(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::BitXor(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::BitAnd(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Shl(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Add(
-                                        Box::new(Expr::Int(Int::I32(7))),
-                                        Box::new(Expr::Mul(
-                                            Box::new(Expr::Int(Int::I32(8))),
-                                            Box::new(Expr::Int(Int::I32(9)))
+            Ok(Spanned::any(Expr::And(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Neq(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::BitOr(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::BitXor(
+                            Spanned::any(Expr::Int(Int::I32(4))),
+                            Spanned::any(Expr::BitAnd(
+                                Spanned::any(Expr::Int(Int::I32(5))),
+                                Spanned::any(Expr::Shl(
+                                    Spanned::any(Expr::Int(Int::I32(6))),
+                                    Spanned::any(Expr::Add(
+                                        Spanned::any(Expr::Int(Int::I32(7))),
+                                        Spanned::any(Expr::Mul(
+                                            Spanned::any(Expr::Int(Int::I32(8))),
+                                            Spanned::any(Expr::Int(Int::I32(9)))
                                         )),
                                     )),
                                 )),
@@ -291,27 +341,30 @@ mod tests {
                         )),
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr8(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr8(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr7_test() {
-        let expr = Box::new(Expr::BitOr(
-            Box::new(Expr::Int(Int::I32(2))),
-            Box::new(Expr::BitXor(
-                Box::new(Expr::Int(Int::I32(3))),
-                Box::new(Expr::BitAnd(
-                    Box::new(Expr::Int(Int::I32(4))),
-                    Box::new(Expr::Shl(
-                        Box::new(Expr::Int(Int::I32(5))),
-                        Box::new(Expr::Add(
-                            Box::new(Expr::Int(Int::I32(6))),
-                            Box::new(Expr::Mul(
-                                Box::new(Expr::Int(Int::I32(7))),
-                                Box::new(Expr::Int(Int::I32(8))),
+        let expr = Spanned::any(Expr::BitOr(
+            Spanned::any(Expr::Int(Int::I32(2))),
+            Spanned::any(Expr::BitXor(
+                Spanned::any(Expr::Int(Int::I32(3))),
+                Spanned::any(Expr::BitAnd(
+                    Spanned::any(Expr::Int(Int::I32(4))),
+                    Spanned::any(Expr::Shl(
+                        Spanned::any(Expr::Int(Int::I32(5))),
+                        Spanned::any(Expr::Add(
+                            Spanned::any(Expr::Int(Int::I32(6))),
+                            Spanned::any(Expr::Mul(
+                                Spanned::any(Expr::Int(Int::I32(7))),
+                                Spanned::any(Expr::Int(Int::I32(8))),
                             )),
                         )),
                     )),
@@ -321,239 +374,276 @@ mod tests {
 
         assert_eq!(
             expr7(None).parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Neq(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
+            Ok(Spanned::any(Expr::Neq(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr.clone()
+            )))
         );
-
         assert_eq!(
             expr7(None).parse("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Eq(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
+            Ok(Spanned::any(Expr::Eq(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr.clone()
+            )))
         );
-
         assert_eq!(
             expr7(None).parse("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Gte(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
+            Ok(Spanned::any(Expr::Gte(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr.clone()
+            )))
         );
-
         assert_eq!(
             expr7(None).parse("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Lte(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
+            Ok(Spanned::any(Expr::Lte(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr.clone()
+            )))
         );
-
         assert_eq!(
             expr7(None).parse("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Gt(Box::new(Expr::Int(Int::I32(1))), expr.clone()))
+            Ok(Spanned::any(Expr::Gt(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr.clone()
+            )))
+        );
+        assert_eq!(
+            expr7(None).parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            Ok(Spanned::any(Expr::Lt(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                expr
+            )))
         );
 
         assert_eq!(
-            expr7(None).parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
-            Ok(Expr::Lt(Box::new(Expr::Int(Int::I32(1))), expr))
+            expr7(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
         );
-
-        assert_eq!(expr7(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
     }
 
     #[test]
     fn expr6_test() {
         assert_eq!(
             expr6(None).parse("1 | 2 ^ 3 & 4 << 5 + 6*7"),
-            Ok(Expr::BitOr(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitXor(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::BitAnd(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::Shl(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Add(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Mul(
-                                    Box::new(Expr::Int(Int::I32(6))),
-                                    Box::new(Expr::Int(Int::I32(7)))
+            Ok(Spanned::any(Expr::BitOr(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::BitXor(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::BitAnd(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::Shl(
+                            Spanned::any(Expr::Int(Int::I32(4))),
+                            Spanned::any(Expr::Add(
+                                Spanned::any(Expr::Int(Int::I32(5))),
+                                Spanned::any(Expr::Mul(
+                                    Spanned::any(Expr::Int(Int::I32(6))),
+                                    Spanned::any(Expr::Int(Int::I32(7)))
                                 )),
                             )),
                         )),
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr6(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr6(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr5_test() {
         assert_eq!(
             expr5(None).parse("1 ^ 2 & 3 << 4 + 5*6"),
-            Ok(Expr::BitXor(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::BitAnd(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Shl(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::Add(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Mul(
-                                Box::new(Expr::Int(Int::I32(5))),
-                                Box::new(Expr::Int(Int::I32(6)))
+            Ok(Spanned::any(Expr::BitXor(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::BitAnd(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Shl(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::Add(
+                            Spanned::any(Expr::Int(Int::I32(4))),
+                            Spanned::any(Expr::Mul(
+                                Spanned::any(Expr::Int(Int::I32(5))),
+                                Spanned::any(Expr::Int(Int::I32(6)))
                             )),
                         )),
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr5(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr5(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr4_test() {
         assert_eq!(
             expr4(None).parse("1 & 2 << 3 + 4*5"),
-            Ok(Expr::BitAnd(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Shl(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Add(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::Mul(
-                            Box::new(Expr::Int(Int::I32(4))),
-                            Box::new(Expr::Int(Int::I32(5)))
+            Ok(Spanned::any(Expr::BitAnd(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Shl(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Add(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::Mul(
+                            Spanned::any(Expr::Int(Int::I32(4))),
+                            Spanned::any(Expr::Int(Int::I32(5)))
                         )),
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr4(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr4(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr3_test() {
         assert_eq!(
             expr3(None).parse("1 << 2 + 3*4"),
-            Ok(Expr::Shl(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Add(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Mul(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::Int(Int::I32(4)))
+            Ok(Spanned::any(Expr::Shl(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Add(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Mul(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::Int(Int::I32(4)))
                     )),
                 )),
-            ))
+            )))
         );
 
         assert_eq!(
             expr3(None).parse("1 >> 2 + 3*4"),
-            Ok(Expr::Shr(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Add(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Mul(
-                        Box::new(Expr::Int(Int::I32(3))),
-                        Box::new(Expr::Int(Int::I32(4)))
+            Ok(Spanned::any(Expr::Shr(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Add(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Mul(
+                        Spanned::any(Expr::Int(Int::I32(3))),
+                        Spanned::any(Expr::Int(Int::I32(4)))
                     )),
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr3(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr3(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr2_test() {
         assert_eq!(
             expr2(None).parse("1 + 2*3"),
-            Ok(Expr::Add(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Mul(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Int(Int::I32(3)))
+            Ok(Spanned::any(Expr::Add(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Mul(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Int(Int::I32(3)))
                 )),
-            ))
+            )))
         );
 
         assert_eq!(
             expr2(None).parse("1 - 2*3"),
-            Ok(Expr::Sub(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Mul(
-                    Box::new(Expr::Int(Int::I32(2))),
-                    Box::new(Expr::Int(Int::I32(3)))
+            Ok(Spanned::any(Expr::Sub(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Mul(
+                    Spanned::any(Expr::Int(Int::I32(2))),
+                    Spanned::any(Expr::Int(Int::I32(3)))
                 )),
-            ))
+            )))
         );
 
         assert_eq!(
             expr2(None).parse("1*2 + 3*4"),
-            Ok(Expr::Add(
-                Box::new(Expr::Mul(
-                    Box::new(Expr::Int(Int::I32(1))),
-                    Box::new(Expr::Int(Int::I32(2)))
+            Ok(Spanned::any(Expr::Add(
+                Spanned::any(Expr::Mul(
+                    Spanned::any(Expr::Int(Int::I32(1))),
+                    Spanned::any(Expr::Int(Int::I32(2)))
                 )),
-                Box::new(Expr::Mul(
-                    Box::new(Expr::Int(Int::I32(3))),
-                    Box::new(Expr::Int(Int::I32(4)))
+                Spanned::any(Expr::Mul(
+                    Spanned::any(Expr::Int(Int::I32(3))),
+                    Spanned::any(Expr::Int(Int::I32(4)))
                 )),
-            ))
+            )))
         );
 
-        assert_eq!(expr2(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr2(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn expr1_test() {
         assert_eq!(
             expr1(None).parse("1*1"),
-            Ok(Expr::Mul(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Int(Int::I32(1))),
-            ))
+            Ok(Spanned::any(Expr::Mul(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Int(Int::I32(1))),
+            )))
         );
         assert_eq!(
             expr1(None).parse("1 / 1"),
-            Ok(Expr::Div(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Int(Int::I32(1))),
-            ))
+            Ok(Spanned::any(Expr::Div(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Int(Int::I32(1))),
+            )))
         );
         assert_eq!(
             expr1(None).parse("1 %2"),
-            Ok(Expr::Rem(
-                Box::new(Expr::Int(Int::I32(1))),
-                Box::new(Expr::Int(Int::I32(2))),
-            ))
+            Ok(Spanned::any(Expr::Rem(
+                Spanned::any(Expr::Int(Int::I32(1))),
+                Spanned::any(Expr::Int(Int::I32(2))),
+            )))
         );
 
         assert_eq!(
             expr1(None).parse("1 % 2 / 3 * 4"),
-            Ok(Expr::Mul(
-                Box::new(Expr::Div(
-                    Box::new(Expr::Rem(
-                        Box::new(Expr::Int(Int::I32(1))),
-                        Box::new(Expr::Int(Int::I32(2)))
+            Ok(Spanned::any(Expr::Mul(
+                Spanned::any(Expr::Div(
+                    Spanned::any(Expr::Rem(
+                        Spanned::any(Expr::Int(Int::I32(1))),
+                        Spanned::any(Expr::Int(Int::I32(2)))
                     )),
-                    Box::new(Expr::Int(Int::I32(3)))
+                    Spanned::any(Expr::Int(Int::I32(3)))
                 )),
-                Box::new(Expr::Int(Int::I32(4))),
-            ))
+                Spanned::any(Expr::Int(Int::I32(4))),
+            )))
         );
 
-        assert_eq!(expr1(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
+        assert_eq!(
+            expr1(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
     }
 
     #[test]
     fn cast_test() {
         assert_eq!(
             cast(None).parse("var as cast"),
-            Ok(Expr::As(
-                Box::new(Expr::Variable("var".to_string())),
-                Type::User("cast".to_string())
-            ))
+            Ok(Spanned::any(Expr::As(
+                Spanned::any(Expr::Variable("var".to_string())),
+                Spanned::any(Type::User("cast".to_string()))
+            )))
         );
         assert_eq!(
             cast(None).parse("127 as u8"),
-            Ok(Expr::As(Box::new(Expr::Int(Int::I32(127))), Type::U8))
+            Ok(Spanned::any(Expr::As(
+                Spanned::any(Expr::Int(Int::I32(127))),
+                Spanned::any(Type::U8)
+            )))
         );
         // TODO: This should also work
         // assert_eq!(
@@ -561,12 +651,21 @@ mod tests {
         // );
 
         // cast should parse fn_call as well
-        assert_eq!(cast(None).parse("1"), Ok(Expr::Int(Int::I32(1))));
-        assert_eq!(cast(None).parse("'a'"), Ok(Expr::Int(Int::I8(97))));
-        assert_eq!(cast(None).parse("\"a\""), Ok(Expr::String("a".to_string())));
+        assert_eq!(
+            cast(None).parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
+        assert_eq!(
+            cast(None).parse("'a'"),
+            Ok(Spanned::any(Expr::Int(Int::I8(97))))
+        );
+        assert_eq!(
+            cast(None).parse("\"a\""),
+            Ok(Spanned::any(Expr::String("a".to_string())))
+        );
         assert_eq!(
             cast(None).parse("var"),
-            Ok(Expr::Variable("var".to_string()))
+            Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }
 
@@ -574,44 +673,68 @@ mod tests {
     fn fn_call_test() {
         assert_eq!(
             fn_call().parse("fun(1, a2, '3', \"4\")"),
-            Ok(Expr::FnCall {
-                name: Box::new(Expr::Variable("fun".to_string())),
+            Ok(Spanned::any(Expr::FnCall {
+                name: Spanned::any(Expr::Variable("fun".to_string())),
                 args: vec![
-                    Expr::Int(Int::I32(1)),
-                    Expr::Variable("a2".to_string()),
-                    Expr::Int(Int::I8(51)),
-                    Expr::String("4".to_string()),
+                    Spanned::any(Expr::Int(Int::I32(1))),
+                    Spanned::any(Expr::Variable("a2".to_string())),
+                    Spanned::any(Expr::Int(Int::I8(51))),
+                    Spanned::any(Expr::String("4".to_string())),
                 ]
-            })
+            }))
         );
         assert_eq!(
             fn_call().parse("fun(a1 as char, a2 as u64)"),
-            Ok(Expr::FnCall {
-                name: Box::new(Expr::Variable("fun".to_string())),
+            Ok(Spanned::any(Expr::FnCall {
+                name: Spanned::any(Expr::Variable("fun".to_string())),
                 args: vec![
-                    Expr::As(Box::new(Expr::Variable("a1".to_string())), Type::I8),
-                    Expr::As(Box::new(Expr::Variable("a2".to_string())), Type::U64),
+                    Spanned::any(Expr::As(
+                        Spanned::any(Expr::Variable("a1".to_string())),
+                        Spanned::any(Type::I8)
+                    )),
+                    Spanned::any(Expr::As(
+                        Spanned::any(Expr::Variable("a2".to_string())),
+                        Spanned::any(Type::U64)
+                    )),
                 ]
-            })
+            }))
         );
 
-        assert_eq!(fn_call().parse("1"), Ok(Expr::Int(Int::I32(1))));
-        assert_eq!(fn_call().parse("'a'"), Ok(Expr::Int(Int::I8(97))));
-        assert_eq!(fn_call().parse("\"a\""), Ok(Expr::String("a".to_string())));
+        assert_eq!(
+            fn_call().parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
+        assert_eq!(
+            fn_call().parse("'a'"),
+            Ok(Spanned::any(Expr::Int(Int::I8(97))))
+        );
+        assert_eq!(
+            fn_call().parse("\"a\""),
+            Ok(Spanned::any(Expr::String("a".to_string())))
+        );
         assert_eq!(
             fn_call().parse("var"),
-            Ok(Expr::Variable("var".to_string()))
+            Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }
 
     #[test]
     fn primary_test() {
-        assert_eq!(primary().parse("1"), Ok(Expr::Int(Int::I32(1))));
-        assert_eq!(primary().parse("'a'"), Ok(Expr::Int(Int::I8(97))));
-        assert_eq!(primary().parse("\"a\""), Ok(Expr::String("a".to_string())));
+        assert_eq!(
+            primary().parse("1"),
+            Ok(Spanned::any(Expr::Int(Int::I32(1))))
+        );
+        assert_eq!(
+            primary().parse("'a'"),
+            Ok(Spanned::any(Expr::Int(Int::I8(97))))
+        );
+        assert_eq!(
+            primary().parse("\"a\""),
+            Ok(Spanned::any(Expr::String("a".to_string())))
+        );
         assert_eq!(
             primary().parse("var"),
-            Ok(Expr::Variable("var".to_string()))
+            Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }
 }

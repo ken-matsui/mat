@@ -80,12 +80,12 @@ fn main() -> i32 {
                     Spanned::any(Stmt::DefVar {
                         is_mut: false,
                         name: "fuga".to_string(),
-                        type_ref: Type::I32,
-                        expr: Box::new(Expr::Int(Int::I32(1))),
+                        type_ref: Spanned::any(Type::I32),
+                        expr: Spanned::any(Expr::Int(Int::I32(1))),
                     }),
                     Spanned::any(Stmt::TypeDef {
                         new: "newint".to_string(),
-                        old: Type::I32,
+                        old: Spanned::any(Type::I32),
                     }),
                     Spanned::any(Stmt::DefFn {
                         name: "f1".to_string(),
@@ -93,70 +93,74 @@ fn main() -> i32 {
                             Param {
                                 is_mut: false,
                                 name: "arg".to_string(),
-                                ty: Type::I8
+                                ty: Spanned::any(Type::I8)
                             },
                             Param {
                                 is_mut: true,
                                 name: "arg2".to_string(),
-                                ty: Type::U64
+                                ty: Spanned::any(Type::U64)
                             }
                         ],
-                        ret_ty: Type::U32,
+                        ret_ty: Spanned::any(Type::U32),
                         body: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(Some(
-                            Box::new(Expr::Add(
-                                Box::new(Expr::As(
-                                    Box::new(Expr::Variable("arg".to_string())),
-                                    Type::U64
+                            Spanned::any(Expr::Add(
+                                Spanned::any(Expr::As(
+                                    Spanned::any(Expr::Variable("arg".to_string())),
+                                    Spanned::any(Type::U64)
                                 )),
-                                Box::new(Expr::Variable("arg2".to_string()))
+                                Spanned::any(Expr::Variable("arg2".to_string()))
                             ))
                         )))])),
                     }),
                     Spanned::any(Stmt::DefFn {
                         name: "main".to_string(),
                         args: vec![],
-                        ret_ty: Type::I32,
+                        ret_ty: Spanned::any(Type::I32),
                         body: Spanned::any(Stmt::Block(vec![
                             Spanned::any(Stmt::DefVar {
                                 is_mut: true,
                                 name: "hoge".to_string(),
-                                type_ref: Type::User("User".to_string()),
-                                expr: Box::new(Expr::Int(Int::I32(12))),
+                                type_ref: Spanned::any(Type::User("User".to_string())),
+                                expr: Spanned::any(Expr::Int(Int::I32(12))),
                             }),
                             Spanned::any(Stmt::If {
-                                cond: Box::new(Expr::Variable("hoge".to_string())),
+                                cond: Spanned::any(Expr::Variable("hoge".to_string())),
                                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(
-                                    Some(Box::new(Expr::Int(Int::I32(1))))
+                                    Some(Spanned::any(Expr::Int(Int::I32(1))))
                                 ))])),
                                 els: Some(Spanned::any(Stmt::If {
-                                    cond: Box::new(Expr::Variable("fuga".to_string())),
+                                    cond: Spanned::any(Expr::Variable("fuga".to_string())),
                                     then: Spanned::any(Stmt::Block(vec![Spanned::any(
-                                        Stmt::Return(Some(Box::new(Expr::FnCall {
-                                            name: Box::new(Expr::Variable("f1".to_string())),
+                                        Stmt::Return(Some(Spanned::any(Expr::FnCall {
+                                            name: Spanned::any(Expr::Variable("f1".to_string())),
                                             args: vec![
-                                                Expr::As(
-                                                    Box::new(Expr::Variable("fuga".to_string())),
-                                                    Type::I8
-                                                ),
-                                                Expr::As(
-                                                    Box::new(Expr::Variable("hoge".to_string())),
-                                                    Type::U64
-                                                )
+                                                Spanned::any(Expr::As(
+                                                    Spanned::any(Expr::Variable(
+                                                        "fuga".to_string()
+                                                    )),
+                                                    Spanned::any(Type::I8)
+                                                )),
+                                                Spanned::any(Expr::As(
+                                                    Spanned::any(Expr::Variable(
+                                                        "hoge".to_string()
+                                                    )),
+                                                    Spanned::any(Type::U64)
+                                                ))
                                             ]
                                         })))
                                     )])),
                                     els: Some(Spanned::any(Stmt::Block(vec![Spanned::any(
-                                        Stmt::Return(Some(Box::new(Expr::Sub(
-                                            Box::new(Expr::Add(
-                                                Box::new(Expr::Add(
-                                                    Box::new(Expr::Int(Int::I32(1))),
-                                                    Box::new(Expr::Int(Int::I32(2))),
+                                        Stmt::Return(Some(Spanned::any(Expr::Sub(
+                                            Spanned::any(Expr::Add(
+                                                Spanned::any(Expr::Add(
+                                                    Spanned::any(Expr::Int(Int::I32(1))),
+                                                    Spanned::any(Expr::Int(Int::I32(2))),
                                                 )),
-                                                Box::new(Expr::Int(Int::I32(2))),
+                                                Spanned::any(Expr::Int(Int::I32(2))),
                                             )),
-                                            Box::new(Expr::Mul(
-                                                Box::new(Expr::Int(Int::I64(1))),
-                                                Box::new(Expr::Variable("hoge".to_string())),
+                                            Spanned::any(Expr::Mul(
+                                                Spanned::any(Expr::Int(Int::I64(1))),
+                                                Spanned::any(Expr::Variable("hoge".to_string())),
                                             )),
                                         )),))
                                     )]))),
