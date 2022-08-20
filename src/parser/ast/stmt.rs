@@ -173,7 +173,6 @@ fn block(if_stmt: Option<RecStmt>) -> impl Parser<char, Stmt, Error = Simple<cha
     })
 }
 
-// TODO: Add test
 fn stmt<'a>(
     block_rec: Option<RecStmt<'a>>,
     if_stmt_rec: Option<RecStmt<'a>>,
@@ -181,34 +180,34 @@ fn stmt<'a>(
     match (block_rec, if_stmt_rec) {
         (None, None) => choice((
             just(';').padded().to(Stmt::Empty),
+            return_stmt(),
             assign_stmt(),
             block(None),
             if_stmt(),
-            return_stmt(),
         ))
         .boxed(),
         (Some(block_rec), None) => choice((
             just(';').padded().to(Stmt::Empty),
+            return_stmt(),
             assign_stmt(),
             block_rec,
             if_stmt(),
-            return_stmt(),
         ))
         .boxed(),
         (None, Some(if_stmt_rec)) => choice((
             just(';').padded().to(Stmt::Empty),
+            return_stmt(),
             assign_stmt(),
             block(Some(if_stmt_rec.clone())),
             if_stmt_rec,
-            return_stmt(),
         ))
         .boxed(),
         (Some(block_rec), Some(if_stmt_rec)) => choice((
             just(';').padded().to(Stmt::Empty),
+            return_stmt(),
             assign_stmt(),
             block_rec,
             if_stmt_rec,
-            return_stmt(),
         ))
         .boxed(),
     }
@@ -410,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    fn block_impl_test() {
+    fn block_test() {
         assert_eq!(block(None).parse("{}"), Ok(Stmt::Block(vec![])));
         assert_eq!(block(None).parse("{     }"), Ok(Stmt::Block(vec![])));
         assert_eq!(
@@ -446,6 +445,40 @@ mod tests {
         assert!(block(None).parse("{     ").is_err());
         assert!(block(None).parse("  }").is_err());
         assert!(block(None).parse("let var: type = 10;").is_err());
+    }
+
+    #[test]
+    fn stmt_test() {
+        assert_eq!(stmt(None, None).parse(";"), Ok(Stmt::Empty));
+        assert_eq!(
+            stmt(None, None).parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10 ;"),
+            Ok(Stmt::Assign(
+                Box::new(Expr::Variable("var".to_string())),
+                big_expr()
+            ))
+        );
+        assert_eq!(stmt(None, None).parse("{}"), Ok(Stmt::Block(vec![])));
+        assert_eq!(
+            stmt(None, None).parse("if foo {}"),
+            Ok(Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![])),
+                els: None,
+            })
+        );
+        assert_eq!(stmt(None, None).parse("return;"), Ok(Stmt::Return(None)));
+
+        // complex statement
+        assert_eq!(
+            stmt(None, None).parse("{ if foo { { return 1; } } }"),
+            Ok(Stmt::Block(vec![Stmt::If {
+                cond: Box::new(Expr::Variable("foo".to_string())),
+                then: Box::new(Stmt::Block(vec![Stmt::Block(vec![Stmt::Return(Some(
+                    Box::new(Expr::Int(Int::I32(1)))
+                ))])])),
+                els: None,
+            }]))
+        );
     }
 
     #[test]
