@@ -158,36 +158,55 @@ fn defvar() -> impl Parser<char, Stmt, Error = Simple<char>> + Clone {
 //     ...
 // }
 
-type RecIfStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
+type RecStmt<'a> = Recursive<'a, char, Stmt, Simple<char>>;
 
-fn block(if_stmt: Option<RecIfStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
-    defvar()
-        .or(stmt(if_stmt))
-        .padded_by(comment().padded().repeated())
-        .repeated()
-        .padded()
-        .delimited_by(just('{'), just('}'))
-        .map(Stmt::Block)
-        .boxed()
+fn block(if_stmt: Option<RecStmt>) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
+    recursive(|block| {
+        defvar()
+            .or(stmt(Some(block), if_stmt))
+            .padded_by(comment().padded().repeated())
+            .repeated()
+            .padded()
+            .delimited_by(just('{'), just('}'))
+            .map(Stmt::Block)
+            .boxed()
+    })
 }
 
 // TODO: Add test
-fn stmt(
-    if_stmt_rec: Option<RecIfStmt>,
-) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + '_ {
-    match if_stmt_rec {
-        None => choice((
+fn stmt<'a>(
+    block_rec: Option<RecStmt<'a>>,
+    if_stmt_rec: Option<RecStmt<'a>>,
+) -> impl Parser<char, Stmt, Error = Simple<char>> + Clone + 'a {
+    match (block_rec, if_stmt_rec) {
+        (None, None) => choice((
             just(';').padded().to(Stmt::Empty),
             assign_stmt(),
-            // block(),
+            block(None),
             if_stmt(),
             return_stmt(),
         ))
         .boxed(),
-        Some(if_stmt_rec) => choice((
+        (Some(block_rec), None) => choice((
             just(';').padded().to(Stmt::Empty),
             assign_stmt(),
-            // TODO: block(),
+            block_rec,
+            if_stmt(),
+            return_stmt(),
+        ))
+        .boxed(),
+        (None, Some(if_stmt_rec)) => choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            block(Some(if_stmt_rec.clone())),
+            if_stmt_rec,
+            return_stmt(),
+        ))
+        .boxed(),
+        (Some(block_rec), Some(if_stmt_rec)) => choice((
+            just(';').padded().to(Stmt::Empty),
+            assign_stmt(),
+            block_rec,
             if_stmt_rec,
             return_stmt(),
         ))
