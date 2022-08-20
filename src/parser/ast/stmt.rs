@@ -15,7 +15,7 @@ pub(crate) enum Stmt {
     Import(String),
 
     DefFn {
-        name: String,
+        name: Spanned<String>,
         args: Vec<Param>,
         ret_ty: Spanned<Type>,
         body: Spanned<Self>,
@@ -109,7 +109,7 @@ fn param() -> impl Parser<Param> {
 fn defn() -> impl Parser<Spanned<Stmt>> {
     text::keyword("fn")
         .padded()
-        .ignore_then(ident())
+        .ignore_then(ident().map_with_span(Spanned::new))
         .then(
             param()
                 .padded()
@@ -319,7 +319,7 @@ mod tests {
                     old: Spanned::any(Type::I32),
                 }),
                 Spanned::any(Stmt::DefFn {
-                    name: "f1".to_string(),
+                    name: Spanned::any("f1".to_string()),
                     args: vec![],
                     ret_ty: Spanned::any(Type::U32),
                     body: Spanned::any(Stmt::Block(vec![])),
@@ -353,7 +353,7 @@ mod tests {
         assert_eq!(
             defn().parse("fn name() -> i16 {}"),
             Ok(Spanned::any(Stmt::DefFn {
-                name: "name".to_string(),
+                name: Spanned::any("name".to_string()),
                 args: vec![],
                 ret_ty: Spanned::any(Type::I16),
                 body: Spanned::any(Stmt::Block(vec![])),
@@ -362,7 +362,7 @@ mod tests {
         assert_eq!(
             defn().parse("fn name(a1: i8) -> i16 {}"),
             Ok(Spanned::any(Stmt::DefFn {
-                name: "name".to_string(),
+                name: Spanned::any("name".to_string()),
                 args: vec![Param {
                     is_mut: false,
                     name: "a1".to_string(),

@@ -88,7 +88,7 @@ fn main() -> i32 {
                         old: Spanned::any(Type::I32),
                     }),
                     Spanned::any(Stmt::DefFn {
-                        name: "f1".to_string(),
+                        name: Spanned::any("f1".to_string()),
                         args: vec![
                             Param {
                                 is_mut: false,
@@ -113,7 +113,7 @@ fn main() -> i32 {
                         )))])),
                     }),
                     Spanned::any(Stmt::DefFn {
-                        name: "main".to_string(),
+                        name: Spanned::any("main".to_string()),
                         args: vec![],
                         ret_ty: Spanned::any(Type::I32),
                         body: Spanned::any(Stmt::Block(vec![
