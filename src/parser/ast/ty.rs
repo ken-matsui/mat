@@ -1,6 +1,6 @@
 /// Type Node
 use crate::parser::ast::{ident, Spanned, Stmt};
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Type {
@@ -17,7 +17,7 @@ pub(crate) enum Type {
     User(String),
 }
 
-pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone {
+pub(crate) fn typeref() -> impl Parser<Type> {
     choice((
         text::keyword("void").to(Type::Void),
         text::keyword("char").to(Type::I8),
@@ -35,7 +35,7 @@ pub(crate) fn typeref() -> impl Parser<char, Type, Error = Simple<char>> + Clone
 }
 
 /// type new = old;
-pub(crate) fn typedef() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+pub(crate) fn typedef() -> impl Parser<Spanned<Stmt>> {
     text::keyword("type")
         .padded()
         .ignore_then(ident().padded())
@@ -49,7 +49,6 @@ pub(crate) fn typedef() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn typeref_test() {

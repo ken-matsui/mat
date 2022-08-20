@@ -1,4 +1,4 @@
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Int {
@@ -12,8 +12,8 @@ pub(crate) enum Int {
     U64(u64),
 }
 
-pub(crate) fn integer() -> impl Parser<char, Int, Error = Simple<char>> + Clone {
-    text::int::<_, Simple<char>>(10)
+pub(crate) fn integer() -> impl Parser<Int> {
+    text::int::<_, ParserError>(10)
         .then(
             choice((
                 just("i8"),
@@ -47,7 +47,7 @@ pub(crate) fn integer() -> impl Parser<char, Int, Error = Simple<char>> + Clone 
         .boxed()
 }
 
-pub(crate) fn character() -> impl Parser<char, Int, Error = Simple<char>> + Clone {
+pub(crate) fn character() -> impl Parser<Int> {
     filter(|c: &char| c.is_ascii())
         .delimited_by(just('\''), just('\''))
         .map(|c| Int::I8(c as i8))
@@ -57,7 +57,6 @@ pub(crate) fn character() -> impl Parser<char, Int, Error = Simple<char>> + Clon
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn integer_test() {

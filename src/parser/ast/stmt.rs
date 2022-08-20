@@ -1,6 +1,5 @@
 use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Spanned, Type};
-use crate::parser::lib::Rec;
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Param {
@@ -71,7 +70,7 @@ pub(crate) enum Stmt {
 }
 
 // import std.io;
-pub(crate) fn import_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+pub(crate) fn import_stmt() -> impl Parser<Spanned<Stmt>> {
     text::keyword("import")
         .ignore_then(
             ident()
@@ -86,12 +85,12 @@ pub(crate) fn import_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<c
         .boxed()
 }
 
-pub(crate) fn top_defs() -> impl Parser<char, Vec<Spanned<Stmt>>, Error = Simple<char>> + Clone {
+pub(crate) fn top_defs() -> impl Parser<Vec<Spanned<Stmt>>> {
     choice((defvar(), defn(), typedef())).repeated().boxed()
 }
 
 // name1: type1
-fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
+fn param() -> impl Parser<Param> {
     text::keyword("mut")
         .or_not()
         .padded()
@@ -107,7 +106,7 @@ fn param() -> impl Parser<char, Param, Error = Simple<char>> + Clone {
 }
 
 // fn name(...) -> type {}
-fn defn() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+fn defn() -> impl Parser<Spanned<Stmt>> {
     text::keyword("fn")
         .padded()
         .ignore_then(ident())
@@ -136,7 +135,7 @@ fn defn() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
 }
 
 // let mut var: type = expr;
-fn defvar() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+fn defvar() -> impl Parser<Spanned<Stmt>> {
     text::keyword("let")
         .padded()
         .ignore_then(just("mut").or_not())
@@ -169,9 +168,7 @@ fn defvar() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
 //     ...
 // }
 
-fn block(
-    if_stmt: Option<Rec<Spanned<Stmt>>>,
-) -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone + '_ {
+fn block(if_stmt: Option<Rec<Spanned<Stmt>>>) -> impl Parser<Spanned<Stmt>> + '_ {
     recursive(|block| {
         defvar()
             .or(stmt(Some(block), if_stmt))
@@ -187,11 +184,11 @@ fn block(
 fn stmt<'a>(
     block_rec: Option<Rec<'a, Spanned<Stmt>>>,
     if_stmt_rec: Option<Rec<'a, Spanned<Stmt>>>,
-) -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone + 'a {
+) -> impl Parser<Spanned<Stmt>> + 'a {
     let empty = just(';')
         .padded()
         .to(Stmt::Empty)
-        .map_with_span(|stmt, span| Spanned::new(stmt, span));
+        .map_with_span(Spanned::new);
 
     match (block_rec, if_stmt_rec) {
         (None, None) => {
@@ -218,7 +215,7 @@ fn stmt<'a>(
 // } else if expr {
 // } else {
 // }
-fn if_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+fn if_stmt() -> impl Parser<Spanned<Stmt>> {
     recursive(|if_stmt| {
         text::keyword("if")
             .padded()
@@ -244,7 +241,7 @@ fn if_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
     .boxed()
 }
 
-fn return_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+fn return_stmt() -> impl Parser<Spanned<Stmt>> {
     text::keyword("return")
         .padded()
         .ignore_then(expr(None).or_not())
@@ -254,7 +251,7 @@ fn return_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clo
         .boxed()
 }
 
-fn assign_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clone {
+fn assign_stmt() -> impl Parser<Spanned<Stmt>> {
     choice((
         cast(None)
             .then(
@@ -286,7 +283,6 @@ fn assign_stmt() -> impl Parser<char, Spanned<Stmt>, Error = Simple<char>> + Clo
 mod tests {
     use super::*;
     use crate::parser::ast::Int;
-    use chumsky::Parser;
 
     #[test]
     fn import_stmt_test() {

@@ -1,14 +1,13 @@
 use crate::parser::ast::ident;
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
-pub(crate) fn variable() -> impl Parser<char, String, Error = Simple<char>> + Clone {
+pub(crate) fn variable() -> impl Parser<String> {
     ident().boxed()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn variable_test() {

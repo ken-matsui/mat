@@ -18,8 +18,7 @@ pub(crate) use string::*;
 pub(crate) use ty::*;
 pub(crate) use variable::*;
 
-use chumsky::prelude::{end, Parser, Simple};
-use chumsky::text::TextParser;
+use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {
@@ -27,7 +26,7 @@ pub(crate) struct Ast {
     defs: Vec<Spanned<Stmt>>,
 }
 
-pub(crate) fn compilation_unit() -> impl Parser<char, Spanned<Ast>, Error = Simple<char>> + Clone {
+pub(crate) fn compilation_unit() -> impl Parser<Spanned<Ast>> {
     import_stmt()
         .repeated()
         .then(top_defs())
@@ -40,8 +39,6 @@ pub(crate) fn compilation_unit() -> impl Parser<char, Spanned<Ast>, Error = Simp
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Int;
-    use chumsky::Parser;
 
     #[test]
     fn compilation_unit_test() {

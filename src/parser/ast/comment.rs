@@ -1,11 +1,11 @@
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
-pub(crate) fn comment() -> impl Parser<char, (), Error = Simple<char>> + Clone {
-    let single_line_comment = just::<_, _, Simple<char>>("//")
+pub(crate) fn comment() -> impl Parser<()> {
+    let single_line_comment = just::<_, _, ParserError>("//")
         .then_ignore(take_until(text::newline()))
         .ignored();
 
-    let multi_line_comment = just::<_, _, Simple<char>>("/*")
+    let multi_line_comment = just::<_, _, ParserError>("/*")
         .then(take_until(just("*/")))
         .ignored();
 
@@ -15,7 +15,6 @@ pub(crate) fn comment() -> impl Parser<char, (), Error = Simple<char>> + Clone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn comment_test() {

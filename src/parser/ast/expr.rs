@@ -1,5 +1,5 @@
 use crate::parser::ast::{character, integer, string, typeref, variable, Int, Type};
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Expr {
@@ -62,31 +62,25 @@ pub(crate) enum Expr {
     Int(Int),
 }
 
-type RecFnCall<'a> = Recursive<'a, char, Expr, Simple<char>>;
-
-pub(crate) fn args(
-    fn_call: Option<RecFnCall>,
-) -> impl Parser<char, Vec<Expr>, Error = Simple<char>> + Clone + '_ {
+pub(crate) fn args(fn_call: Option<Rec<Expr>>) -> impl Parser<Vec<Expr>> + '_ {
     expr(fn_call).separated_by(just(',')).boxed()
 }
 
-pub(crate) fn expr(
-    fn_call: Option<RecFnCall>,
-) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+pub(crate) fn expr(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr8(fn_call.clone())
         .then(just("||").to(Expr::Or).then(expr8(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr8(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr8(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr7(fn_call.clone())
         .then(just("&&").to(Expr::And).then(expr7(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr7(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr7(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr6(fn_call.clone())
         .then(
             choice((
@@ -104,28 +98,28 @@ fn expr7(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<c
         .boxed()
 }
 
-fn expr6(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr6(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr5(fn_call.clone())
         .then(just('|').to(Expr::BitOr).then(expr5(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr5(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr5(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr4(fn_call.clone())
         .then(just('^').to(Expr::BitXor).then(expr4(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr4(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr4(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr3(fn_call.clone())
         .then(just('&').to(Expr::BitAnd).then(expr3(fn_call)).repeated())
         .foldl(|lhs, (op, rhs)| op(Box::new(lhs), Box::new(rhs)))
         .boxed()
 }
 
-fn expr3(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr3(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr2(fn_call.clone())
         .then(
             choice((
@@ -139,7 +133,7 @@ fn expr3(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<c
         .boxed()
 }
 
-fn expr2(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr2(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     expr1(fn_call.clone())
         .then(
             choice((
@@ -153,7 +147,7 @@ fn expr2(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<c
         .boxed()
 }
 
-fn expr1(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+fn expr1(fn_call: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     cast(fn_call.clone())
         .then(
             choice((
@@ -169,9 +163,7 @@ fn expr1(fn_call: Option<RecFnCall>) -> impl Parser<char, Expr, Error = Simple<c
 }
 
 // cast expr: expr as type as type
-pub(crate) fn cast(
-    fn_call_rec: Option<RecFnCall>,
-) -> impl Parser<char, Expr, Error = Simple<char>> + Clone + '_ {
+pub(crate) fn cast(fn_call_rec: Option<Rec<Expr>>) -> impl Parser<Expr> + '_ {
     let as_expr = just("as").to(Expr::As).then(typeref().padded()).repeated();
 
     match fn_call_rec {
@@ -187,7 +179,7 @@ pub(crate) fn cast(
 }
 
 // fn(a1, a2)
-fn fn_call() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn fn_call() -> impl Parser<Expr> {
     recursive(|fn_call| {
         primary()
             .then(
@@ -203,7 +195,7 @@ fn fn_call() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
     .boxed()
 }
 
-fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
+fn primary() -> impl Parser<Expr> {
     choice((
         integer().map(Expr::Int),
         character().map(Expr::Int),
@@ -217,7 +209,6 @@ fn primary() -> impl Parser<char, Expr, Error = Simple<char>> + Clone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn args_test() {

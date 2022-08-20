@@ -1,6 +1,7 @@
 use crate::parser::ast::{compilation_unit, Ast, Spanned};
-use chumsky::prelude::{Parser, Simple};
+use crate::parser::lib::ParserError;
+use chumsky::prelude::Parser;
 
-pub(crate) fn parse(src: String) -> (Option<Spanned<Ast>>, Vec<Simple<char>>) {
+pub(crate) fn parse(src: String) -> (Option<Spanned<Ast>>, Vec<ParserError>) {
     compilation_unit().parse_recovery(src)
 }

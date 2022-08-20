@@ -1,8 +1,8 @@
 /// String Literal Node
-use chumsky::prelude::*;
+use crate::parser::lib::*;
 
 // pointer for i8
-pub(crate) fn string() -> impl Parser<char, String, Error = Simple<char>> + Clone {
+pub(crate) fn string() -> impl Parser<String> {
     filter(|c: &char| c.is_ascii() && *c != '"')
         .repeated()
         .delimited_by(just('"'), just('"'))
@@ -13,7 +13,6 @@ pub(crate) fn string() -> impl Parser<char, String, Error = Simple<char>> + Clon
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chumsky::Parser;
 
     #[test]
     fn string_test() {
