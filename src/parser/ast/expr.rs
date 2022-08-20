@@ -246,7 +246,7 @@ fn primary() -> impl Parser<Spanned<Expr>> {
         variable().map(Expr::Variable),
     ))
     .padded()
-    .map_with_span(Spanned::new) // TODO: remove this once items in choice support `Spanned`
+    .map_with_span(Spanned::new)
     .boxed()
 }
 
