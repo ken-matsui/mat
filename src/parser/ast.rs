@@ -81,7 +81,7 @@ fn main() -> i32 {
                         is_mut: false,
                         name: "fuga".to_string(),
                         type_ref: Spanned::any(Type::I32),
-                        expr: Spanned::any(Expr::Int(Int::I32(1))),
+                        expr: Spanned::any(Expr::I32(1)),
                     }),
                     Spanned::any(Stmt::TypeDef {
                         new: "newint".to_string(),
@@ -121,12 +121,12 @@ fn main() -> i32 {
                                 is_mut: true,
                                 name: "hoge".to_string(),
                                 type_ref: Spanned::any(Type::User("User".to_string())),
-                                expr: Spanned::any(Expr::Int(Int::I32(12))),
+                                expr: Spanned::any(Expr::I32(12)),
                             }),
                             Spanned::any(Stmt::If {
                                 cond: Spanned::any(Expr::Variable("hoge".to_string())),
                                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(
-                                    Some(Spanned::any(Expr::Int(Int::I32(1))))
+                                    Some(Spanned::any(Expr::I32(1)))
                                 ))])),
                                 els: Some(Spanned::any(Stmt::If {
                                     cond: Spanned::any(Expr::Variable("fuga".to_string())),
@@ -153,13 +153,13 @@ fn main() -> i32 {
                                         Stmt::Return(Some(Spanned::any(Expr::Sub(
                                             Spanned::any(Expr::Add(
                                                 Spanned::any(Expr::Add(
-                                                    Spanned::any(Expr::Int(Int::I32(1))),
-                                                    Spanned::any(Expr::Int(Int::I32(2))),
+                                                    Spanned::any(Expr::I32(1)),
+                                                    Spanned::any(Expr::I32(2)),
                                                 )),
-                                                Spanned::any(Expr::Int(Int::I32(2))),
+                                                Spanned::any(Expr::I32(2)),
                                             )),
                                             Spanned::any(Expr::Mul(
-                                                Spanned::any(Expr::Int(Int::I64(1))),
+                                                Spanned::any(Expr::I64(1)),
                                                 Spanned::any(Expr::Variable("hoge".to_string())),
                                             )),
                                         )),))

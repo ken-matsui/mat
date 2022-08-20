@@ -1,18 +1,7 @@
+use crate::parser::ast::{Expr, Spanned};
 use crate::parser::lib::*;
 
-#[derive(Debug, PartialEq, Clone)]
-pub(crate) enum Int {
-    I8(i8),
-    I16(i16),
-    I32(i32),
-    I64(i64),
-    U8(u8),
-    U16(u16),
-    U32(u32),
-    U64(u64),
-}
-
-pub(crate) fn integer() -> impl Parser<Int> {
+pub(crate) fn integer() -> impl Parser<Spanned<Expr>> {
     text::int::<_, ParserError>(10)
         .then(
             choice((
@@ -31,26 +20,28 @@ pub(crate) fn integer() -> impl Parser<Int> {
         .try_map(|(num, suf), span| {
             match suf {
                 // With suffix
-                Some("i8") => num.parse().map(Int::I8),
-                Some("i16") => num.parse().map(Int::I16),
-                Some("i32") => num.parse().map(Int::I32),
-                Some("i64") => num.parse().map(Int::I64),
-                Some("u8") => num.parse().map(Int::U8),
-                Some("u16") => num.parse().map(Int::U16),
-                Some("u32") => num.parse().map(Int::U32),
-                Some("u64") => num.parse().map(Int::U64),
+                Some("i8") => num.parse().map(Expr::I8),
+                Some("i16") => num.parse().map(Expr::I16),
+                Some("i32") => num.parse().map(Expr::I32),
+                Some("i64") => num.parse().map(Expr::I64),
+                Some("u8") => num.parse().map(Expr::U8),
+                Some("u16") => num.parse().map(Expr::U16),
+                Some("u32") => num.parse().map(Expr::U32),
+                Some("u64") => num.parse().map(Expr::U64),
                 // No suffix
-                _ => num.parse().map(Int::I32),
+                _ => num.parse().map(Expr::I32),
             }
             .map_err(|e| Simple::custom(span, format!("{}", e)))
         })
+        .map_with_span(Spanned::new)
         .boxed()
 }
 
-pub(crate) fn character() -> impl Parser<Int> {
+pub(crate) fn character() -> impl Parser<Spanned<Expr>> {
     filter(|c: &char| c.is_ascii())
         .delimited_by(just('\''), just('\''))
-        .map(|c| Int::I8(c as i8))
+        .map(|c| Expr::I8(c as i8))
+        .map_with_span(Spanned::new)
         .boxed()
 }
 
@@ -60,55 +51,70 @@ mod tests {
 
     #[test]
     fn integer_test() {
-        assert_eq!(integer().parse("0"), Ok(Int::I32(0)));
-        assert_eq!(integer().parse("2147483647"), Ok(Int::I32(2147483647)));
+        assert_eq!(integer().parse("0"), Ok(Spanned::any(Expr::I32(0))));
+        assert_eq!(
+            integer().parse("2147483647"),
+            Ok(Spanned::any(Expr::I32(2147483647)))
+        );
         assert!(integer().parse("2147483648").is_err());
-        assert_eq!(integer().parse("0 i8"), Ok(Int::I32(0)));
+        assert_eq!(integer().parse("0 i8"), Ok(Spanned::any(Expr::I32(0))));
 
-        assert_eq!(integer().parse("0i8 "), Ok(Int::I8(0)));
-        assert_eq!(integer().parse("127i8"), Ok(Int::I8(127)));
+        assert_eq!(integer().parse("0i8 "), Ok(Spanned::any(Expr::I8(0))));
+        assert_eq!(integer().parse("127i8"), Ok(Spanned::any(Expr::I8(127))));
         assert!(integer().parse("128i8").is_err());
 
-        assert_eq!(integer().parse("0i16 "), Ok(Int::I16(0)));
-        assert_eq!(integer().parse("32767i16"), Ok(Int::I16(32767)));
+        assert_eq!(integer().parse("0i16 "), Ok(Spanned::any(Expr::I16(0))));
+        assert_eq!(
+            integer().parse("32767i16"),
+            Ok(Spanned::any(Expr::I16(32767)))
+        );
         assert!(integer().parse("32768i16").is_err());
 
-        assert_eq!(integer().parse("0i32 "), Ok(Int::I32(0)));
-        assert_eq!(integer().parse("2147483647i32"), Ok(Int::I32(2147483647)));
+        assert_eq!(integer().parse("0i32 "), Ok(Spanned::any(Expr::I32(0))));
+        assert_eq!(
+            integer().parse("2147483647i32"),
+            Ok(Spanned::any(Expr::I32(2147483647)))
+        );
         assert!(integer().parse("2147483648i32").is_err());
 
-        assert_eq!(integer().parse("0i64 "), Ok(Int::I64(0)));
+        assert_eq!(integer().parse("0i64 "), Ok(Spanned::any(Expr::I64(0))));
         assert_eq!(
             integer().parse("9223372036854775807i64"),
-            Ok(Int::I64(9223372036854775807))
+            Ok(Spanned::any(Expr::I64(9223372036854775807)))
         );
         assert!(integer().parse("9223372036854775808").is_err());
 
-        assert_eq!(integer().parse("0u8 "), Ok(Int::U8(0)));
-        assert_eq!(integer().parse("255u8"), Ok(Int::U8(255)));
+        assert_eq!(integer().parse("0u8 "), Ok(Spanned::any(Expr::U8(0))));
+        assert_eq!(integer().parse("255u8"), Ok(Spanned::any(Expr::U8(255))));
         assert!(integer().parse("256u8").is_err());
 
-        assert_eq!(integer().parse("0u16 "), Ok(Int::U16(0)));
-        assert_eq!(integer().parse("65535u16"), Ok(Int::U16(65535)));
+        assert_eq!(integer().parse("0u16 "), Ok(Spanned::any(Expr::U16(0))));
+        assert_eq!(
+            integer().parse("65535u16"),
+            Ok(Spanned::any(Expr::U16(65535)))
+        );
         assert!(integer().parse("65536u16").is_err());
 
-        assert_eq!(integer().parse("0u32 "), Ok(Int::U32(0)));
-        assert_eq!(integer().parse("4294967295u32"), Ok(Int::U32(4294967295)));
+        assert_eq!(integer().parse("0u32 "), Ok(Spanned::any(Expr::U32(0))));
+        assert_eq!(
+            integer().parse("4294967295u32"),
+            Ok(Spanned::any(Expr::U32(4294967295)))
+        );
         assert!(integer().parse("4294967296u32").is_err());
 
-        assert_eq!(integer().parse("0u64 "), Ok(Int::U64(0)));
+        assert_eq!(integer().parse("0u64 "), Ok(Spanned::any(Expr::U64(0))));
         assert_eq!(
             integer().parse("18446744073709551615u64"),
-            Ok(Int::U64(18446744073709551615))
+            Ok(Spanned::any(Expr::U64(18446744073709551615)))
         );
         assert!(integer().parse("18446744073709551616u64").is_err());
     }
 
     #[test]
     fn character_test() {
-        assert_eq!(character().parse("'a'"), Ok(Int::I8(97)));
-        assert_eq!(character().parse("'1'"), Ok(Int::I8(49)));
-        assert_eq!(character().parse("'\n'"), Ok(Int::I8(10)));
+        assert_eq!(character().parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
+        assert_eq!(character().parse("'1'"), Ok(Spanned::any(Expr::I8(49))));
+        assert_eq!(character().parse("'\n'"), Ok(Spanned::any(Expr::I8(10))));
         assert!(character().parse("'a").is_err());
         assert!(character().parse("a'").is_err());
         assert!(character().parse("a").is_err());

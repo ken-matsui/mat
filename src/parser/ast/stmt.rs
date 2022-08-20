@@ -275,7 +275,6 @@ fn assign_stmt() -> impl Parser<Spanned<Stmt>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Int;
 
     #[test]
     fn import_stmt_test() {
@@ -313,7 +312,7 @@ mod tests {
                     is_mut: false,
                     name: "foo".to_string(),
                     type_ref: Spanned::any(Type::I8),
-                    expr: Spanned::any(Expr::Int(Int::I32(1))),
+                    expr: Spanned::any(Expr::I32(1)),
                 }),
                 Spanned::any(Stmt::TypeDef {
                     new: "newint".to_string(),
@@ -385,7 +384,7 @@ mod tests {
                 is_mut: false,
                 name: "var".to_string(),
                 type_ref: Spanned::any(Type::User("type".to_string())),
-                expr: Spanned::any(Expr::Int(Int::I32(10))),
+                expr: Spanned::any(Expr::I32(10)),
             }))
         );
         assert_eq!(
@@ -394,7 +393,7 @@ mod tests {
                 is_mut: true,
                 name: "var".to_string(),
                 type_ref: Spanned::any(Type::User("type".to_string())),
-                expr: Spanned::any(Expr::Int(Int::I32(10))),
+                expr: Spanned::any(Expr::I32(10)),
             }))
         );
 
@@ -430,13 +429,13 @@ mod tests {
                     is_mut: false,
                     name: "var1".to_string(),
                     type_ref: Spanned::any(Type::User("type".to_string())),
-                    expr: Spanned::any(Expr::Int(Int::I32(10))),
+                    expr: Spanned::any(Expr::I32(10)),
                 }),
                 Spanned::any(Stmt::DefVar {
                     is_mut: true,
                     name: "var2".to_string(),
                     type_ref: Spanned::any(Type::User("type".to_string())),
-                    expr: Spanned::any(Expr::Int(Int::I32(10))),
+                    expr: Spanned::any(Expr::I32(10)),
                 }),
                 Spanned::any(Stmt::If {
                     cond: Spanned::any(Expr::Variable("var1".to_string())),
@@ -483,7 +482,7 @@ mod tests {
             Ok(Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Block(vec![
-                    Spanned::any(Stmt::Return(Some(Spanned::any(Expr::Int(Int::I32(1))))))
+                    Spanned::any(Stmt::Return(Some(Spanned::any(Expr::I32(1)))))
                 ]))])),
                 els: None,
             })])))
@@ -497,7 +496,7 @@ mod tests {
             Ok(Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                    Expr::Int(Int::I32(1))
+                    Expr::I32(1)
                 )))])),
                 els: None,
             }))
@@ -519,10 +518,10 @@ mod tests {
             Ok(Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                    Expr::Int(Int::I32(1))
+                    Expr::I32(1)
                 )))])),
                 els: Some(Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(
-                    Spanned::any(Expr::Int(Int::I32(2)))
+                    Spanned::any(Expr::I32(2))
                 ))]))),
             }))
         );
@@ -531,15 +530,15 @@ mod tests {
             Ok(Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                    Expr::Int(Int::I32(1))
+                    Expr::I32(1)
                 )))])),
                 els: Some(Spanned::any(Stmt::If {
                     cond: Spanned::any(Expr::Variable("bar".to_string())),
                     then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                        Expr::Int(Int::I32(2))
+                        Expr::I32(2)
                     )))])),
                     els: Some(Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(
-                        Spanned::any(Expr::Int(Int::I32(3)))
+                        Spanned::any(Expr::I32(3))
                     ))])))
                 })),
             }))
@@ -549,12 +548,12 @@ mod tests {
             Ok(Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                    Expr::Int(Int::I32(1))
+                    Expr::I32(1)
                 )))])),
                 els: Some(Spanned::any(Stmt::If {
                     cond: Spanned::any(Expr::Variable("bar".to_string())),
                     then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                        Expr::Int(Int::I32(2))
+                        Expr::I32(2)
                     )))])),
                     els: None,
                 })),
@@ -566,22 +565,22 @@ mod tests {
             Ok(Spanned::any(Stmt::If {
                 cond: Spanned::any(Expr::Variable("foo".to_string())),
                 then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                    Expr::Int(Int::I32(1))
+                    Expr::I32(1)
                 )))])),
                 els: Some(Spanned::any(Stmt::If {
                     cond: Spanned::any(Expr::Variable("bar".to_string())),
                     then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(Spanned::any(
-                        Expr::Int(Int::I32(2))
+                        Expr::I32(2)
                     )))])),
                     els: Some(Spanned::any(Stmt::If {
                         cond: Spanned::any(Expr::Variable("baz".to_string())),
                         then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(
-                            Spanned::any(Expr::Int(Int::I32(3)))
+                            Spanned::any(Expr::I32(3))
                         ))])),
                         els: Some(Spanned::any(Stmt::If {
                             cond: Spanned::any(Expr::Variable("qux".to_string())),
                             then: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Expr(
-                                Spanned::any(Expr::Int(Int::I32(4)))
+                                Spanned::any(Expr::I32(4))
                             ))])),
                             els: None,
                         })),
@@ -597,15 +596,13 @@ mod tests {
         assert_eq!(
             return_stmt().parse("return 1 + 2;"),
             Ok(Spanned::any(Stmt::Return(Some(Spanned::any(Expr::Add(
-                Spanned::any(Expr::Int(Int::I32(1))),
-                Spanned::any(Expr::Int(Int::I32(2)))
+                Spanned::any(Expr::I32(1)),
+                Spanned::any(Expr::I32(2)),
             ))))))
         );
         assert_eq!(
             return_stmt().parse("return 1;"),
-            Ok(Spanned::any(Stmt::Return(Some(Spanned::any(Expr::Int(
-                Int::I32(1)
-            ))))))
+            Ok(Spanned::any(Stmt::Return(Some(Spanned::any(Expr::I32(1))))))
         );
         assert_eq!(
             return_stmt().parse("return ;"),
@@ -617,24 +614,24 @@ mod tests {
 
     fn big_expr() -> Spanned<Expr> {
         Spanned::any(Expr::Or(
-            Spanned::any(Expr::Int(Int::I32(1))),
+            Spanned::any(Expr::I32(1)),
             Spanned::any(Expr::And(
-                Spanned::any(Expr::Int(Int::I32(2))),
+                Spanned::any(Expr::I32(2)),
                 Spanned::any(Expr::Neq(
-                    Spanned::any(Expr::Int(Int::I32(3))),
+                    Spanned::any(Expr::I32(3)),
                     Spanned::any(Expr::BitOr(
-                        Spanned::any(Expr::Int(Int::I32(4))),
+                        Spanned::any(Expr::I32(4)),
                         Spanned::any(Expr::BitXor(
-                            Spanned::any(Expr::Int(Int::I32(5))),
+                            Spanned::any(Expr::I32(5)),
                             Spanned::any(Expr::BitAnd(
-                                Spanned::any(Expr::Int(Int::I32(6))),
+                                Spanned::any(Expr::I32(6)),
                                 Spanned::any(Expr::Shl(
-                                    Spanned::any(Expr::Int(Int::I32(7))),
+                                    Spanned::any(Expr::I32(7)),
                                     Spanned::any(Expr::Add(
-                                        Spanned::any(Expr::Int(Int::I32(8))),
+                                        Spanned::any(Expr::I32(8)),
                                         Spanned::any(Expr::Mul(
-                                            Spanned::any(Expr::Int(Int::I32(9))),
-                                            Spanned::any(Expr::Int(Int::I32(10))),
+                                            Spanned::any(Expr::I32(9)),
+                                            Spanned::any(Expr::I32(10)),
                                         )),
                                     )),
                                 )),
@@ -726,9 +723,7 @@ mod tests {
         );
         assert_eq!(
             assign_stmt().parse("1 ;"),
-            Ok(Spanned::any(Stmt::Expr(Spanned::any(Expr::Int(Int::I32(
-                1
-            ))))))
+            Ok(Spanned::any(Stmt::Expr(Spanned::any(Expr::I32(1)))))
         );
         assert!(assign_stmt().parse("1 ").is_err());
     }
