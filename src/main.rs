@@ -1,5 +1,6 @@
 mod parser;
 
+use crate::parser::lib::ParserError;
 use ariadne::{sources, Color, Fmt, Label, Report, ReportKind};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
@@ -53,63 +54,74 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let source_id: String = args.source;
-    let src = read_to_string(source_id.clone()).expect("Failed to read file");
+    let source = Source {
+        id: args.source.clone(),
+        content: read_to_string(args.source).expect("Failed to read file"),
+    };
 
-    let (ast, errs) = parser::parse::parse(src.clone());
+    let (ast, errs) = parser::parse::parse(source.content.clone());
     if let Some(ast) = ast {
         if args.dump_ast {
             println!("{:#?}", ast);
         }
     } else {
-        for e in errs {
-            let message = match e.reason() {
-                chumsky::error::SimpleReason::Unexpected
-                | chumsky::error::SimpleReason::Unclosed { .. } => {
-                    format!(
-                        "{}{}, expected {}",
-                        if e.found().is_some() {
-                            "unexpected token"
-                        } else {
-                            "unexpected end of input"
-                        },
-                        if let Some(label) = e.label() {
-                            format!(" while parsing {}", label.fg(Color::Green))
-                        } else {
-                            " something else".to_string()
-                        },
-                        if e.expected().count() == 0 {
-                            "something else".to_string()
-                        } else {
-                            e.expected()
-                                .map(|expected| match expected {
-                                    Some(expected) => expected.to_string(),
-                                    None => "end of input".to_string(),
-                                })
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        }
-                    )
-                }
-                chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
-            };
+        emit_errors(errs, source);
+    }
+}
 
-            Report::build(ReportKind::Error, source_id.clone(), e.span().start)
-                .with_message(message)
-                .with_label(Label::new((source_id.clone(), e.span())).with_message(
-                    match e.reason() {
-                        chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
-                        _ => format!(
-                            "Unexpected {}",
-                            e.found()
-                                .map(|c| format!("token {}", c.fg(Color::Red)))
-                                .unwrap_or_else(|| "end of input".to_string())
-                        ),
+struct Source {
+    id: String,
+    content: String,
+}
+
+fn emit_errors(errs: Vec<ParserError>, source: Source) {
+    for e in errs {
+        let message = match e.reason() {
+            chumsky::error::SimpleReason::Unexpected
+            | chumsky::error::SimpleReason::Unclosed { .. } => {
+                format!(
+                    "{}{}, expected {}",
+                    if e.found().is_some() {
+                        "unexpected token"
+                    } else {
+                        "unexpected end of input"
                     },
-                ))
-                .finish()
-                .print(sources(vec![(source_id.clone(), src.clone())]))
-                .unwrap();
-        }
+                    if let Some(label) = e.label() {
+                        format!(" while parsing {}", label.fg(Color::Green))
+                    } else {
+                        " something else".to_string()
+                    },
+                    if e.expected().count() == 0 {
+                        "something else".to_string()
+                    } else {
+                        e.expected()
+                            .map(|expected| match expected {
+                                Some(expected) => expected.to_string(),
+                                None => "end of input".to_string(),
+                            })
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    }
+                )
+            }
+            chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
+        };
+
+        Report::build(ReportKind::Error, source.id.clone(), e.span().start)
+            .with_message(message)
+            .with_label(
+                Label::new((source.id.clone(), e.span())).with_message(match e.reason() {
+                    chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
+                    _ => format!(
+                        "Unexpected {}",
+                        e.found()
+                            .map(|c| format!("token {}", c.fg(Color::Red)))
+                            .unwrap_or_else(|| "end of input".to_string())
+                    ),
+                }),
+            )
+            .finish()
+            .print(sources(vec![(source.id.clone(), source.content.clone())]))
+            .unwrap();
     }
 }
