@@ -6,7 +6,6 @@ let fuga: i32 = 1;
 type newint = i32;
 type User = newint;
 
-
 fn f1(arg: char, arg2: u64) -> u32 {
     return arg as u64 + arg2;
 }

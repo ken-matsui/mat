@@ -3,9 +3,9 @@ use chumsky::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Param {
-    is_mut: bool,
-    name: String,
-    ty: Type,
+    pub(crate) is_mut: bool,
+    pub(crate) name: String,
+    pub(crate) ty: Type,
 }
 
 #[derive(Debug, PartialEq, Clone)]
