@@ -23,7 +23,7 @@ pub(crate) enum Stmt {
 
     DefVar {
         is_mut: bool,
-        name: String,
+        name: Spanned<String>,
         ty: Spanned<Type>,
         expr: Spanned<Expr>,
     },
@@ -139,7 +139,7 @@ fn defvar() -> impl Parser<Spanned<Stmt>> {
     text::keyword("let")
         .padded()
         .ignore_then(just("mut").or_not())
-        .then(ident())
+        .then(ident().map_with_span(Spanned::new))
         .then_ignore(just(':'))
         .then(typeref().padded())
         .then_ignore(just('='))
@@ -310,7 +310,7 @@ mod tests {
             Ok(vec![
                 Spanned::any(Stmt::DefVar {
                     is_mut: false,
-                    name: "foo".to_string(),
+                    name: Spanned::any("foo".to_string()),
                     ty: Spanned::any(Type::I8),
                     expr: Spanned::any(Expr::I32(1)),
                 }),
@@ -382,7 +382,7 @@ mod tests {
             defvar().parse("let var: type = 10;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: false,
-                name: "var".to_string(),
+                name: Spanned::any("var".to_string()),
                 ty: Spanned::any(Type::User("type".to_string())),
                 expr: Spanned::any(Expr::I32(10)),
             }))
@@ -391,7 +391,7 @@ mod tests {
             defvar().parse("let mut var: type = 10;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: true,
-                name: "var".to_string(),
+                name: Spanned::any("var".to_string()),
                 ty: Spanned::any(Type::User("type".to_string())),
                 expr: Spanned::any(Expr::I32(10)),
             }))
@@ -427,13 +427,13 @@ mod tests {
             Ok(Spanned::any(Stmt::Block(vec![
                 Spanned::any(Stmt::DefVar {
                     is_mut: false,
-                    name: "var1".to_string(),
+                    name: Spanned::any("var1".to_string()),
                     ty: Spanned::any(Type::User("type".to_string())),
                     expr: Spanned::any(Expr::I32(10)),
                 }),
                 Spanned::any(Stmt::DefVar {
                     is_mut: true,
-                    name: "var2".to_string(),
+                    name: Spanned::any("var2".to_string()),
                     ty: Spanned::any(Type::User("type".to_string())),
                     expr: Spanned::any(Expr::I32(10)),
                 }),

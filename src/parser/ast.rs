@@ -79,7 +79,7 @@ fn main() -> i32 {
                 defs: vec![
                     Spanned::any(Stmt::DefVar {
                         is_mut: false,
-                        name: "fuga".to_string(),
+                        name: Spanned::any("fuga".to_string()),
                         ty: Spanned::any(Type::I32),
                         expr: Spanned::any(Expr::I32(1)),
                     }),
@@ -119,7 +119,7 @@ fn main() -> i32 {
                         body: Spanned::any(Stmt::Block(vec![
                             Spanned::any(Stmt::DefVar {
                                 is_mut: true,
-                                name: "hoge".to_string(),
+                                name: Spanned::any("hoge".to_string()),
                                 ty: Spanned::any(Type::User("User".to_string())),
                                 expr: Spanned::any(Expr::I32(12)),
                             }),
