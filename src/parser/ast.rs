@@ -22,8 +22,8 @@ use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {
-    imports: Vec<Spanned<Stmt>>,
-    defs: Vec<Spanned<Stmt>>,
+    pub(crate) imports: Vec<Spanned<Stmt>>,
+    pub(crate) defs: Vec<Spanned<Stmt>>,
 }
 
 pub(crate) fn compilation_unit() -> impl Parser<Ast> {
