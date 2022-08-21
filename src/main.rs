@@ -3,7 +3,7 @@ mod sema;
 
 use crate::parser::lib::ParserError;
 use crate::sema::error::SemanticError;
-use crate::sema::local;
+use crate::sema::local_resolver;
 use ariadne::{sources, Color, Fmt, Label, Report, ReportKind, Source as Sources};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
@@ -68,24 +68,28 @@ fn main() {
             println!("{:#?}", ast);
             return;
         }
-        match local::resolve(ast) {
+        match local_resolver::resolve(ast) {
             Ok(()) => {
                 println!("Semantic analysis has completed successfully.");
             }
-            Err(err) => match err {
-                SemanticError::DuplicatedDef { pre_span, span } => {
-                    Report::build(ReportKind::Error, (), 0)
-                        .with_message("Duplicated definition")
-                        .with_label(
-                            Label::new(pre_span.range())
-                                .with_message("previous definition of the definition"),
-                        )
-                        .with_label(Label::new(span.range()).with_message("redefined here"))
-                        .finish()
-                        .print(Sources::from(source.content.clone()))
-                        .unwrap();
+            Err(errors) => {
+                let mut report = Report::build(ReportKind::Error, (), 0);
+                for err in errors {
+                    report = match err {
+                        SemanticError::DuplicatedDef { pre_span, span } => report
+                            .with_message("Duplicated definition")
+                            .with_label(
+                                Label::new(pre_span.range())
+                                    .with_message("previous definition of the definition"),
+                            )
+                            .with_label(Label::new(span.range()).with_message("redefined here")),
+                    };
                 }
-            },
+                report
+                    .finish()
+                    .print(Sources::from(source.content.clone()))
+                    .unwrap();
+            }
         }
     } else {
         emit_errors(errs, source);

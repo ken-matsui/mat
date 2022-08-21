@@ -1,3 +1,5 @@
 let hoge: i8 = 1;
 
 fn hoge() -> i8 {}
+
+fn hoge() -> i8 {}
