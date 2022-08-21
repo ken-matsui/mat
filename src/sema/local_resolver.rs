@@ -53,8 +53,8 @@ impl LocalResolver {
         for stmt in &ast.defs {
             if let Stmt::DefVar { expr, .. } = stmt.deref() {
                 if let Some(expr) = expr.deref() {
-                    self.resolve_variable(&expr);
-                    self.resolve_string(&expr);
+                    self.resolve_variable(expr);
+                    self.resolve_string(expr);
                 }
             }
         }

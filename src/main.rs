@@ -90,7 +90,7 @@ fn main() {
                 }
                 report
                     .finish()
-                    .print(Sources::from(source.content.clone()))
+                    .print(Sources::from(source.content))
                     .unwrap();
             }
         }

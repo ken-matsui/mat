@@ -35,7 +35,7 @@ impl Scope for ToplevelScope {
         self.children.push(s);
     }
 
-    fn get_mut(&mut self, name: &String, span: Span) -> Result<&mut Entity, SemanticError> {
+    fn get_mut(&mut self, name: &str, span: Span) -> Result<&mut Entity, SemanticError> {
         self.entities
             .get_mut(name)
             .ok_or(SemanticError::UnresolvedRef { span })

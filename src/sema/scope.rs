@@ -14,5 +14,5 @@ pub(crate) trait Scope: 'static {
     fn add_child(&mut self, s: LocalScope);
 
     /// Search and get entity through scopes up to ToplevelScope.
-    fn get_mut(&mut self, name: &String, span: Span) -> Result<&mut Entity, SemanticError>;
+    fn get_mut(&mut self, name: &str, span: Span) -> Result<&mut Entity, SemanticError>;
 }
