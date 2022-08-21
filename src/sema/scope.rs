@@ -11,6 +11,7 @@ pub(crate) struct Scope {
     children: Vec<Self>,
 }
 
+/// Impls for All Scope
 impl Scope {
     pub(crate) fn new(parent: Option<Box<Self>>) -> Self {
         Self {
@@ -38,7 +39,7 @@ impl Scope {
         } else {
             // Find the variable on the upper scope until toplevel
             self.parent_mut()
-                .ok_or(SemanticError::UnresolvedRef { span })
+                .ok_or(SemanticError::UnresolvedRef(span))
                 .and_then(|parent| parent.refer(name, span))
         }
     }
@@ -53,12 +54,15 @@ impl Scope {
             .entities
             .insert(*entity.clone().name.value, entity.clone())
         {
-            Err(SemanticError::DuplicatedDef {
-                pre_span: dup.name.span,
-                span: entity.name.span,
-            })
+            Err(SemanticError::DuplicatedDef(
+                dup.name.span,
+                entity.name.span,
+            ))
         } else {
             Ok(())
         }
     }
 }
+
+/// Impls for Local Scope
+impl Scope {}

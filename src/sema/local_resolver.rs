@@ -161,7 +161,18 @@ impl LocalResolver {
 
     fn push_vars_to_scope(&mut self, vars: Vec<Param>) {
         let scope = Scope::new(Some(self.current_scope().clone()));
-        for var in vars {}
+        for var in vars {
+            // if scope.is_defined_locally(var.name) {
+            //     // self.errors.push(SemanticError::DuplicatedDef {});
+            //
+            //     error(
+            //         var.location(),
+            //         "duplicated variable in scope: " + var.name(),
+            //     );
+            // } else {
+            //     scope.define_variable(var);
+            // }
+        }
         self.scope_stack.push_back(Box::new(scope));
     }
 
@@ -214,10 +225,10 @@ mod tests {
                     })
                 ]
             }),
-            Err(vec![SemanticError::DuplicatedDef {
-                pre_span: Span::new(Span::any()),
-                span: Span::new(Span::any())
-            }])
+            Err(vec![SemanticError::DuplicatedDef(
+                Span::new_any(),
+                Span::new_any()
+            )]),
         );
     }
 
@@ -233,9 +244,7 @@ mod tests {
                     expr: Some(Spanned::any(Expr::Variable("bar".to_string()))), // Undefined variable
                 })]
             }),
-            Err(vec![SemanticError::UnresolvedRef {
-                span: Span::new(Span::any())
-            }])
+            Err(vec![SemanticError::UnresolvedRef(Span::new_any())])
         );
         assert_eq!(
             LocalResolver::new().resolve(Ast {
@@ -284,15 +293,9 @@ mod tests {
                 })]
             }),
             Err(vec![
-                SemanticError::UnresolvedRef {
-                    span: Span::new(Span::any())
-                },
-                SemanticError::UnresolvedRef {
-                    span: Span::new(Span::any())
-                },
-                SemanticError::UnresolvedRef {
-                    span: Span::new(Span::any())
-                }
+                SemanticError::UnresolvedRef(Span::new_any()),
+                SemanticError::UnresolvedRef(Span::new_any()),
+                SemanticError::UnresolvedRef(Span::new_any())
             ])
         );
         assert_eq!(
@@ -330,12 +333,8 @@ mod tests {
                 ]
             }),
             Err(vec![
-                SemanticError::UnresolvedRef {
-                    span: Span::new(Span::any())
-                },
-                SemanticError::UnresolvedRef {
-                    span: Span::new(Span::any())
-                }
+                SemanticError::UnresolvedRef(Span::new_any()),
+                SemanticError::UnresolvedRef(Span::new_any())
             ])
         );
         assert_eq!(
@@ -378,9 +377,7 @@ mod tests {
                     })
                 ]
             }),
-            Err(vec![SemanticError::UnresolvedRef {
-                span: Span::new(Span::any())
-            }])
+            Err(vec![SemanticError::UnresolvedRef(Span::new_any())])
         );
         assert_eq!(
             LocalResolver::new().resolve(Ast {

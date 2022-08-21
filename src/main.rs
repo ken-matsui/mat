@@ -76,14 +76,14 @@ fn main() {
                 let mut report = Report::build(ReportKind::Error, (), 0);
                 for err in errors {
                     report = match err {
-                        SemanticError::DuplicatedDef { pre_span, span } => report
+                        SemanticError::DuplicatedDef(pre_span, span) => report
                             .with_message("Duplicated definition")
                             .with_label(
                                 Label::new(pre_span.range())
                                     .with_message("previous definition of the definition"),
                             )
                             .with_label(Label::new(span.range()).with_message("redefined here")),
-                        SemanticError::UnresolvedRef { span } => report
+                        SemanticError::UnresolvedRef(span) => report
                             .with_message("Unresolved reference")
                             .with_label(Label::new(span.range()).with_message("undefined ident")),
                     };

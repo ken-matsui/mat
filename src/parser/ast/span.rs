@@ -31,6 +31,11 @@ impl Span {
     pub(crate) fn any() -> Range<usize> {
         0..0
     }
+    /// Construct a new Span in any
+    #[cfg(test)]
+    pub(crate) fn new_any() -> Self {
+        Self::new(Self::any())
+    }
 }
 
 impl fmt::Debug for Span {
