@@ -3,7 +3,7 @@ mod sema;
 
 use crate::parser::lib::ParserError;
 use crate::sema::error::SemanticError;
-use crate::sema::local_resolver;
+use crate::sema::local_resolver::LocalResolver;
 use ariadne::{sources, Color, Fmt, Label, Report, ReportKind, Source as Sources};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
@@ -68,7 +68,7 @@ fn main() {
             println!("{:#?}", ast);
             return;
         }
-        match local_resolver::resolve(ast) {
+        match LocalResolver::new().resolve(ast) {
             Ok(()) => {
                 println!("Semantic analysis has completed successfully.");
             }

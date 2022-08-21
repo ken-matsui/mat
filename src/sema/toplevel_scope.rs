@@ -1,20 +1,37 @@
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
+use crate::sema::local_scope::LocalScope;
+use crate::sema::scope::Scope;
 use linked_hash_map::LinkedHashMap;
 
+#[derive(Debug, Clone)]
 pub(crate) struct ToplevelScope {
     entities: LinkedHashMap<String, Entity>,
+    children: Vec<LocalScope>,
 }
 
 impl ToplevelScope {
-    pub(crate) fn new(entities: LinkedHashMap<String, Entity>) -> Self {
-        Self { entities }
+    pub(crate) fn new() -> Self {
+        Self {
+            entities: LinkedHashMap::new(),
+            children: Vec::new(),
+        }
     }
 }
 
-impl Default for ToplevelScope {
-    fn default() -> Self {
-        Self::new(LinkedHashMap::new())
+impl Scope for ToplevelScope {
+    fn is_toplevel() -> bool {
+        true
+    }
+    fn toplevel(&self) -> ToplevelScope {
+        self.clone()
+    }
+    fn parent(&self) -> Option<Box<dyn Scope>> {
+        None
+    }
+
+    fn add_child(&mut self, s: LocalScope) {
+        self.children.push(s);
     }
 }
 
