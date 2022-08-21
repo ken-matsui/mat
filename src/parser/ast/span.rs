@@ -53,6 +53,15 @@ impl<T> Spanned<T> {
         }
     }
 
+    /// Get a reference to the inner value.
+    pub(crate) fn value(&self) -> &T {
+        &self.value
+    }
+    /// Get a mutable to the inner value.
+    pub(crate) fn value_mut(&mut self) -> &mut T {
+        &mut self.value
+    }
+
     /// Bypass equity checks on tests
     #[cfg(test)]
     pub(crate) fn any(value: T) -> Self {
@@ -64,13 +73,12 @@ impl<T> Deref for Spanned<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.value
+        self.value()
     }
 }
-
 impl<T> DerefMut for Spanned<T> {
     fn deref_mut(&mut self) -> &mut T {
-        &mut self.value
+        self.value_mut()
     }
 }
 
