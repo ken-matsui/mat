@@ -81,7 +81,7 @@ fn main() -> i32 {
                         is_mut: false,
                         name: Spanned::any("fuga".to_string()),
                         ty: Spanned::any(Type::I32),
-                        expr: Spanned::any(Expr::I32(1)),
+                        expr: Some(Spanned::any(Expr::I32(1))),
                     }),
                     Spanned::any(Stmt::TypeDef {
                         new: "newint".to_string(),
@@ -121,7 +121,7 @@ fn main() -> i32 {
                                 is_mut: true,
                                 name: Spanned::any("hoge".to_string()),
                                 ty: Spanned::any(Type::User("User".to_string())),
-                                expr: Spanned::any(Expr::I32(12)),
+                                expr: Some(Spanned::any(Expr::I32(12))),
                             }),
                             Spanned::any(Stmt::If {
                                 cond: Spanned::any(Expr::Variable("hoge".to_string())),

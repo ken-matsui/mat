@@ -25,7 +25,7 @@ pub(crate) enum Stmt {
         is_mut: bool,
         name: Spanned<String>,
         ty: Spanned<Type>,
-        expr: Spanned<Expr>,
+        expr: Option<Spanned<Expr>>,
     },
 
     TypeDef {
@@ -142,9 +142,7 @@ fn defvar() -> impl Parser<Spanned<Stmt>> {
         .then(ident().map_with_span(Spanned::new))
         .then_ignore(just(':'))
         .then(typeref().padded())
-        .then_ignore(just('='))
-        .padded()
-        .then(expr(None))
+        .then(just('=').ignore_then(expr(None)).or_not())
         .then_ignore(just(';'))
         .map_with_span(|(((mt, nm), ty), expr), span| {
             Spanned::new(
@@ -312,7 +310,7 @@ mod tests {
                     is_mut: false,
                     name: Spanned::any("foo".to_string()),
                     ty: Spanned::any(Type::I8),
-                    expr: Spanned::any(Expr::I32(1)),
+                    expr: Some(Spanned::any(Expr::I32(1))),
                 }),
                 Spanned::any(Stmt::TypeDef {
                     new: "newint".to_string(),
@@ -384,7 +382,7 @@ mod tests {
                 is_mut: false,
                 name: Spanned::any("var".to_string()),
                 ty: Spanned::any(Type::User("type".to_string())),
-                expr: Spanned::any(Expr::I32(10)),
+                expr: Some(Spanned::any(Expr::I32(10))),
             }))
         );
         assert_eq!(
@@ -393,7 +391,25 @@ mod tests {
                 is_mut: true,
                 name: Spanned::any("var".to_string()),
                 ty: Spanned::any(Type::User("type".to_string())),
-                expr: Spanned::any(Expr::I32(10)),
+                expr: Some(Spanned::any(Expr::I32(10))),
+            }))
+        );
+        assert_eq!(
+            defvar().parse("let mut var: type;"),
+            Ok(Spanned::any(Stmt::DefVar {
+                is_mut: true,
+                name: Spanned::any("var".to_string()),
+                ty: Spanned::any(Type::User("type".to_string())),
+                expr: None,
+            }))
+        );
+        assert_eq!(
+            defvar().parse("let   mut   var    :   type     ;"),
+            Ok(Spanned::any(Stmt::DefVar {
+                is_mut: true,
+                name: Spanned::any("var".to_string()),
+                ty: Spanned::any(Type::User("type".to_string())),
+                expr: None,
             }))
         );
 
@@ -429,13 +445,13 @@ mod tests {
                     is_mut: false,
                     name: Spanned::any("var1".to_string()),
                     ty: Spanned::any(Type::User("type".to_string())),
-                    expr: Spanned::any(Expr::I32(10)),
+                    expr: Some(Spanned::any(Expr::I32(10))),
                 }),
                 Spanned::any(Stmt::DefVar {
                     is_mut: true,
                     name: Spanned::any("var2".to_string()),
                     ty: Spanned::any(Type::User("type".to_string())),
-                    expr: Spanned::any(Expr::I32(10)),
+                    expr: Some(Spanned::any(Expr::I32(10))),
                 }),
                 Spanned::any(Stmt::If {
                     cond: Spanned::any(Expr::Variable("var1".to_string())),
