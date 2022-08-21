@@ -1,4 +1,4 @@
-use crate::parser::ast::{Spanned, Stmt, Type};
+use crate::parser::ast::{Param, Spanned, Stmt, Type};
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Entity {
@@ -32,5 +32,17 @@ impl TryFrom<Stmt> for Entity {
             Stmt::DefFn { name, ret_ty, .. } => Ok(Entity::new(name, ret_ty)),
             _ => Err("Converting into entity is only permitted to DefVar & DefFn"),
         }
+    }
+}
+
+impl From<Param> for Entity {
+    fn from(param: Param) -> Self {
+        Self::new(param.name, param.ty)
+    }
+}
+impl From<&Param> for Entity {
+    fn from(param: &Param) -> Self {
+        let param = param.clone();
+        Self::new(param.name, param.ty)
     }
 }

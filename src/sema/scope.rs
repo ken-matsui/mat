@@ -43,13 +43,8 @@ impl Scope {
                 .and_then(|parent| parent.refer(name, span))
         }
     }
-}
 
-/// Impls for Toplevel Scope
-impl Scope {
     pub(crate) fn define_entity(&mut self, entity: Entity) -> Result<(), SemanticError> {
-        assert!(self.parent.is_none());
-
         if let Some(dup) = self
             .entities
             .insert(*entity.clone().name.value, entity.clone())

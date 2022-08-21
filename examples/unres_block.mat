@@ -1,0 +1,15 @@
+let foo: i8;
+
+fn main(bar: i8) -> void {
+    let baz: i8 = qux;
+    foo = bar;
+    let qux: i8;
+    if quux {
+        bar = garply;
+        baz = qux;
+        let garply: i8;
+    }
+    let grault: i8;
+    let garply: i8;
+    let grault: i8;
+}
