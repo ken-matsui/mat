@@ -24,17 +24,10 @@ impl LocalResolver {
 impl LocalResolver {
     pub(crate) fn resolve(&mut self, ast: Ast) -> Result<(), Vec<SemanticError>> {
         // toplevel scope
-        let mut toplevel = ToplevelScope::new();
-        self.scope_stack.push_back(Box::new(toplevel.clone()));
+        let mut toplevel = Box::new(ToplevelScope::new());
 
-        for stmt in &ast.defs {
-            // Convert DefVar & DefFn into Entities and define the entity.
-            if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
-                if let Err(err) = toplevel.define_entity(entity) {
-                    self.errors.push(err);
-                }
-            }
-        }
+        self.define_entities(&ast, &mut toplevel);
+        self.scope_stack.push_back(toplevel);
         self.resolve_gvar_initializers(&ast);
         // toplevel scope end
 
@@ -42,6 +35,17 @@ impl LocalResolver {
             Ok(())
         } else {
             Err(self.errors.clone())
+        }
+    }
+
+    fn define_entities(&mut self, ast: &Ast, toplevel: &mut Box<ToplevelScope>) {
+        for stmt in &ast.defs {
+            // Convert DefVar & DefFn into Entities and define the entity.
+            if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
+                if let Err(err) = toplevel.define_entity(entity) {
+                    self.errors.push(err);
+                }
+            }
         }
     }
 

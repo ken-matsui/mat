@@ -1,1 +1,2 @@
+//let fuga: i8 = 1;
 let hoge: i8 = fuga;
