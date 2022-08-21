@@ -4,7 +4,7 @@ use crate::parser::lib::*;
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Param {
     pub(crate) is_mut: bool,
-    pub(crate) name: String,
+    pub(crate) name: Spanned<String>,
     pub(crate) ty: Spanned<Type>,
 }
 
@@ -94,7 +94,7 @@ fn param() -> impl Parser<Param> {
     text::keyword("mut")
         .or_not()
         .padded()
-        .then(ident())
+        .then(ident().map_with_span(Spanned::new))
         .then_ignore(just(':'))
         .then(typeref().padded())
         .map(|((mt, name), ty)| Param {
@@ -332,7 +332,7 @@ mod tests {
             param().parse("name: i8"),
             Ok(Param {
                 is_mut: false,
-                name: "name".to_string(),
+                name: Spanned::any("name".to_string()),
                 ty: Spanned::any(Type::I8)
             })
         );
@@ -340,7 +340,7 @@ mod tests {
             param().parse("mut name: i8"),
             Ok(Param {
                 is_mut: true,
-                name: "name".to_string(),
+                name: Spanned::any("name".to_string()),
                 ty: Spanned::any(Type::I8)
             })
         );
@@ -363,7 +363,7 @@ mod tests {
                 name: Spanned::any("name".to_string()),
                 args: vec![Param {
                     is_mut: false,
-                    name: "a1".to_string(),
+                    name: Spanned::any("a1".to_string()),
                     ty: Spanned::any(Type::I8)
                 }],
                 ret_ty: Spanned::any(Type::I16),

@@ -92,12 +92,12 @@ fn main() -> i32 {
                         args: vec![
                             Param {
                                 is_mut: false,
-                                name: "arg".to_string(),
+                                name: Spanned::any("arg".to_string()),
                                 ty: Spanned::any(Type::I8)
                             },
                             Param {
                                 is_mut: true,
-                                name: "arg2".to_string(),
+                                name: Spanned::any("arg2".to_string()),
                                 ty: Spanned::any(Type::U64)
                             }
                         ],
