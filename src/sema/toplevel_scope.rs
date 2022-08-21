@@ -20,13 +20,15 @@ impl Default for ToplevelScope {
 
 impl ToplevelScope {
     pub(crate) fn define_entity(&mut self, entity: Entity) -> Result<(), SemanticError> {
-        if let Some(dup) = self.entities.get(&**entity.name) {
+        if let Some(dup) = self
+            .entities
+            .insert(*entity.clone().name.value, entity.clone())
+        {
             Err(SemanticError::DuplicatedDef {
                 pre_span: dup.name.span,
                 span: entity.name.span,
             })
         } else {
-            self.entities.insert(*entity.clone().name.value, entity);
             Ok(())
         }
     }

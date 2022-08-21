@@ -1,2 +1,3 @@
 let hoge: i8 = 1;
-let hoge: i16 = 2;
+
+fn hoge() -> i8 {}
