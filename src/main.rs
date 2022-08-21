@@ -1,7 +1,10 @@
 mod parser;
+mod sema;
 
 use crate::parser::lib::ParserError;
-use ariadne::{sources, Color, Fmt, Label, Report, ReportKind};
+use crate::sema::error::SemanticError;
+use crate::sema::local;
+use ariadne::{sources, Color, Fmt, Label, Report, ReportKind, Source as Sources};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
 
@@ -64,6 +67,25 @@ fn main() {
         if args.dump_ast {
             println!("{:#?}", ast);
             return;
+        }
+        match local::resolve(ast) {
+            Ok(()) => {
+                println!("Semantic analysis has completed successfully.");
+            }
+            Err(err) => match err {
+                SemanticError::DuplicatedDef { pre_span, span } => {
+                    Report::build(ReportKind::Error, (), 0)
+                        .with_message("Duplicated definition")
+                        .with_label(
+                            Label::new(pre_span.range())
+                                .with_message("previous definition of the definition"),
+                        )
+                        .with_label(Label::new(span.range()).with_message("redefined here"))
+                        .finish()
+                        .print(Sources::from(source.content.clone()))
+                        .unwrap();
+                }
+            },
         }
     } else {
         emit_errors(errs, source);
