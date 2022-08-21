@@ -3,7 +3,7 @@ use std::fmt;
 use std::ops::{Deref, DerefMut, Range};
 
 /// Range does not implements `Copy` (#27186), so here we use (usize, usize) instead
-#[derive(Clone, Copy)]
+#[derive(Clone, PartialEq, Copy)]
 pub(crate) struct Span(pub(crate) (usize, usize));
 
 impl Span {

@@ -1,1 +1,2 @@
-let hoge: i8 = 1 || 2 && 3 != foo | 5 ^ 6 & bar << 8 + 9*10 || fuga;
+let qux: i8;
+let foo: i8 = 1 != bar | 2 & buz << 3 || qux;

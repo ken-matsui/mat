@@ -24,10 +24,10 @@ impl LocalResolver {
 impl LocalResolver {
     pub(crate) fn resolve(&mut self, ast: Ast) -> Result<(), Vec<SemanticError>> {
         // toplevel scope
-        let mut toplevel = Box::new(ToplevelScope::new());
+        let mut toplevel = ToplevelScope::new();
 
         self.define_entities(&ast, &mut toplevel);
-        self.scope_stack.push_back(toplevel);
+        self.scope_stack.push_back(Box::new(toplevel));
         self.resolve_gvar_initializers(&ast);
         // toplevel scope end
 
@@ -38,7 +38,7 @@ impl LocalResolver {
         }
     }
 
-    fn define_entities(&mut self, ast: &Ast, toplevel: &mut Box<ToplevelScope>) {
+    fn define_entities(&mut self, ast: &Ast, toplevel: &mut ToplevelScope) {
         for stmt in &ast.defs {
             // Convert DefVar & DefFn into Entities and define the entity.
             if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
@@ -158,5 +158,268 @@ impl LocalResolver {
 
     fn current_scope(&mut self) -> &mut Box<dyn Scope> {
         self.scope_stack.back_mut().unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::ast::{Span, Type};
+
+    #[test]
+    fn test_define_entities() {
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                defs: vec![]
+            }),
+            Ok(())
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                defs: vec![Spanned::any(Stmt::DefVar {
+                    is_mut: false,
+                    name: Spanned::any("foo".to_string()),
+                    ty: Spanned::any(Type::I8),
+                    expr: None,
+                })]
+            }),
+            Ok(())
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                defs: vec![
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    })
+                ]
+            }),
+            Err(vec![SemanticError::DuplicatedDef {
+                pre_span: Span::new(Span::any()),
+                span: Span::new(Span::any())
+            }])
+        );
+    }
+
+    #[test]
+    fn test_resolve_variable() {
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                defs: vec![Spanned::any(Stmt::DefVar {
+                    is_mut: false,
+                    name: Spanned::any("foo".to_string()),
+                    ty: Spanned::any(Type::I8),
+                    expr: Some(Spanned::any(Expr::Variable("bar".to_string()))), // Undefined variable
+                })]
+            }),
+            Err(vec![SemanticError::UnresolvedRef {
+                span: Span::new(Span::any())
+            }])
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                defs: vec![
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("bar".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: Some(Spanned::any(Expr::Variable("bar".to_string()))),
+                    })
+                ]
+            }),
+            Ok(())
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
+                defs: vec![Spanned::any(Stmt::DefVar {
+                    is_mut: false,
+                    name: Spanned::any("foo".to_string()),
+                    ty: Spanned::any(Type::I8),
+                    expr: Some(Spanned::any(Expr::Or(
+                        Spanned::any(Expr::Neq(
+                            Spanned::any(Expr::I32(1)),
+                            Spanned::any(Expr::BitOr(
+                                Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
+                                Spanned::any(Expr::BitAnd(
+                                    Spanned::any(Expr::I32(2)),
+                                    Spanned::any(Expr::Shl(
+                                        Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
+                                        Spanned::any(Expr::I32(3))
+                                    ))
+                                ))
+                            ))
+                        )),
+                        Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
+                    ))),
+                })]
+            }),
+            Err(vec![
+                SemanticError::UnresolvedRef {
+                    span: Span::new(Span::any())
+                },
+                SemanticError::UnresolvedRef {
+                    span: Span::new(Span::any())
+                },
+                SemanticError::UnresolvedRef {
+                    span: Span::new(Span::any())
+                }
+            ])
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
+                defs: vec![
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("bar".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: Some(Spanned::any(Expr::Or(
+                            Spanned::any(Expr::Neq(
+                                Spanned::any(Expr::I32(1)),
+                                Spanned::any(Expr::BitOr(
+                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
+                                    Spanned::any(Expr::BitAnd(
+                                        Spanned::any(Expr::I32(2)),
+                                        Spanned::any(Expr::Shl(
+                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
+                                            Spanned::any(Expr::I32(3))
+                                        ))
+                                    ))
+                                ))
+                            )),
+                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
+                        ))),
+                    })
+                ]
+            }),
+            Err(vec![
+                SemanticError::UnresolvedRef {
+                    span: Span::new(Span::any())
+                },
+                SemanticError::UnresolvedRef {
+                    span: Span::new(Span::any())
+                }
+            ])
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
+                defs: vec![
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("bar".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("buz".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: Some(Spanned::any(Expr::Or(
+                            Spanned::any(Expr::Neq(
+                                Spanned::any(Expr::I32(1)),
+                                Spanned::any(Expr::BitOr(
+                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
+                                    Spanned::any(Expr::BitAnd(
+                                        Spanned::any(Expr::I32(2)),
+                                        Spanned::any(Expr::Shl(
+                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
+                                            Spanned::any(Expr::I32(3))
+                                        ))
+                                    ))
+                                ))
+                            )),
+                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
+                        ))),
+                    })
+                ]
+            }),
+            Err(vec![SemanticError::UnresolvedRef {
+                span: Span::new(Span::any())
+            }])
+        );
+        assert_eq!(
+            LocalResolver::new().resolve(Ast {
+                imports: vec![],
+                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
+                defs: vec![
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("bar".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("buz".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("qux".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: None,
+                    }),
+                    Spanned::any(Stmt::DefVar {
+                        is_mut: false,
+                        name: Spanned::any("foo".to_string()),
+                        ty: Spanned::any(Type::I8),
+                        expr: Some(Spanned::any(Expr::Or(
+                            Spanned::any(Expr::Neq(
+                                Spanned::any(Expr::I32(1)),
+                                Spanned::any(Expr::BitOr(
+                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
+                                    Spanned::any(Expr::BitAnd(
+                                        Spanned::any(Expr::I32(2)),
+                                        Spanned::any(Expr::Shl(
+                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
+                                            Spanned::any(Expr::I32(3))
+                                        ))
+                                    ))
+                                ))
+                            )),
+                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
+                        ))),
+                    })
+                ]
+            }),
+            Ok(())
+        );
     }
 }
