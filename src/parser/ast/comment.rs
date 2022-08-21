@@ -23,7 +23,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn single_line_comment_test() {
+    fn test_single_line_comment() {
         assert!(comment().parse("// comment\n").is_ok());
         assert!(comment().parse("//\n").is_ok());
         assert!(comment().parse("// comment").is_ok());
@@ -31,7 +31,7 @@ mod tests {
     }
 
     #[test]
-    fn multi_line_comment() {
+    fn test_multi_line_comment() {
         assert!(comment()
             .parse(
                 r#"/*
@@ -52,7 +52,7 @@ mod tests {
     }
 
     #[test]
-    fn comment_test() {
+    fn test_comment() {
         assert!(comment().parse("// comment\n").is_ok());
         assert!(comment().parse("//\n").is_ok());
         assert!(comment().parse("// comment").is_ok());

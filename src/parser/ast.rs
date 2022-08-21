@@ -41,7 +41,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn compilation_unit_test() {
+    fn test_compilation_unit() {
         assert_eq!(
             compilation_unit().parse(
                 r#"

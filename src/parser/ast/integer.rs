@@ -50,7 +50,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn integer_test() {
+    fn test_integer() {
         assert_eq!(integer().parse("0"), Ok(Spanned::any(Expr::I32(0))));
         assert_eq!(
             integer().parse("2147483647"),
@@ -111,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    fn character_test() {
+    fn test_character() {
         assert_eq!(character().parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
         assert_eq!(character().parse("'1'"), Ok(Spanned::any(Expr::I8(49))));
         assert_eq!(character().parse("'\n'"), Ok(Spanned::any(Expr::I8(10))));

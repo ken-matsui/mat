@@ -18,7 +18,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn string_test() {
+    fn test_string() {
         assert_eq!(
             string().parse("\"a\""),
             Ok(Spanned::any(Expr::String("a".to_string())))

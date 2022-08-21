@@ -13,7 +13,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn variable_test() {
+    fn test_variable() {
         assert_eq!(
             variable().parse("var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))

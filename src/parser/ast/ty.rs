@@ -52,7 +52,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn typeref_test() {
+    fn test_typeref() {
         assert_eq!(typeref().parse("void"), Ok(Spanned::any(Type::Void)));
         assert_eq!(typeref().parse("char"), Ok(Spanned::any(Type::I8)));
         assert_eq!(typeref().parse("i8"), Ok(Spanned::any(Type::I8)));
@@ -71,7 +71,7 @@ mod tests {
     }
 
     #[test]
-    fn typedef_test() {
+    fn test_typedef() {
         assert_eq!(
             typedef().parse("type new = i8;"),
             Ok(Spanned::any(Stmt::TypeDef {

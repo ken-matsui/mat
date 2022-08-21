@@ -275,7 +275,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn import_stmt_test() {
+    fn test_import_stmt() {
         assert_eq!(
             import_stmt().parse("import std.io;"),
             Ok(Spanned::any(Stmt::Import("std.io".to_string())))
@@ -295,7 +295,7 @@ mod tests {
     }
 
     #[test]
-    fn top_defs_test() {
+    fn test_top_defs() {
         assert_eq!(top_defs().parse(""), Ok(vec![]));
         assert_eq!(
             top_defs().parse(
@@ -327,7 +327,7 @@ mod tests {
     }
 
     #[test]
-    fn param_test() {
+    fn test_param() {
         assert_eq!(
             param().parse("name: i8"),
             Ok(Param {
@@ -347,7 +347,7 @@ mod tests {
     }
 
     #[test]
-    fn defn_test() {
+    fn test_defn() {
         assert_eq!(
             defn().parse("fn name() -> i16 {}"),
             Ok(Spanned::any(Stmt::DefFn {
@@ -375,7 +375,7 @@ mod tests {
     }
 
     #[test]
-    fn defvar_test() {
+    fn test_defvar() {
         assert_eq!(
             defvar().parse("let var: type = 10;"),
             Ok(Spanned::any(Stmt::DefVar {
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn block_test() {
+    fn test_block() {
         assert_eq!(
             block(None).parse("{}"),
             Ok(Spanned::any(Stmt::Block(vec![])))
@@ -466,7 +466,7 @@ mod tests {
     }
 
     #[test]
-    fn stmt_test() {
+    fn test_stmt() {
         assert_eq!(stmt(None, None).parse(";"), Ok(Spanned::any(Stmt::Empty)));
         assert_eq!(
             stmt(None, None).parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10 ;"),
@@ -506,7 +506,7 @@ mod tests {
     }
 
     #[test]
-    fn if_stmt_test() {
+    fn test_if_stmt() {
         assert_eq!(
             if_stmt().parse("if foo { 1; }"),
             Ok(Spanned::any(Stmt::If {
@@ -608,7 +608,7 @@ mod tests {
     }
 
     #[test]
-    fn return_stmt_test() {
+    fn test_return_stmt() {
         assert_eq!(
             return_stmt().parse("return 1 + 2;"),
             Ok(Spanned::any(Stmt::Return(Some(Spanned::any(Expr::Add(
@@ -659,7 +659,7 @@ mod tests {
         ))
     }
     #[test]
-    fn assign_stmt_test() {
+    fn test_assign_stmt() {
         assert_eq!(
             assign_stmt().parse("var = 1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10 ;"),
             Ok(Spanned::any(Stmt::Assign(
