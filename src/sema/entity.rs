@@ -17,6 +17,12 @@ impl Entity {
     }
 }
 
+impl Entity {
+    pub(crate) fn referred(&mut self) {
+        self.n_referred += 1;
+    }
+}
+
 impl TryFrom<Stmt> for Entity {
     type Error = &'static str;
 

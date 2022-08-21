@@ -83,6 +83,9 @@ fn main() {
                                     .with_message("previous definition of the definition"),
                             )
                             .with_label(Label::new(span.range()).with_message("redefined here")),
+                        SemanticError::UnresolvedRef { span } => report
+                            .with_message("Unresolved reference")
+                            .with_label(Label::new(span.range()).with_message("undefined ident")),
                     };
                 }
                 report

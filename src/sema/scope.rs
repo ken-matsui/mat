@@ -1,5 +1,8 @@
+use crate::parser::ast::Span;
+use crate::sema::entity::Entity;
 use crate::sema::local_scope::LocalScope;
 use crate::sema::toplevel_scope::ToplevelScope;
+use crate::SemanticError;
 
 pub(crate) trait Scope: 'static {
     fn is_toplevel() -> bool
@@ -10,5 +13,6 @@ pub(crate) trait Scope: 'static {
 
     fn add_child(&mut self, s: LocalScope);
 
-    // fn get() -> Entity;
+    /// Search and get entity through scopes up to ToplevelScope.
+    fn get_mut(&mut self, name: &String, span: Span) -> Result<&mut Entity, SemanticError>;
 }

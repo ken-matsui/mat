@@ -2,7 +2,6 @@
 use crate::parser::ast::{Ast, Expr, Spanned, Stmt};
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
-use crate::sema::local_scope::LocalScope;
 use crate::sema::scope::Scope;
 use crate::sema::toplevel_scope::ToplevelScope;
 use std::collections::LinkedList;
@@ -46,7 +45,7 @@ impl LocalResolver {
         }
     }
 
-    fn resolve_gvar_initializers(&self, ast: &Ast) {
+    fn resolve_gvar_initializers(&mut self, ast: &Ast) {
         for stmt in &ast.defs {
             if let Stmt::DefVar { expr, .. } = stmt.deref() {
                 if let Some(expr) = expr.deref() {
@@ -57,11 +56,22 @@ impl LocalResolver {
         }
     }
 
-    fn resolve_variable(&self, expr: &Spanned<Expr>) {
-        if let Expr::Variable(var) = expr.deref() {}
+    fn resolve_variable(&mut self, expr: &Spanned<Expr>) {
+        if let Expr::Variable(var) = expr.deref() {
+            match self.current_scope().get_mut(var, expr.span) {
+                Ok(entity) => {
+                    entity.referred();
+                }
+                Err(err) => self.errors.push(err),
+            }
+        }
     }
 
     fn resolve_string(&self, expr: &Spanned<Expr>) {
         if let Expr::String(str) = expr.deref() {}
+    }
+
+    fn current_scope(&mut self) -> &mut Box<dyn Scope> {
+        self.scope_stack.back_mut().unwrap()
     }
 }

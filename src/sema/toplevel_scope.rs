@@ -1,3 +1,4 @@
+use crate::parser::ast::Span;
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
 use crate::sema::local_scope::LocalScope;
@@ -32,6 +33,12 @@ impl Scope for ToplevelScope {
 
     fn add_child(&mut self, s: LocalScope) {
         self.children.push(s);
+    }
+
+    fn get_mut(&mut self, name: &String, span: Span) -> Result<&mut Entity, SemanticError> {
+        self.entities
+            .get_mut(name)
+            .ok_or(SemanticError::UnresolvedRef { span })
     }
 }
 
