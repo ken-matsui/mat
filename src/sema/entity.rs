@@ -4,7 +4,7 @@ use crate::parser::ast::{Spanned, Stmt, Type};
 pub(crate) struct Entity {
     pub(crate) name: Spanned<String>,
     pub(crate) ty: Spanned<Type>,
-    pub(crate) n_referred: i64,
+    pub(crate) n_referred: usize,
 }
 
 impl Entity {
