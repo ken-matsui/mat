@@ -65,6 +65,7 @@ impl LocalResolver {
             Expr::Variable(var) => match self.current_scope().get_mut(var, expr.span) {
                 Ok(entity) => {
                     entity.referred();
+                    // TODO: node.setEntity(ent);
                 }
                 Err(err) => self.errors.push(err),
             },
