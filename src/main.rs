@@ -73,25 +73,36 @@ fn main() {
                 println!("Semantic analysis has completed successfully.");
             }
             Err(errors) => {
-                let mut report = Report::build(ReportKind::Error, (), 0);
                 for err in errors {
-                    report = match err {
-                        SemanticError::DuplicatedDef(pre_span, span) => report
-                            .with_message("Duplicated definition")
-                            .with_label(
-                                Label::new(pre_span.range())
-                                    .with_message("previous definition of the definition"),
-                            )
-                            .with_label(Label::new(span.range()).with_message("redefined here")),
-                        SemanticError::UnresolvedRef(span) => report
-                            .with_message("Unresolved reference")
-                            .with_label(Label::new(span.range()).with_message("undefined ident")),
-                    };
-                }
-                report
+                    match err {
+                        SemanticError::DuplicatedDef(pre_span, span) => {
+                            Report::build(ReportKind::Error, &source.id, span.start())
+                                .with_message("Duplicated definition")
+                                .with_label(
+                                    Label::new((&source.id, pre_span.range()))
+                                        .with_message("previous definition".fg(Color::Blue))
+                                        .with_color(Color::Blue),
+                                )
+                                .with_label(
+                                    Label::new((&source.id, span.range()))
+                                        .with_message("redefined here".fg(Color::Red))
+                                        .with_color(Color::Red),
+                                )
+                        }
+                        SemanticError::UnresolvedRef(span) => {
+                            Report::build(ReportKind::Error, &source.id, span.start())
+                                .with_message("Unresolved reference")
+                                .with_label(
+                                    Label::new((&source.id, span.range()))
+                                        .with_message("undefined ident".fg(Color::Red))
+                                        .with_color(Color::Red),
+                                )
+                        }
+                    }
                     .finish()
-                    .print(Sources::from(source.content))
+                    .print((&source.id, Sources::from(source.content.clone())))
                     .unwrap();
+                }
             }
         }
     } else {
