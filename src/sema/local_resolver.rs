@@ -53,14 +53,13 @@ impl LocalResolver {
         for stmt in &ast.defs {
             if let Stmt::DefVar { expr, .. } = stmt.deref() {
                 if let Some(expr) = expr.deref() {
-                    self.resolve_variable(expr);
-                    self.resolve_string(expr);
+                    self.visit_expr(expr);
                 }
             }
         }
     }
 
-    fn resolve_variable(&mut self, expr: &Spanned<Expr>) {
+    fn visit_expr(&mut self, expr: &Spanned<Expr>) {
         match expr.deref() {
             Expr::Variable(var) => match self.current_scope().get_mut(var, expr.span) {
                 Ok(entity) => {
@@ -70,90 +69,91 @@ impl LocalResolver {
                 Err(err) => self.errors.push(err),
             },
             Expr::Or(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::And(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Lt(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Gt(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Lte(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Gte(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Eq(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Neq(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::BitOr(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::BitXor(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::BitAnd(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Shl(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Shr(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Add(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Sub(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Mul(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Div(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::Rem(lhs, rhs) => {
-                self.resolve_variable(lhs);
-                self.resolve_variable(rhs);
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
             }
             Expr::As(lhs, _ty) => {
-                self.resolve_variable(lhs);
+                self.visit_expr(lhs);
             }
             Expr::FnCall { name, args } => {
-                self.resolve_variable(name);
-                let _ = args.iter().map(|arg| self.resolve_variable(arg));
+                self.visit_expr(name);
+                let _ = args.iter().map(|arg| self.visit_expr(arg));
+            }
+            Expr::String(_str) => {
+                //node.setEntry(constantTable.intern(node.value()));
+                //                     return null;
+                todo!()
             }
             _ => (),
         }
-    }
-
-    fn resolve_string(&self, expr: &Spanned<Expr>) {
-        if let Expr::String(str) = expr.deref() {}
     }
 
     fn current_scope(&mut self) -> &mut Box<dyn Scope> {
@@ -213,7 +213,7 @@ mod tests {
     }
 
     #[test]
-    fn test_resolve_variable() {
+    fn test_visit_expr() {
         assert_eq!(
             LocalResolver::new().resolve(Ast {
                 imports: vec![],
