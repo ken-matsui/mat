@@ -1,14 +1,13 @@
 /// Local Resolver
-use crate::parser::ast::{Ast, Expr, Spanned, Stmt};
+use crate::parser::ast::{Ast, Expr, Param, Spanned, Stmt};
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
 use crate::sema::scope::Scope;
-use crate::sema::toplevel_scope::ToplevelScope;
 use std::collections::LinkedList;
 use std::ops::Deref;
 
 pub(crate) struct LocalResolver {
-    scope_stack: LinkedList<Box<dyn Scope>>,
+    scope_stack: LinkedList<Box<Scope>>,
     errors: Vec<SemanticError>,
 }
 
@@ -19,17 +18,14 @@ impl LocalResolver {
             errors: Vec::new(),
         }
     }
-}
 
-impl LocalResolver {
     pub(crate) fn resolve(&mut self, ast: Ast) -> Result<(), Vec<SemanticError>> {
-        // toplevel scope
-        let mut toplevel = ToplevelScope::new();
+        let mut toplevel = Scope::new(None);
 
         self.define_entities(&ast, &mut toplevel);
         self.scope_stack.push_back(Box::new(toplevel));
         self.resolve_gvar_initializers(&ast);
-        // toplevel scope end
+        self.resolve_functions(&ast);
 
         if self.errors.is_empty() {
             Ok(())
@@ -38,7 +34,7 @@ impl LocalResolver {
         }
     }
 
-    fn define_entities(&mut self, ast: &Ast, toplevel: &mut ToplevelScope) {
+    fn define_entities(&mut self, ast: &Ast, toplevel: &mut Scope) {
         for stmt in &ast.defs {
             // Convert DefVar & DefFn into Entities and define the entity.
             if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
@@ -59,15 +55,27 @@ impl LocalResolver {
         }
     }
 
+    fn resolve_functions(&mut self, ast: &Ast) {
+        for stmt in &ast.defs {
+            if let Stmt::DefFn { args, body, .. } = stmt.deref() {}
+        }
+    }
+
     fn visit_expr(&mut self, expr: &Spanned<Expr>) {
         match expr.deref() {
-            Expr::Variable(var) => match self.current_scope().get_mut(var, expr.span) {
-                Ok(entity) => {
-                    entity.referred();
-                    // TODO: node.setEntity(ent);
-                }
-                Err(err) => self.errors.push(err),
-            },
+            Expr::Variable(var) => {
+                match self.current_scope().refer(var, expr.span) {
+                    Ok(()) => {
+                        // TODO: node.setEntity(ent);
+                    }
+                    Err(err) => self.errors.push(err),
+                };
+            }
+            Expr::String(_str) => {
+                // node.setEntry(constantTable.intern(node.value()));
+                // return null;
+                todo!()
+            }
             Expr::Or(lhs, rhs) => {
                 self.visit_expr(lhs);
                 self.visit_expr(rhs);
@@ -147,16 +155,17 @@ impl LocalResolver {
                 self.visit_expr(name);
                 let _ = args.iter().map(|arg| self.visit_expr(arg));
             }
-            Expr::String(_str) => {
-                //node.setEntry(constantTable.intern(node.value()));
-                //                     return null;
-                todo!()
-            }
             _ => (),
         }
     }
 
-    fn current_scope(&mut self) -> &mut Box<dyn Scope> {
+    fn push_vars_to_scope(&mut self, vars: Vec<Param>) {
+        let scope = Scope::new(Some(self.current_scope().clone()));
+        for var in vars {}
+        self.scope_stack.push_back(Box::new(scope));
+    }
+
+    fn current_scope(&mut self) -> &mut Box<Scope> {
         self.scope_stack.back_mut().unwrap()
     }
 }
