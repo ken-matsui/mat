@@ -1,13 +1,14 @@
-use crate::parser::ast::Span;
+pub(crate) use crate::parser::error::ParserError;
 pub(crate) use chumsky::prelude::*;
 pub(crate) use chumsky::Parser as _;
-
-pub(crate) type ParserError = Simple<char, Span>;
 
 // trait alias under stable version
 pub(crate) trait Parser<T>: chumsky::Parser<char, T, Error = ParserError> + Clone {
     #[cfg(test)]
     fn parse_test(&self, stream: &str) -> Result<T, Vec<Self::Error>> {
+        use crate::parser::ast::Span;
+        use crate::SrcId;
+
         let len = stream.chars().count();
         let span = |i| Span::new(crate::SrcId::any(), i..i + 1);
 

@@ -1,6 +1,6 @@
 use crate::parser::ast::Span;
 use crate::sema::entity::Entity;
-use crate::SemanticError;
+use crate::sema::error::SemanticError;
 use linked_hash_map::LinkedHashMap;
 
 #[derive(Debug, Clone)]
