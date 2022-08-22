@@ -5,7 +5,7 @@ use crate::parser::ast::SrcId;
 use crate::parser::lib::ParserError;
 use crate::sema::error::SemanticError;
 use crate::sema::local_resolver::LocalResolver;
-use ariadne::{Color, Fmt, Label, Report, ReportKind, Source as Sources, Span};
+use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
 
@@ -71,6 +71,8 @@ fn main() {
                 println!("Semantic analysis has completed successfully.");
             }
             Err(errors) => {
+                let source = Source::from(code.clone());
+
                 for err in errors {
                     match err {
                         SemanticError::DuplicatedDef(pre_span, span) => {
@@ -87,7 +89,7 @@ fn main() {
                                         .with_color(Color::Red),
                                 )
                                 .finish()
-                                .print((span.src(), Sources::from(code.clone())))
+                                .print((span.src(), source.clone()))
                         }
                         SemanticError::UnresolvedRef(span) => {
                             Report::build(ReportKind::Error, span.src(), span.start())
@@ -98,7 +100,7 @@ fn main() {
                                         .with_color(Color::Red),
                                 )
                                 .finish()
-                                .print((span.src(), Sources::from(code.clone())))
+                                .print((span.src(), source.clone()))
                         }
                     }
                     .unwrap();
@@ -110,7 +112,9 @@ fn main() {
     }
 }
 
-fn emit_errors(errs: Vec<ParserError>, content: String) {
+fn emit_errors(errs: Vec<ParserError>, code: String) {
+    let source = Source::from(code.clone());
+
     for e in errs {
         let message = match e.reason() {
             chumsky::error::SimpleReason::Unexpected
@@ -155,7 +159,7 @@ fn emit_errors(errs: Vec<ParserError>, content: String) {
                     ),
             }))
             .finish()
-            .print((e.span().src(), Sources::from(content.clone())))
+            .print((e.span().src(), source.clone()))
             .unwrap();
     }
 }

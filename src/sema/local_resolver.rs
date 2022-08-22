@@ -178,14 +178,15 @@ impl LocalResolver {
                 self.pop_scope(); // TODO: stmts.set_scope(self.pop_scope());
             }
             Stmt::DefVar { name, ty, expr, .. } => {
+                // should evaluate expr first to support like `let min = min(1, 2)`.
+                if let Some(expr) = expr {
+                    self.visit_expr(expr);
+                }
                 if let Err(err) = self
                     .current_scope()
                     .define_entity(Entity::new(name.clone(), ty.clone()))
                 {
                     self.errors.push(err);
-                }
-                if let Some(expr) = expr {
-                    self.visit_expr(expr); // TODO: should evaluate this first to support like `let min = min(1, 2)`.
                 }
             }
             Stmt::If { cond, then, els } => {
