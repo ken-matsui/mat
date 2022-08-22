@@ -21,18 +21,22 @@ impl LocalResolver {
     }
 
     pub(crate) fn resolve(&mut self, ast: &Ast) -> Result<(), Vec<SemanticError>> {
-        let toplevel = Rc::new(RefCell::new(Scope::new(None)));
+        let toplevel = Scope::new(None);
         self.scope_stack.push_back(toplevel.clone());
-        self.define_entities(ast, toplevel);
+        self.define_entities(ast, toplevel.clone());
 
         self.resolve_gvar_initializers(ast);
         self.resolve_functions(ast);
+        toplevel.borrow().check_references(&mut self.errors);
 
         if self.errors.is_empty() {
             Ok(())
         } else {
             Err(self.errors.clone())
         }
+
+        // TODO: ast.set_scope(toplevel);
+        // TODO: ast.set_constant_table(constant_table);
     }
 
     fn define_entities(&mut self, ast: &Ast, toplevel: Rc<RefCell<Scope>>) {
@@ -178,12 +182,9 @@ impl LocalResolver {
         }
     }
 
-    fn new_scope(&self) -> Scope {
-        Scope::new(Some(self.current_scope().clone()))
-    }
     fn push_scope(&mut self) {
-        let scope = self.new_scope();
-        self.scope_stack.push_back(Rc::new(RefCell::new(scope)));
+        self.scope_stack
+            .push_back(Scope::new(Some(self.current_scope().clone())));
     }
     fn pop_scope(&mut self) -> Option<Rc<RefCell<Scope>>> {
         self.scope_stack.pop_back()

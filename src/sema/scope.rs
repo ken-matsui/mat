@@ -10,16 +10,26 @@ pub(crate) struct Scope {
     parent: Option<Rc<RefCell<Self>>>,
     // Toplevel has DefVars & DefFns, otherwise, only DefVars will be held.
     entities: LinkedHashMap<String, Entity>, // TODO: DefinedVariable?
-    children: Vec<Self>,
+    children: Vec<Rc<RefCell<Self>>>,
 }
 
 /// Impls for All Scope
 impl Scope {
-    pub(crate) fn new(parent: Option<Rc<RefCell<Self>>>) -> Self {
-        Self {
-            parent,
-            entities: LinkedHashMap::new(),
-            children: Vec::new(),
+    pub(crate) fn new(parent: Option<Rc<RefCell<Self>>>) -> Rc<RefCell<Self>> {
+        if let Some(parent) = parent {
+            let this = Rc::new(RefCell::new(Self {
+                parent: Some(parent.clone()),
+                entities: LinkedHashMap::new(),
+                children: Vec::new(),
+            }));
+            parent.borrow_mut().add_child(this.clone());
+            this
+        } else {
+            Rc::new(RefCell::new(Self {
+                parent,
+                entities: LinkedHashMap::new(),
+                children: Vec::new(),
+            }))
         }
     }
 
@@ -27,7 +37,7 @@ impl Scope {
         self.parent.clone()
     }
 
-    pub(crate) fn add_child(&mut self, s: Self) {
+    fn add_child(&mut self, s: Rc<RefCell<Self>>) {
         self.children.push(s);
     }
 
@@ -56,7 +66,20 @@ impl Scope {
             Ok(())
         }
     }
-}
 
-/// Impls for Local Scope
-impl Scope {}
+    pub(crate) fn check_references(&self, errors: &mut Vec<SemanticError>) {
+        for ent in self.entities.values() {
+            if !ent.is_referred() {
+                // TODO: Use warns vec
+                println!("WARNING: `{:?}` is unused.", ent.name);
+            }
+        }
+
+        // do not check parameters
+        for func_scope in &self.children {
+            for scope in &func_scope.borrow().children {
+                scope.borrow().check_references(errors);
+            }
+        }
+    }
+}

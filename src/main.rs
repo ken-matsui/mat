@@ -67,6 +67,7 @@ fn main() {
 
             if let Err(errors) = sema::analyze(&ast) {
                 errors.emit(&code);
+                return;
             }
             println!("Semantic analysis has completed successfully.");
         }

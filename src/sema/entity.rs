@@ -21,6 +21,9 @@ impl Entity {
     pub(crate) fn referred(&mut self) {
         self.n_referred += 1;
     }
+    pub(crate) fn is_referred(&self) -> bool {
+        self.n_referred > 0
+    }
 }
 
 impl TryFrom<Stmt> for Entity {
