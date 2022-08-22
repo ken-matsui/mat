@@ -10,7 +10,7 @@ pub(crate) trait Parser<T>: chumsky::Parser<char, T, Error = ParserError> + Clon
         use crate::SrcId;
 
         let len = stream.chars().count();
-        let span = |i| Span::new(crate::SrcId::any(), i..i + 1);
+        let span = |i| Span::new(SrcId::any(), i..i + 1);
 
         self.parse(chumsky::Stream::from_iter(
             span(len),

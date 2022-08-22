@@ -185,6 +185,15 @@ mod tests {
     use super::*;
     use crate::parser::ast::{Span, Type};
 
+    fn let_imut_i8(name: &str, expr: Option<Spanned<Expr>>) -> Spanned<Stmt> {
+        Spanned::any(Stmt::DefVar {
+            is_mut: false,
+            name: Spanned::any(name.to_string()),
+            ty: Spanned::any(Type::I8),
+            expr,
+        })
+    }
+
     #[test]
     fn test_define_entities() {
         assert_eq!(
@@ -197,32 +206,14 @@ mod tests {
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                defs: vec![Spanned::any(Stmt::DefVar {
-                    is_mut: false,
-                    name: Spanned::any("foo".to_string()),
-                    ty: Spanned::any(Type::I8),
-                    expr: None,
-                })]
+                defs: vec![let_imut_i8("foo", None)]
             }),
             Ok(())
         );
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                defs: vec![
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    })
-                ]
+                defs: vec![let_imut_i8("foo", None), let_imut_i8("foo", None)]
             }),
             Err(vec![SemanticError::DuplicatedDef(Span::any(), Span::any())]),
         );
@@ -233,12 +224,9 @@ mod tests {
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                defs: vec![Spanned::any(Stmt::DefVar {
-                    is_mut: false,
-                    name: Spanned::any("foo".to_string()),
-                    ty: Spanned::any(Type::I8),
-                    expr: Some(Spanned::any(Expr::Variable("bar".to_string()))), // Undefined variable
-                })]
+                defs: vec![
+                    let_imut_i8("foo", Some(Spanned::any(Expr::Variable("bar".to_string())))), // Undefined variable
+                ]
             }),
             Err(vec![SemanticError::UnresolvedRef(Span::any())])
         );
@@ -246,47 +234,40 @@ mod tests {
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("bar".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: Some(Spanned::any(Expr::Variable("bar".to_string()))),
-                    })
+                    let_imut_i8("bar", None),
+                    let_imut_i8("foo", Some(Spanned::any(Expr::Variable("bar".to_string())))),
                 ]
             }),
             Ok(())
         );
-        assert_eq!(
-            LocalResolver::new().resolve(&Ast {
-                imports: vec![],
-                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
-                defs: vec![Spanned::any(Stmt::DefVar {
-                    is_mut: false,
-                    name: Spanned::any("foo".to_string()),
-                    ty: Spanned::any(Type::I8),
-                    expr: Some(Spanned::any(Expr::Or(
-                        Spanned::any(Expr::Neq(
-                            Spanned::any(Expr::I32(1)),
-                            Spanned::any(Expr::BitOr(
-                                Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
-                                Spanned::any(Expr::BitAnd(
-                                    Spanned::any(Expr::I32(2)),
-                                    Spanned::any(Expr::Shl(
-                                        Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
-                                        Spanned::any(Expr::I32(3))
-                                    ))
-                                ))
-                            ))
+
+        // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
+        let let_complex = Spanned::any(Stmt::DefVar {
+            is_mut: false,
+            name: Spanned::any("foo".to_string()),
+            ty: Spanned::any(Type::I8),
+            expr: Some(Spanned::any(Expr::Or(
+                Spanned::any(Expr::Neq(
+                    Spanned::any(Expr::I32(1)),
+                    Spanned::any(Expr::BitOr(
+                        Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
+                        Spanned::any(Expr::BitAnd(
+                            Spanned::any(Expr::I32(2)),
+                            Spanned::any(Expr::Shl(
+                                Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
+                                Spanned::any(Expr::I32(3)),
+                            )),
                         )),
-                        Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
-                    ))),
-                })]
+                    )),
+                )),
+                Spanned::any(Expr::Variable("qux".to_string())), // Undefined variable
+            ))),
+        });
+
+        assert_eq!(
+            LocalResolver::new().resolve(&Ast {
+                imports: vec![],
+                defs: vec![let_complex.clone()]
             }),
             Err(vec![
                 SemanticError::UnresolvedRef(Span::any()),
@@ -297,36 +278,7 @@ mod tests {
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
-                defs: vec![
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("bar".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: Some(Spanned::any(Expr::Or(
-                            Spanned::any(Expr::Neq(
-                                Spanned::any(Expr::I32(1)),
-                                Spanned::any(Expr::BitOr(
-                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
-                                    Spanned::any(Expr::BitAnd(
-                                        Spanned::any(Expr::I32(2)),
-                                        Spanned::any(Expr::Shl(
-                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
-                                            Spanned::any(Expr::I32(3))
-                                        ))
-                                    ))
-                                ))
-                            )),
-                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
-                        ))),
-                    })
-                ]
+                defs: vec![let_imut_i8("bar", None), let_complex.clone(),]
             }),
             Err(vec![
                 SemanticError::UnresolvedRef(Span::any()),
@@ -336,41 +288,10 @@ mod tests {
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("bar".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("buz".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: Some(Spanned::any(Expr::Or(
-                            Spanned::any(Expr::Neq(
-                                Spanned::any(Expr::I32(1)),
-                                Spanned::any(Expr::BitOr(
-                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
-                                    Spanned::any(Expr::BitAnd(
-                                        Spanned::any(Expr::I32(2)),
-                                        Spanned::any(Expr::Shl(
-                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
-                                            Spanned::any(Expr::I32(3))
-                                        ))
-                                    ))
-                                ))
-                            )),
-                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
-                        ))),
-                    })
+                    let_imut_i8("bar", None),
+                    let_imut_i8("buz", None),
+                    let_complex.clone(),
                 ]
             }),
             Err(vec![SemanticError::UnresolvedRef(Span::any())])
@@ -378,47 +299,11 @@ mod tests {
         assert_eq!(
             LocalResolver::new().resolve(&Ast {
                 imports: vec![],
-                // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("bar".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("buz".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("qux".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: None,
-                    }),
-                    Spanned::any(Stmt::DefVar {
-                        is_mut: false,
-                        name: Spanned::any("foo".to_string()),
-                        ty: Spanned::any(Type::I8),
-                        expr: Some(Spanned::any(Expr::Or(
-                            Spanned::any(Expr::Neq(
-                                Spanned::any(Expr::I32(1)),
-                                Spanned::any(Expr::BitOr(
-                                    Spanned::any(Expr::Variable("bar".to_string())), // Undefined variable
-                                    Spanned::any(Expr::BitAnd(
-                                        Spanned::any(Expr::I32(2)),
-                                        Spanned::any(Expr::Shl(
-                                            Spanned::any(Expr::Variable("buz".to_string())), // Undefined variable
-                                            Spanned::any(Expr::I32(3))
-                                        ))
-                                    ))
-                                ))
-                            )),
-                            Spanned::any(Expr::Variable("qux".to_string())) // Undefined variable
-                        ))),
-                    })
+                    let_imut_i8("bar", None),
+                    let_imut_i8("buz", None),
+                    let_imut_i8("qux", None),
+                    let_complex,
                 ]
             }),
             Ok(())
