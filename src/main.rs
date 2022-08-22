@@ -71,8 +71,6 @@ fn main() {
                 println!("Semantic analysis has completed successfully.");
             }
             Err(errors) => {
-                let source = Source::from(code.clone());
-
                 for err in errors {
                     match err {
                         SemanticError::DuplicatedDef(pre_span, span) => {
@@ -89,7 +87,7 @@ fn main() {
                                         .with_color(Color::Red),
                                 )
                                 .finish()
-                                .print((span.src(), source.clone()))
+                                .print((span.src(), Source::from(code.clone())))
                         }
                         SemanticError::UnresolvedRef(span) => {
                             Report::build(ReportKind::Error, span.src(), span.start())
@@ -100,7 +98,7 @@ fn main() {
                                         .with_color(Color::Red),
                                 )
                                 .finish()
-                                .print((span.src(), source.clone()))
+                                .print((span.src(), Source::from(code.clone())))
                         }
                     }
                     .unwrap();
@@ -113,8 +111,6 @@ fn main() {
 }
 
 fn emit_errors(errs: Vec<ParserError>, code: String) {
-    let source = Source::from(code.clone());
-
     for e in errs {
         let message = match e.reason() {
             chumsky::error::SimpleReason::Unexpected
@@ -159,7 +155,7 @@ fn emit_errors(errs: Vec<ParserError>, code: String) {
                     ),
             }))
             .finish()
-            .print((e.span().src(), source.clone()))
+            .print((e.span().src(), Source::from(code.clone())))
             .unwrap();
     }
 }
