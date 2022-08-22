@@ -1,6 +1,6 @@
 pub(crate) mod ast;
-pub(crate) mod error;
-pub(crate) mod lib;
+mod error;
+mod lib;
 
 use ast::{compilation_unit, Ast, SrcId};
 use chumsky::{Parser, Span, Stream};

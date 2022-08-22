@@ -1,8 +1,8 @@
-pub(crate) mod entity;
-pub(crate) mod error;
-pub(crate) mod local_resolver;
-pub(crate) mod scope;
-pub(crate) mod visitor;
+mod entity;
+mod error;
+mod local_resolver;
+mod scope;
+mod visitor;
 
 use crate::parser::ast::Ast;
 use crate::Emit;
