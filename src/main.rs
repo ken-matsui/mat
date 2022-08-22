@@ -67,7 +67,7 @@ fn main() {
                 return;
             }
 
-            if let Err(errors) = LocalResolver::new().resolve(&ast) {
+            if let Err(errors) = sema::analyze(&ast) {
                 errors.emit(&code);
             }
             println!("Semantic analysis has completed successfully.");
