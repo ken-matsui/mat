@@ -5,7 +5,9 @@ use std::fmt::Debug;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum SemanticWarning {
+    // LocalResolver
     UnusedEntity(Span),
+    // TypeResolver
 }
 
 impl Emit for SemanticWarning {
@@ -33,8 +35,11 @@ impl Emit for Vec<SemanticWarning> {
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum SemanticError {
+    // LocalResolver
     DuplicatedDef(Span, Span),
     UnresolvedRef(Span),
+    // TypeResolver
+    DuplicatedType(Span, Span),
 }
 
 impl Emit for SemanticError {
@@ -62,6 +67,23 @@ impl Emit for SemanticError {
                     .with_label(
                         Label::new(span)
                             .with_message("undefined ident".fg(Color::Red))
+                            .with_color(Color::Red),
+                    )
+                    .finish()
+                    .print((span.src(), Source::from(code)))
+            }
+            SemanticError::DuplicatedType(pre_span, span) => {
+                // TODO: too similar to DuplicatedDef
+                Report::build(ReportKind::Error, span.src(), span.start())
+                    .with_message("Duplicated type")
+                    .with_label(
+                        Label::new(pre_span)
+                            .with_message("previous definition".fg(Color::Blue))
+                            .with_color(Color::Blue),
+                    )
+                    .with_label(
+                        Label::new(span)
+                            .with_message("redefined here".fg(Color::Red))
                             .with_color(Color::Red),
                     )
                     .finish()

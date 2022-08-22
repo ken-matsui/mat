@@ -84,7 +84,7 @@ fn main() -> i32 {
                         expr: Some(Spanned::any(Expr::I32(1))),
                     }),
                     Spanned::any(Stmt::TypeDef {
-                        new: Spanned::any("newint".to_string()),
+                        name: Spanned::any("newint".to_string()),
                         old: Spanned::any(Type::I32),
                     }),
                     Spanned::any(Stmt::DefFn {
