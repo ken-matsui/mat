@@ -29,7 +29,7 @@ pub(crate) enum Stmt {
     },
 
     TypeDef {
-        new: String,
+        new: Spanned<String>,
         old: Spanned<Type>,
     },
 
@@ -313,7 +313,7 @@ mod tests {
                     expr: Some(Spanned::any(Expr::I32(1))),
                 }),
                 Spanned::any(Stmt::TypeDef {
-                    new: "newint".to_string(),
+                    new: Spanned::any("newint".to_string()),
                     old: Spanned::any(Type::I32),
                 }),
                 Spanned::any(Stmt::DefFn {

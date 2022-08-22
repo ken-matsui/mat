@@ -39,7 +39,7 @@ pub(crate) fn typeref() -> impl Parser<Spanned<Type>> {
 pub(crate) fn typedef() -> impl Parser<Spanned<Stmt>> {
     text::keyword("type")
         .padded()
-        .ignore_then(ident().padded())
+        .ignore_then(ident().map_with_span(Spanned::new).padded())
         .then_ignore(just('='))
         .then(typeref().padded())
         .then_ignore(just(';'))
@@ -75,28 +75,28 @@ mod tests {
         assert_eq!(
             typedef().parse_test("type new = i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
-                new: "new".to_string(),
+                new: Spanned::any("new".to_string()),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new=i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
-                new: "new".to_string(),
+                new: Spanned::any("new".to_string()),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new=i8  ;"),
             Ok(Spanned::any(Stmt::TypeDef {
-                new: "new".to_string(),
+                new: Spanned::any("new".to_string()),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
-                new: "new".to_string(),
+                new: Spanned::any("new".to_string()),
                 old: Spanned::any(Type::User("old".to_string())),
             }))
         );
@@ -105,7 +105,7 @@ mod tests {
         assert_eq!(
             typedef().parse_test("type i8 = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
-                new: "i8".to_string(),
+                new: Spanned::any("i8".to_string()),
                 old: Spanned::any(Type::User("old".to_string())),
             }))
         );
