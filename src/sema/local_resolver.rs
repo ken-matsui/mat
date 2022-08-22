@@ -19,7 +19,7 @@ impl LocalResolver {
         }
     }
 
-    pub(crate) fn resolve(&mut self, ast: Ast) -> Result<(), Vec<SemanticError>> {
+    pub(crate) fn resolve(&mut self, ast: &Ast) -> Result<(), Vec<SemanticError>> {
         let mut toplevel = Scope::new(None);
         self.define_entities(&ast, &mut toplevel);
         self.scope_stack.push_back(Box::new(toplevel));
@@ -188,14 +188,14 @@ mod tests {
     #[test]
     fn test_define_entities() {
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![]
             }),
             Ok(())
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![Spanned::any(Stmt::DefVar {
                     is_mut: false,
@@ -207,7 +207,7 @@ mod tests {
             Ok(())
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![
                     Spanned::any(Stmt::DefVar {
@@ -231,7 +231,7 @@ mod tests {
     #[test]
     fn test_visit_expr() {
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![Spanned::any(Stmt::DefVar {
                     is_mut: false,
@@ -243,7 +243,7 @@ mod tests {
             Err(vec![SemanticError::UnresolvedRef(Span::any())])
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 defs: vec![
                     Spanned::any(Stmt::DefVar {
@@ -263,7 +263,7 @@ mod tests {
             Ok(())
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![Spanned::any(Stmt::DefVar {
@@ -295,7 +295,7 @@ mod tests {
             ])
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![
@@ -334,7 +334,7 @@ mod tests {
             ])
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![
@@ -376,7 +376,7 @@ mod tests {
             Err(vec![SemanticError::UnresolvedRef(Span::any())])
         );
         assert_eq!(
-            LocalResolver::new().resolve(Ast {
+            LocalResolver::new().resolve(&Ast {
                 imports: vec![],
                 // let foo: i8 = 1 != bar | 2 & buz << 3 || qux;
                 defs: vec![

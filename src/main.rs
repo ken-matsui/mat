@@ -8,7 +8,7 @@ use crate::sema::local_resolver::LocalResolver;
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[clap(version, about, long_about = None)]
 #[clap(group(
     ArgGroup::new("dumps")
@@ -66,10 +66,11 @@ fn main() {
                 println!("{:#?}", ast);
                 return;
             }
-            match LocalResolver::new().resolve(ast) {
-                Err(errors) => errors.emit(&code),
-                Ok(()) => println!("Semantic analysis has completed successfully."),
+
+            if let Err(errors) = LocalResolver::new().resolve(&ast) {
+                errors.emit(&code);
             }
+            println!("Semantic analysis has completed successfully.");
         }
     }
 }
