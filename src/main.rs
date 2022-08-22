@@ -59,21 +59,17 @@ fn main() {
     let args = Args::parse();
     let code = read_to_string(args.source.clone()).expect("Failed to read file");
 
-    let (ast, errors) = parser::parse(SrcId::from_path(args.source), &code);
-    if let Some(ast) = ast {
-        if args.dump_ast {
-            println!("{:#?}", ast);
-            return;
-        }
-        match LocalResolver::new().resolve(ast) {
-            Ok(()) => {
-                println!("Semantic analysis has completed successfully.");
+    match parser::parse(SrcId::from_path(args.source), &code) {
+        Err(errors) => errors.emit(&code),
+        Ok(ast) => {
+            if args.dump_ast {
+                println!("{:#?}", ast);
+                return;
             }
-            Err(errors) => {
-                errors.emit(&code);
+            match LocalResolver::new().resolve(ast) {
+                Err(errors) => errors.emit(&code),
+                Ok(()) => println!("Semantic analysis has completed successfully."),
             }
         }
-    } else {
-        errors.emit(&code);
     }
 }
