@@ -20,24 +20,24 @@ mod tests {
     #[test]
     fn test_string() {
         assert_eq!(
-            string().parse("\"a\""),
+            string().parse_test("\"a\""),
             Ok(Spanned::any(Expr::String("a".to_string())))
         );
         assert_eq!(
-            string().parse("\"a\"     "),
+            string().parse_test("\"a\"     "),
             Ok(Spanned::any(Expr::String("a".to_string())))
         );
         assert_eq!(
-            string().parse("\"1 \""),
+            string().parse_test("\"1 \""),
             Ok(Spanned::any(Expr::String("1 ".to_string())))
         );
         assert_eq!(
-            string().parse("\"\n\""),
+            string().parse_test("\"\n\""),
             Ok(Spanned::any(Expr::String("\n".to_string())))
         );
-        assert!(string().parse("    \"a\"").is_err());
-        assert!(string().parse("\"a").is_err());
-        assert!(string().parse("a\"").is_err());
-        assert!(string().parse("a").is_err());
+        assert!(string().parse_test("    \"a\"").is_err());
+        assert!(string().parse_test("\"a").is_err());
+        assert!(string().parse_test("a\"").is_err());
+        assert!(string().parse_test("a").is_err());
     }
 }

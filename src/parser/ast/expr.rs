@@ -1,4 +1,4 @@
-use crate::parser::ast::{character, integer, string, typeref, variable, Span, Spanned, Type};
+use crate::parser::ast::{character, integer, string, typeref, variable, Spanned, Type};
 use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -233,11 +233,11 @@ fn fn_call() -> impl Parser<Spanned<Expr>> {
                     name.span.union(
                         args.iter()
                             .map(|f| f.span)
-                            .fold(first.span, |acc, xs| Span::new(acc.union(xs))),
+                            .fold(first.span, |acc, xs| acc.union(xs)),
                     )
                 } else {
                     // No args found
-                    name.span.range()
+                    name.span
                 };
                 Spanned::new(Expr::FnCall { name, args }, span)
             })
@@ -258,7 +258,7 @@ mod tests {
     #[test]
     fn test_args() {
         assert_eq!(
-            args(None).parse("1, var, 1 +1"),
+            args(None).parse_test("1, var, 1 +1"),
             Ok(vec![
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Variable("var".to_string())),
@@ -268,13 +268,16 @@ mod tests {
                 )),
             ])
         );
-        assert_eq!(args(None).parse("1"), Ok(vec![Spanned::any(Expr::I32(1))]));
+        assert_eq!(
+            args(None).parse_test("1"),
+            Ok(vec![Spanned::any(Expr::I32(1))])
+        );
     }
 
     #[test]
     fn test_expr() {
         assert_eq!(
-            expr(None).parse("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
+            expr(None).parse_test("1 || 2 && 3 != 4 | 5 ^ 6 & 7 << 8 + 9*10"),
             Ok(Spanned::any(Expr::Or(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::And(
@@ -305,13 +308,13 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr8() {
         assert_eq!(
-            expr8(None).parse("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
+            expr8(None).parse_test("1 && 2 != 3 | 4 ^ 5 & 6 << 7 + 8*9"),
             Ok(Spanned::any(Expr::And(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Neq(
@@ -339,7 +342,7 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr8(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr8(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
@@ -365,52 +368,52 @@ mod tests {
         ));
 
         assert_eq!(
-            expr7(None).parse("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 != 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Neq(
                 Spanned::any(Expr::I32(1)),
                 expr.clone()
             )))
         );
         assert_eq!(
-            expr7(None).parse("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 == 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Eq(
                 Spanned::any(Expr::I32(1)),
                 expr.clone()
             )))
         );
         assert_eq!(
-            expr7(None).parse("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 >= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Gte(
                 Spanned::any(Expr::I32(1)),
                 expr.clone()
             )))
         );
         assert_eq!(
-            expr7(None).parse("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 <= 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Lte(
                 Spanned::any(Expr::I32(1)),
                 expr.clone()
             )))
         );
         assert_eq!(
-            expr7(None).parse("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 > 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Gt(
                 Spanned::any(Expr::I32(1)),
                 expr.clone()
             )))
         );
         assert_eq!(
-            expr7(None).parse("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
+            expr7(None).parse_test("1 < 2 | 3 ^ 4 & 5 << 6 + 7*8"),
             Ok(Spanned::any(Expr::Lt(Spanned::any(Expr::I32(1)), expr)))
         );
 
-        assert_eq!(expr7(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr7(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr6() {
         assert_eq!(
-            expr6(None).parse("1 | 2 ^ 3 & 4 << 5 + 6*7"),
+            expr6(None).parse_test("1 | 2 ^ 3 & 4 << 5 + 6*7"),
             Ok(Spanned::any(Expr::BitOr(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::BitXor(
@@ -432,13 +435,13 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr6(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr6(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr5() {
         assert_eq!(
-            expr5(None).parse("1 ^ 2 & 3 << 4 + 5*6"),
+            expr5(None).parse_test("1 ^ 2 & 3 << 4 + 5*6"),
             Ok(Spanned::any(Expr::BitXor(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::BitAnd(
@@ -457,13 +460,13 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr5(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr5(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr4() {
         assert_eq!(
-            expr4(None).parse("1 & 2 << 3 + 4*5"),
+            expr4(None).parse_test("1 & 2 << 3 + 4*5"),
             Ok(Spanned::any(Expr::BitAnd(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Shl(
@@ -479,13 +482,13 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr4(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr4(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr3() {
         assert_eq!(
-            expr3(None).parse("1 << 2 + 3*4"),
+            expr3(None).parse_test("1 << 2 + 3*4"),
             Ok(Spanned::any(Expr::Shl(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Add(
@@ -499,7 +502,7 @@ mod tests {
         );
 
         assert_eq!(
-            expr3(None).parse("1 >> 2 + 3*4"),
+            expr3(None).parse_test("1 >> 2 + 3*4"),
             Ok(Spanned::any(Expr::Shr(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Add(
@@ -512,13 +515,13 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr3(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr3(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr2() {
         assert_eq!(
-            expr2(None).parse("1 + 2*3"),
+            expr2(None).parse_test("1 + 2*3"),
             Ok(Spanned::any(Expr::Add(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Mul(
@@ -529,7 +532,7 @@ mod tests {
         );
 
         assert_eq!(
-            expr2(None).parse("1 - 2*3"),
+            expr2(None).parse_test("1 - 2*3"),
             Ok(Spanned::any(Expr::Sub(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::Mul(
@@ -540,7 +543,7 @@ mod tests {
         );
 
         assert_eq!(
-            expr2(None).parse("1*2 + 3*4"),
+            expr2(None).parse_test("1*2 + 3*4"),
             Ok(Spanned::any(Expr::Add(
                 Spanned::any(Expr::Mul(
                     Spanned::any(Expr::I32(1)),
@@ -553,27 +556,27 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr2(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr2(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_expr1() {
         assert_eq!(
-            expr1(None).parse("1*1"),
+            expr1(None).parse_test("1*1"),
             Ok(Spanned::any(Expr::Mul(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::I32(1)),
             )))
         );
         assert_eq!(
-            expr1(None).parse("1 / 1"),
+            expr1(None).parse_test("1 / 1"),
             Ok(Spanned::any(Expr::Div(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::I32(1)),
             )))
         );
         assert_eq!(
-            expr1(None).parse("1 %2"),
+            expr1(None).parse_test("1 %2"),
             Ok(Spanned::any(Expr::Rem(
                 Spanned::any(Expr::I32(1)),
                 Spanned::any(Expr::I32(2)),
@@ -581,7 +584,7 @@ mod tests {
         );
 
         assert_eq!(
-            expr1(None).parse("1 % 2 / 3 * 4"),
+            expr1(None).parse_test("1 % 2 / 3 * 4"),
             Ok(Spanned::any(Expr::Mul(
                 Spanned::any(Expr::Div(
                     Spanned::any(Expr::Rem(
@@ -594,20 +597,20 @@ mod tests {
             )))
         );
 
-        assert_eq!(expr1(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(expr1(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
     }
 
     #[test]
     fn test_cast() {
         assert_eq!(
-            cast(None).parse("var as cast"),
+            cast(None).parse_test("var as cast"),
             Ok(Spanned::any(Expr::As(
                 Spanned::any(Expr::Variable("var".to_string())),
                 Spanned::any(Type::User("cast".to_string()))
             )))
         );
         assert_eq!(
-            cast(None).parse("127 as u8"),
+            cast(None).parse_test("127 as u8"),
             Ok(Spanned::any(Expr::As(
                 Spanned::any(Expr::I32(127)),
                 Spanned::any(Type::U8)
@@ -615,18 +618,18 @@ mod tests {
         );
         // TODO: This should also work
         // assert_eq!(
-        //     cast(None).parse("fun(a1 as char, a2 as u64) as u8"), todo!()
+        //     cast(None).parse_test("fun(a1 as char, a2 as u64) as u8"), todo!()
         // );
 
-        // cast should parse fn_call as well
-        assert_eq!(cast(None).parse("1"), Ok(Spanned::any(Expr::I32(1))));
-        assert_eq!(cast(None).parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
+        // cast should parse_test fn_call as well
+        assert_eq!(cast(None).parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(cast(None).parse_test("'a'"), Ok(Spanned::any(Expr::I8(97))));
         assert_eq!(
-            cast(None).parse("\"a\""),
+            cast(None).parse_test("\"a\""),
             Ok(Spanned::any(Expr::String("a".to_string())))
         );
         assert_eq!(
-            cast(None).parse("var"),
+            cast(None).parse_test("var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }
@@ -634,7 +637,7 @@ mod tests {
     #[test]
     fn test_fn_call() {
         assert_eq!(
-            fn_call().parse("fun(1, a2, '3', \"4\")"),
+            fn_call().parse_test("fun(1, a2, '3', \"4\")"),
             Ok(Spanned::any(Expr::FnCall {
                 name: Spanned::any(Expr::Variable("fun".to_string())),
                 args: vec![
@@ -646,7 +649,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            fn_call().parse("fun(a1 as char, a2 as u64)"),
+            fn_call().parse_test("fun(a1 as char, a2 as u64)"),
             Ok(Spanned::any(Expr::FnCall {
                 name: Spanned::any(Expr::Variable("fun".to_string())),
                 args: vec![
@@ -662,28 +665,28 @@ mod tests {
             }))
         );
 
-        assert_eq!(fn_call().parse("1"), Ok(Spanned::any(Expr::I32(1))));
-        assert_eq!(fn_call().parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
+        assert_eq!(fn_call().parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(fn_call().parse_test("'a'"), Ok(Spanned::any(Expr::I8(97))));
         assert_eq!(
-            fn_call().parse("\"a\""),
+            fn_call().parse_test("\"a\""),
             Ok(Spanned::any(Expr::String("a".to_string())))
         );
         assert_eq!(
-            fn_call().parse("var"),
+            fn_call().parse_test("var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }
 
     #[test]
     fn test_primary() {
-        assert_eq!(primary().parse("1"), Ok(Spanned::any(Expr::I32(1))));
-        assert_eq!(primary().parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
+        assert_eq!(primary().parse_test("1"), Ok(Spanned::any(Expr::I32(1))));
+        assert_eq!(primary().parse_test("'a'"), Ok(Spanned::any(Expr::I8(97))));
         assert_eq!(
-            primary().parse("\"a\""),
+            primary().parse_test("\"a\""),
             Ok(Spanned::any(Expr::String("a".to_string())))
         );
         assert_eq!(
-            primary().parse("var"),
+            primary().parse_test("var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
     }

@@ -24,56 +24,56 @@ mod tests {
 
     #[test]
     fn test_single_line_comment() {
-        assert!(comment().parse("// comment\n").is_ok());
-        assert!(comment().parse("//\n").is_ok());
-        assert!(comment().parse("// comment").is_ok());
-        assert!(comment().parse("/\n").is_err());
+        assert!(comment().parse_test("// comment\n").is_ok());
+        assert!(comment().parse_test("//\n").is_ok());
+        assert!(comment().parse_test("// comment").is_ok());
+        assert!(comment().parse_test("/\n").is_err());
     }
 
     #[test]
     fn test_multi_line_comment() {
         assert!(comment()
-            .parse(
+            .parse_test(
                 r#"/*
                 comment
                 */
             "#
             )
             .is_ok());
-        assert!(comment().parse("/**/").is_ok());
-        assert!(comment().parse("/**/\n").is_ok());
-        assert!(comment().parse("/* foo */\n").is_ok());
-        assert!(comment().parse("/** *foo **/\n").is_ok());
-        assert!(comment().parse("/* foo */").is_ok());
-        assert!(comment().parse("/* foo *\n").is_err());
-        assert!(comment().parse("/* foo \n").is_err());
-        assert!(comment().parse("* foo */\n").is_err());
-        assert!(comment().parse(" foo */\n").is_err());
+        assert!(comment().parse_test("/**/").is_ok());
+        assert!(comment().parse_test("/**/\n").is_ok());
+        assert!(comment().parse_test("/* foo */\n").is_ok());
+        assert!(comment().parse_test("/** *foo **/\n").is_ok());
+        assert!(comment().parse_test("/* foo */").is_ok());
+        assert!(comment().parse_test("/* foo *\n").is_err());
+        assert!(comment().parse_test("/* foo \n").is_err());
+        assert!(comment().parse_test("* foo */\n").is_err());
+        assert!(comment().parse_test(" foo */\n").is_err());
     }
 
     #[test]
     fn test_comment() {
-        assert!(comment().parse("// comment\n").is_ok());
-        assert!(comment().parse("//\n").is_ok());
-        assert!(comment().parse("// comment").is_ok());
-        assert!(comment().parse("/\n").is_err());
+        assert!(comment().parse_test("// comment\n").is_ok());
+        assert!(comment().parse_test("//\n").is_ok());
+        assert!(comment().parse_test("// comment").is_ok());
+        assert!(comment().parse_test("/\n").is_err());
 
         assert!(comment()
-            .parse(
+            .parse_test(
                 r#"/*
                 comment
                 */
             "#
             )
             .is_ok());
-        assert!(comment().parse("/**/").is_ok());
-        assert!(comment().parse("/**/\n").is_ok());
-        assert!(comment().parse("/* foo */\n").is_ok());
-        assert!(comment().parse("/** *foo **/\n").is_ok());
-        assert!(comment().parse("/* foo */").is_ok());
-        assert!(comment().parse("/* foo *\n").is_err());
-        assert!(comment().parse("/* foo \n").is_err());
-        assert!(comment().parse("* foo */\n").is_err());
-        assert!(comment().parse(" foo */\n").is_err());
+        assert!(comment().parse_test("/**/").is_ok());
+        assert!(comment().parse_test("/**/\n").is_ok());
+        assert!(comment().parse_test("/* foo */\n").is_ok());
+        assert!(comment().parse_test("/** *foo **/\n").is_ok());
+        assert!(comment().parse_test("/* foo */").is_ok());
+        assert!(comment().parse_test("/* foo *\n").is_err());
+        assert!(comment().parse_test("/* foo \n").is_err());
+        assert!(comment().parse_test("* foo */\n").is_err());
+        assert!(comment().parse_test(" foo */\n").is_err());
     }
 }

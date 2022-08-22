@@ -185,7 +185,7 @@ impl LocalResolver {
                     self.errors.push(err);
                 }
                 if let Some(expr) = expr {
-                    self.visit_expr(expr);
+                    self.visit_expr(expr); // TODO: should evaluate this first to support like `let min = min(1, 2)`.
                 }
             }
             Stmt::If { cond, then, els } => {
@@ -304,10 +304,7 @@ mod tests {
                     })
                 ]
             }),
-            Err(vec![SemanticError::DuplicatedDef(
-                Span::new_any(),
-                Span::new_any()
-            )]),
+            Err(vec![SemanticError::DuplicatedDef(Span::any(), Span::any())]),
         );
     }
 
@@ -323,7 +320,7 @@ mod tests {
                     expr: Some(Spanned::any(Expr::Variable("bar".to_string()))), // Undefined variable
                 })]
             }),
-            Err(vec![SemanticError::UnresolvedRef(Span::new_any())])
+            Err(vec![SemanticError::UnresolvedRef(Span::any())])
         );
         assert_eq!(
             LocalResolver::new().resolve(Ast {
@@ -372,9 +369,9 @@ mod tests {
                 })]
             }),
             Err(vec![
-                SemanticError::UnresolvedRef(Span::new_any()),
-                SemanticError::UnresolvedRef(Span::new_any()),
-                SemanticError::UnresolvedRef(Span::new_any())
+                SemanticError::UnresolvedRef(Span::any()),
+                SemanticError::UnresolvedRef(Span::any()),
+                SemanticError::UnresolvedRef(Span::any())
             ])
         );
         assert_eq!(
@@ -412,8 +409,8 @@ mod tests {
                 ]
             }),
             Err(vec![
-                SemanticError::UnresolvedRef(Span::new_any()),
-                SemanticError::UnresolvedRef(Span::new_any())
+                SemanticError::UnresolvedRef(Span::any()),
+                SemanticError::UnresolvedRef(Span::any())
             ])
         );
         assert_eq!(
@@ -456,7 +453,7 @@ mod tests {
                     })
                 ]
             }),
-            Err(vec![SemanticError::UnresolvedRef(Span::new_any())])
+            Err(vec![SemanticError::UnresolvedRef(Span::any())])
         );
         assert_eq!(
             LocalResolver::new().resolve(Ast {

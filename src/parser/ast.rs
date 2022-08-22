@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn test_compilation_unit() {
         assert_eq!(
-            compilation_unit().parse(
+            compilation_unit().parse_test(
                 r#"
 import std.io;
 import stdio;

@@ -1,10 +1,11 @@
 mod parser;
 mod sema;
 
+use crate::parser::ast::SrcId;
 use crate::parser::lib::ParserError;
 use crate::sema::error::SemanticError;
 use crate::sema::local_resolver::LocalResolver;
-use ariadne::{sources, Color, Fmt, Label, Report, ReportKind, Source as Sources};
+use ariadne::{Color, Fmt, Label, Report, ReportKind, Source as Sources, Span};
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
 
@@ -57,12 +58,9 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let source = Source {
-        id: args.source.clone(),
-        content: read_to_string(args.source).expect("Failed to read file"),
-    };
+    let code = read_to_string(args.source.clone()).expect("Failed to read file");
 
-    let (ast, errs) = parser::parse(source.content.clone());
+    let (ast, errs) = parser::parse(SrcId::from_path(args.source), code.clone());
     if let Some(ast) = ast {
         if args.dump_ast {
             println!("{:#?}", ast);
@@ -76,46 +74,43 @@ fn main() {
                 for err in errors {
                     match err {
                         SemanticError::DuplicatedDef(pre_span, span) => {
-                            Report::build(ReportKind::Error, &source.id, span.start())
+                            Report::build(ReportKind::Error, span.src(), span.start())
                                 .with_message("Duplicated definition")
                                 .with_label(
-                                    Label::new((&source.id, pre_span.range()))
+                                    Label::new(pre_span)
                                         .with_message("previous definition".fg(Color::Blue))
                                         .with_color(Color::Blue),
                                 )
                                 .with_label(
-                                    Label::new((&source.id, span.range()))
+                                    Label::new(span)
                                         .with_message("redefined here".fg(Color::Red))
                                         .with_color(Color::Red),
                                 )
+                                .finish()
+                                .print((span.src(), Sources::from(code.clone())))
                         }
                         SemanticError::UnresolvedRef(span) => {
-                            Report::build(ReportKind::Error, &source.id, span.start())
+                            Report::build(ReportKind::Error, span.src(), span.start())
                                 .with_message("Unresolved reference")
                                 .with_label(
-                                    Label::new((&source.id, span.range()))
+                                    Label::new(span)
                                         .with_message("undefined ident".fg(Color::Red))
                                         .with_color(Color::Red),
                                 )
+                                .finish()
+                                .print((span.src(), Sources::from(code.clone())))
                         }
                     }
-                    .finish()
-                    .print((&source.id, Sources::from(source.content.clone())))
                     .unwrap();
                 }
             }
         }
     } else {
-        emit_errors(errs, source);
+        emit_errors(errs, code);
     }
 }
 
-struct Source {
-    id: String,
-    content: String,
-}
-
-fn emit_errors(errs: Vec<ParserError>, source: Source) {
+fn emit_errors(errs: Vec<ParserError>, content: String) {
     for e in errs {
         let message = match e.reason() {
             chumsky::error::SimpleReason::Unexpected
@@ -148,21 +143,19 @@ fn emit_errors(errs: Vec<ParserError>, source: Source) {
             chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
         };
 
-        Report::build(ReportKind::Error, source.id.clone(), e.span().start)
+        Report::build(ReportKind::Error, e.span().src(), e.span().start())
             .with_message(message)
-            .with_label(
-                Label::new((source.id.clone(), e.span())).with_message(match e.reason() {
-                    chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
-                    _ => format!(
+            .with_label(Label::new(e.span()).with_message(match e.reason() {
+                chumsky::error::SimpleReason::Custom(msg) => msg.clone(),
+                _ => format!(
                         "Unexpected {}",
                         e.found()
                             .map(|c| format!("token {}", c.fg(Color::Red)))
                             .unwrap_or_else(|| "end of input".to_string())
                     ),
-                }),
-            )
+            }))
             .finish()
-            .print(sources(vec![(source.id.clone(), source.content.clone())]))
+            .print((e.span().src(), Sources::from(content.clone())))
             .unwrap();
     }
 }

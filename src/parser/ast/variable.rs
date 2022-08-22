@@ -15,17 +15,17 @@ mod tests {
     #[test]
     fn test_variable() {
         assert_eq!(
-            variable().parse("var"),
+            variable().parse_test("var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
         assert_eq!(
-            variable().parse("var    "),
+            variable().parse_test("var    "),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
         assert_eq!(
-            variable().parse("  var"),
+            variable().parse_test("  var"),
             Ok(Spanned::any(Expr::Variable("var".to_string())))
         );
-        assert!(variable().parse("1var").is_err());
+        assert!(variable().parse_test("1var").is_err());
     }
 }

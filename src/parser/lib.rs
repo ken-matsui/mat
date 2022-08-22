@@ -1,10 +1,22 @@
+use crate::parser::ast::Span;
 pub(crate) use chumsky::prelude::*;
 pub(crate) use chumsky::Parser as _;
 
-pub(crate) type ParserError = Simple<char>;
+pub(crate) type ParserError = Simple<char, Span>;
 
 // trait alias under stable version
-pub(crate) trait Parser<T>: chumsky::Parser<char, T, Error = ParserError> + Clone {}
+pub(crate) trait Parser<T>: chumsky::Parser<char, T, Error = ParserError> + Clone {
+    #[cfg(test)]
+    fn parse_test(&self, stream: &str) -> Result<T, Vec<Self::Error>> {
+        let len = stream.chars().count();
+        let span = |i| Span::new(crate::SrcId::any(), i..i + 1);
+
+        self.parse(chumsky::Stream::from_iter(
+            span(len),
+            stream.chars().enumerate().map(|(i, c)| (c, span(i))),
+        ))
+    }
+}
 impl<S, T> Parser<T> for S where S: chumsky::Parser<char, T, Error = ParserError> + Clone {}
 
 pub(crate) type Rec<'a, T> = Recursive<'a, char, T, ParserError>;

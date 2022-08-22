@@ -51,74 +51,107 @@ mod tests {
 
     #[test]
     fn test_integer() {
-        assert_eq!(integer().parse("0"), Ok(Spanned::any(Expr::I32(0))));
+        assert_eq!(integer().parse_test("0"), Ok(Spanned::any(Expr::I32(0))));
         assert_eq!(
-            integer().parse("2147483647"),
+            integer().parse_test("2147483647"),
             Ok(Spanned::any(Expr::I32(2147483647)))
         );
-        assert!(integer().parse("2147483648").is_err());
-        assert_eq!(integer().parse("0 i8"), Ok(Spanned::any(Expr::I32(0))));
+        assert!(integer().parse_test("2147483648").is_err());
+        assert_eq!(integer().parse_test("0 i8"), Ok(Spanned::any(Expr::I32(0))));
 
-        assert_eq!(integer().parse("0i8 "), Ok(Spanned::any(Expr::I8(0))));
-        assert_eq!(integer().parse("127i8"), Ok(Spanned::any(Expr::I8(127))));
-        assert!(integer().parse("128i8").is_err());
-
-        assert_eq!(integer().parse("0i16 "), Ok(Spanned::any(Expr::I16(0))));
+        assert_eq!(integer().parse_test("0i8 "), Ok(Spanned::any(Expr::I8(0))));
         assert_eq!(
-            integer().parse("32767i16"),
+            integer().parse_test("127i8"),
+            Ok(Spanned::any(Expr::I8(127)))
+        );
+        assert!(integer().parse_test("128i8").is_err());
+
+        assert_eq!(
+            integer().parse_test("0i16 "),
+            Ok(Spanned::any(Expr::I16(0)))
+        );
+        assert_eq!(
+            integer().parse_test("32767i16"),
             Ok(Spanned::any(Expr::I16(32767)))
         );
-        assert!(integer().parse("32768i16").is_err());
+        assert!(integer().parse_test("32768i16").is_err());
 
-        assert_eq!(integer().parse("0i32 "), Ok(Spanned::any(Expr::I32(0))));
         assert_eq!(
-            integer().parse("2147483647i32"),
+            integer().parse_test("0i32 "),
+            Ok(Spanned::any(Expr::I32(0)))
+        );
+        assert_eq!(
+            integer().parse_test("2147483647i32"),
             Ok(Spanned::any(Expr::I32(2147483647)))
         );
-        assert!(integer().parse("2147483648i32").is_err());
+        assert!(integer().parse_test("2147483648i32").is_err());
 
-        assert_eq!(integer().parse("0i64 "), Ok(Spanned::any(Expr::I64(0))));
         assert_eq!(
-            integer().parse("9223372036854775807i64"),
+            integer().parse_test("0i64 "),
+            Ok(Spanned::any(Expr::I64(0)))
+        );
+        assert_eq!(
+            integer().parse_test("9223372036854775807i64"),
             Ok(Spanned::any(Expr::I64(9223372036854775807)))
         );
-        assert!(integer().parse("9223372036854775808").is_err());
+        assert!(integer().parse_test("9223372036854775808").is_err());
 
-        assert_eq!(integer().parse("0u8 "), Ok(Spanned::any(Expr::U8(0))));
-        assert_eq!(integer().parse("255u8"), Ok(Spanned::any(Expr::U8(255))));
-        assert!(integer().parse("256u8").is_err());
-
-        assert_eq!(integer().parse("0u16 "), Ok(Spanned::any(Expr::U16(0))));
+        assert_eq!(integer().parse_test("0u8 "), Ok(Spanned::any(Expr::U8(0))));
         assert_eq!(
-            integer().parse("65535u16"),
+            integer().parse_test("255u8"),
+            Ok(Spanned::any(Expr::U8(255)))
+        );
+        assert!(integer().parse_test("256u8").is_err());
+
+        assert_eq!(
+            integer().parse_test("0u16 "),
+            Ok(Spanned::any(Expr::U16(0)))
+        );
+        assert_eq!(
+            integer().parse_test("65535u16"),
             Ok(Spanned::any(Expr::U16(65535)))
         );
-        assert!(integer().parse("65536u16").is_err());
+        assert!(integer().parse_test("65536u16").is_err());
 
-        assert_eq!(integer().parse("0u32 "), Ok(Spanned::any(Expr::U32(0))));
         assert_eq!(
-            integer().parse("4294967295u32"),
+            integer().parse_test("0u32 "),
+            Ok(Spanned::any(Expr::U32(0)))
+        );
+        assert_eq!(
+            integer().parse_test("4294967295u32"),
             Ok(Spanned::any(Expr::U32(4294967295)))
         );
-        assert!(integer().parse("4294967296u32").is_err());
+        assert!(integer().parse_test("4294967296u32").is_err());
 
-        assert_eq!(integer().parse("0u64 "), Ok(Spanned::any(Expr::U64(0))));
         assert_eq!(
-            integer().parse("18446744073709551615u64"),
+            integer().parse_test("0u64 "),
+            Ok(Spanned::any(Expr::U64(0)))
+        );
+        assert_eq!(
+            integer().parse_test("18446744073709551615u64"),
             Ok(Spanned::any(Expr::U64(18446744073709551615)))
         );
-        assert!(integer().parse("18446744073709551616u64").is_err());
+        assert!(integer().parse_test("18446744073709551616u64").is_err());
     }
 
     #[test]
     fn test_character() {
-        assert_eq!(character().parse("'a'"), Ok(Spanned::any(Expr::I8(97))));
-        assert_eq!(character().parse("'1'"), Ok(Spanned::any(Expr::I8(49))));
-        assert_eq!(character().parse("'\n'"), Ok(Spanned::any(Expr::I8(10))));
-        assert!(character().parse("'a").is_err());
-        assert!(character().parse("a'").is_err());
-        assert!(character().parse("a").is_err());
-        assert!(character().parse("'aa'").is_err());
-        assert!(character().parse("'\nn'").is_err());
+        assert_eq!(
+            character().parse_test("'a'"),
+            Ok(Spanned::any(Expr::I8(97)))
+        );
+        assert_eq!(
+            character().parse_test("'1'"),
+            Ok(Spanned::any(Expr::I8(49)))
+        );
+        assert_eq!(
+            character().parse_test("'\n'"),
+            Ok(Spanned::any(Expr::I8(10)))
+        );
+        assert!(character().parse_test("'a").is_err());
+        assert!(character().parse_test("a'").is_err());
+        assert!(character().parse_test("a").is_err());
+        assert!(character().parse_test("'aa'").is_err());
+        assert!(character().parse_test("'\nn'").is_err());
     }
 }

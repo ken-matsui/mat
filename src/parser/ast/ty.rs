@@ -53,67 +53,67 @@ mod tests {
 
     #[test]
     fn test_typeref() {
-        assert_eq!(typeref().parse("void"), Ok(Spanned::any(Type::Void)));
-        assert_eq!(typeref().parse("char"), Ok(Spanned::any(Type::I8)));
-        assert_eq!(typeref().parse("i8"), Ok(Spanned::any(Type::I8)));
-        assert_eq!(typeref().parse("i16"), Ok(Spanned::any(Type::I16)));
-        assert_eq!(typeref().parse("i32"), Ok(Spanned::any(Type::I32)));
-        assert_eq!(typeref().parse("i64"), Ok(Spanned::any(Type::I64)));
-        assert_eq!(typeref().parse("u8"), Ok(Spanned::any(Type::U8)));
-        assert_eq!(typeref().parse("u16"), Ok(Spanned::any(Type::U16)));
-        assert_eq!(typeref().parse("u32"), Ok(Spanned::any(Type::U32)));
-        assert_eq!(typeref().parse("u64"), Ok(Spanned::any(Type::U64)));
+        assert_eq!(typeref().parse_test("void"), Ok(Spanned::any(Type::Void)));
+        assert_eq!(typeref().parse_test("char"), Ok(Spanned::any(Type::I8)));
+        assert_eq!(typeref().parse_test("i8"), Ok(Spanned::any(Type::I8)));
+        assert_eq!(typeref().parse_test("i16"), Ok(Spanned::any(Type::I16)));
+        assert_eq!(typeref().parse_test("i32"), Ok(Spanned::any(Type::I32)));
+        assert_eq!(typeref().parse_test("i64"), Ok(Spanned::any(Type::I64)));
+        assert_eq!(typeref().parse_test("u8"), Ok(Spanned::any(Type::U8)));
+        assert_eq!(typeref().parse_test("u16"), Ok(Spanned::any(Type::U16)));
+        assert_eq!(typeref().parse_test("u32"), Ok(Spanned::any(Type::U32)));
+        assert_eq!(typeref().parse_test("u64"), Ok(Spanned::any(Type::U64)));
         assert_eq!(
-            typeref().parse("type"),
+            typeref().parse_test("type"),
             Ok(Spanned::any(Type::User("type".to_string())))
         );
-        assert!(typeref().parse("1type").is_err());
+        assert!(typeref().parse_test("1type").is_err());
     }
 
     #[test]
     fn test_typedef() {
         assert_eq!(
-            typedef().parse("type new = i8;"),
+            typedef().parse_test("type new = i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
-            typedef().parse("type new=i8;"),
+            typedef().parse_test("type new=i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
-            typedef().parse("type new=i8  ;"),
+            typedef().parse_test("type new=i8  ;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
                 old: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
-            typedef().parse("type new = old;"),
+            typedef().parse_test("type new = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "new".to_string(),
                 old: Spanned::any(Type::User("old".to_string())),
             }))
         );
         // TODO: For now, this is allowed (will be an error at semantic analysis),
-        //   but it would be better to ban at parse time.
+        //   but it would be better to ban at parse phase.
         assert_eq!(
-            typedef().parse("type i8 = old;"),
+            typedef().parse_test("type i8 = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 new: "i8".to_string(),
                 old: Spanned::any(Type::User("old".to_string())),
             }))
         );
-        assert!(typedef().parse("type foo = bar").is_err());
-        assert!(typedef().parse("type foo = ;").is_err());
-        assert!(typedef().parse("type foo bar;").is_err());
-        assert!(typedef().parse("type = bar;").is_err());
-        assert!(typedef().parse("foo = bar;").is_err());
-        assert!(typedef().parse("typefoo = bar;").is_err());
+        assert!(typedef().parse_test("type foo = bar").is_err());
+        assert!(typedef().parse_test("type foo = ;").is_err());
+        assert!(typedef().parse_test("type foo bar;").is_err());
+        assert!(typedef().parse_test("type = bar;").is_err());
+        assert!(typedef().parse_test("foo = bar;").is_err());
+        assert!(typedef().parse_test("typefoo = bar;").is_err());
     }
 }
