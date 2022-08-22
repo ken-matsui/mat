@@ -3,8 +3,6 @@ mod parser;
 mod sema;
 
 use crate::error::Emit;
-use crate::parser::ast::SrcId;
-use crate::sema::local_resolver::LocalResolver;
 use clap::{ArgGroup, Parser};
 use std::fs::read_to_string;
 
@@ -59,7 +57,7 @@ fn main() {
     let args = Args::parse();
     let code = read_to_string(args.source.clone()).expect("Failed to read file");
 
-    match parser::parse(SrcId::from_path(args.source), &code) {
+    match parser::parse(args.source, &code) {
         Err(errors) => errors.emit(&code),
         Ok(ast) => {
             if args.dump_ast {
