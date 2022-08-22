@@ -1,13 +1,14 @@
-/// Local Resolver
 use crate::parser::ast::{Ast, Expr, Spanned, Stmt};
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
 use crate::sema::scope::Scope;
+use std::cell::RefCell;
 use std::collections::LinkedList;
 use std::ops::Deref;
+use std::rc::Rc;
 
 pub(crate) struct LocalResolver {
-    scope_stack: LinkedList<Box<Scope>>,
+    scope_stack: LinkedList<Rc<RefCell<Scope>>>,
     errors: Vec<SemanticError>,
 }
 
@@ -20,12 +21,12 @@ impl LocalResolver {
     }
 
     pub(crate) fn resolve(&mut self, ast: &Ast) -> Result<(), Vec<SemanticError>> {
-        let mut toplevel = Scope::new(None);
-        self.define_entities(&ast, &mut toplevel);
-        self.scope_stack.push_back(Box::new(toplevel));
+        let toplevel = Rc::new(RefCell::new(Scope::new(None)));
+        self.scope_stack.push_back(toplevel.clone());
+        self.define_entities(ast, toplevel);
 
-        self.resolve_gvar_initializers(&ast);
-        self.resolve_functions(&ast);
+        self.resolve_gvar_initializers(ast);
+        self.resolve_functions(ast);
 
         if self.errors.is_empty() {
             Ok(())
@@ -34,11 +35,11 @@ impl LocalResolver {
         }
     }
 
-    fn define_entities(&mut self, ast: &Ast, toplevel: &mut Scope) {
+    fn define_entities(&mut self, ast: &Ast, toplevel: Rc<RefCell<Scope>>) {
         for stmt in &ast.defs {
             // Convert DefVar & DefFn into Entities and define the entity.
             if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
-                if let Err(err) = toplevel.define_entity(entity) {
+                if let Err(err) = toplevel.borrow_mut().define_entity(entity) {
                     self.errors.push(err);
                 }
             }
@@ -60,7 +61,12 @@ impl LocalResolver {
             if let Stmt::DefFn { args, body, .. } = stmt.deref() {
                 self.push_scope();
                 for arg in args {
-                    if let Err(err) = self.current_scope().define_entity(Entity::from(arg)) {
+                    let maybe_err = self
+                        .current_scope()
+                        .borrow_mut()
+                        .define_entity(Entity::from(arg))
+                        .err();
+                    if let Some(err) = maybe_err {
                         self.errors.push(err);
                     }
                 }
@@ -73,12 +79,16 @@ impl LocalResolver {
     fn visit_expr(&mut self, expr: &Spanned<Expr>) {
         match expr.deref() {
             Expr::Variable(var) => {
-                match self.current_scope().refer(var, expr.span) {
-                    Ok(()) => {
-                        // TODO: node.setEntity(ent);
-                    }
-                    Err(err) => self.errors.push(err),
-                };
+                let maybe_err = self
+                    .current_scope()
+                    .borrow_mut()
+                    .refer(var, expr.span)
+                    .err();
+
+                // TODO: node.setEntity(ent); when not error; `refer()` should return entity.
+                if let Some(err) = maybe_err {
+                    self.errors.push(err)
+                }
             }
             Expr::String(_str) => {
                 // node.setEntry(constantTable.intern(node.value()));
@@ -131,10 +141,13 @@ impl LocalResolver {
                 if let Some(expr) = expr {
                     self.visit_expr(expr);
                 }
-                if let Err(err) = self
+
+                let maybe_err = self
                     .current_scope()
+                    .borrow_mut()
                     .define_entity(Entity::new(name.clone(), ty.clone()))
-                {
+                    .err();
+                if let Some(err) = maybe_err {
                     self.errors.push(err);
                 }
             }
@@ -165,18 +178,18 @@ impl LocalResolver {
         }
     }
 
-    fn new_scope(&mut self) -> Scope {
+    fn new_scope(&self) -> Scope {
         Scope::new(Some(self.current_scope().clone()))
     }
     fn push_scope(&mut self) {
         let scope = self.new_scope();
-        self.scope_stack.push_back(Box::new(scope));
+        self.scope_stack.push_back(Rc::new(RefCell::new(scope)));
     }
-    fn pop_scope(&mut self) -> Option<Box<Scope>> {
+    fn pop_scope(&mut self) -> Option<Rc<RefCell<Scope>>> {
         self.scope_stack.pop_back()
     }
-    fn current_scope(&mut self) -> &mut Box<Scope> {
-        self.scope_stack.back_mut().unwrap()
+    fn current_scope(&self) -> &Rc<RefCell<Scope>> {
+        self.scope_stack.back().unwrap()
     }
 }
 

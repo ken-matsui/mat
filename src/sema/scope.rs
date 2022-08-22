@@ -2,10 +2,12 @@ use crate::parser::ast::Span;
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticError;
 use linked_hash_map::LinkedHashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Scope {
-    parent: Option<Box<Self>>,
+    parent: Option<Rc<RefCell<Self>>>,
     // Toplevel has DefVars & DefFns, otherwise, only DefVars will be held.
     entities: LinkedHashMap<String, Entity>, // TODO: DefinedVariable?
     children: Vec<Self>,
@@ -13,7 +15,7 @@ pub(crate) struct Scope {
 
 /// Impls for All Scope
 impl Scope {
-    pub(crate) fn new(parent: Option<Box<Self>>) -> Self {
+    pub(crate) fn new(parent: Option<Rc<RefCell<Self>>>) -> Self {
         Self {
             parent,
             entities: LinkedHashMap::new(),
@@ -21,11 +23,8 @@ impl Scope {
         }
     }
 
-    fn parent(&self) -> Option<Box<Self>> {
+    fn parent(&self) -> Option<Rc<RefCell<Self>>> {
         self.parent.clone()
-    }
-    fn parent_mut(&mut self) -> Option<&mut Box<Self>> {
-        self.parent.as_mut()
     }
 
     pub(crate) fn add_child(&mut self, s: Self) {
@@ -38,9 +37,9 @@ impl Scope {
             Ok(())
         } else {
             // Find the variable on the upper scope until toplevel
-            self.parent_mut()
+            self.parent()
                 .ok_or(SemanticError::UnresolvedRef(span))
-                .and_then(|parent| parent.refer(name, span))
+                .and_then(|parent| parent.borrow_mut().refer(name, span))
         }
     }
 

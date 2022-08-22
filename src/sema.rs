@@ -9,6 +9,6 @@ use error::SemanticError;
 use local_resolver::LocalResolver;
 
 pub(crate) fn analyze(ast: &Ast) -> Result<(), Vec<SemanticError>> {
-    LocalResolver::new().resolve(&ast)
+    LocalResolver::new().resolve(ast)
     // .and_then()
 }
