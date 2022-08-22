@@ -85,75 +85,24 @@ impl LocalResolver {
                 // return null;
                 todo!()
             }
-            Expr::Or(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::And(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Lt(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Gt(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Lte(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Gte(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Eq(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Neq(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::BitOr(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::BitXor(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::BitAnd(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Shl(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Shr(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Add(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Sub(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Mul(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Div(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Expr::Rem(lhs, rhs) => {
+            Expr::Or(lhs, rhs)
+            | Expr::And(lhs, rhs)
+            | Expr::Lt(lhs, rhs)
+            | Expr::Gt(lhs, rhs)
+            | Expr::Lte(lhs, rhs)
+            | Expr::Gte(lhs, rhs)
+            | Expr::Eq(lhs, rhs)
+            | Expr::Neq(lhs, rhs)
+            | Expr::BitOr(lhs, rhs)
+            | Expr::BitXor(lhs, rhs)
+            | Expr::BitAnd(lhs, rhs)
+            | Expr::Shl(lhs, rhs)
+            | Expr::Shr(lhs, rhs)
+            | Expr::Add(lhs, rhs)
+            | Expr::Sub(lhs, rhs)
+            | Expr::Mul(lhs, rhs)
+            | Expr::Div(lhs, rhs)
+            | Expr::Rem(lhs, rhs) => {
                 self.visit_expr(lhs);
                 self.visit_expr(rhs);
             }
@@ -197,47 +146,17 @@ impl LocalResolver {
                 }
             }
             Stmt::Return(Some(expr)) => self.visit_expr(expr),
-            Stmt::Assign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::AddAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::SubAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::MulAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::DivAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::RemAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::BitAndAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::BitOrAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::BitXorAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::ShlAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            Stmt::ShrAssign(lhs, rhs) => {
+            Stmt::Assign(lhs, rhs)
+            | Stmt::AddAssign(lhs, rhs)
+            | Stmt::SubAssign(lhs, rhs)
+            | Stmt::MulAssign(lhs, rhs)
+            | Stmt::DivAssign(lhs, rhs)
+            | Stmt::RemAssign(lhs, rhs)
+            | Stmt::BitAndAssign(lhs, rhs)
+            | Stmt::BitOrAssign(lhs, rhs)
+            | Stmt::BitXorAssign(lhs, rhs)
+            | Stmt::ShlAssign(lhs, rhs)
+            | Stmt::ShrAssign(lhs, rhs) => {
                 self.visit_expr(lhs);
                 self.visit_expr(rhs);
             }
