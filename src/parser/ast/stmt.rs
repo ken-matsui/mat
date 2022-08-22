@@ -1,14 +1,14 @@
 use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Spanned, Type};
 use crate::parser::lib::*;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) struct Param {
     pub(crate) is_mut: bool,
     pub(crate) name: Spanned<String>,
     pub(crate) ty: Spanned<Type>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum Stmt {
     Empty,
 
@@ -30,7 +30,7 @@ pub(crate) enum Stmt {
 
     TypeDef {
         name: Spanned<String>,
-        old: Spanned<Type>,
+        ty: Spanned<Type>,
     },
 
     Block(Vec<Spanned<Self>>),
@@ -314,7 +314,7 @@ mod tests {
                 }),
                 Spanned::any(Stmt::TypeDef {
                     name: Spanned::any("newint".to_string()),
-                    old: Spanned::any(Type::I32),
+                    ty: Spanned::any(Type::I32),
                 }),
                 Spanned::any(Stmt::DefFn {
                     name: Spanned::any("f1".to_string()),

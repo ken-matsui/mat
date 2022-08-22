@@ -1,7 +1,7 @@
 use crate::parser::ast::{character, integer, string, typeref, variable, Spanned, Type};
 use crate::parser::lib::*;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum Expr {
     /// ||
     Or(Spanned<Self>, Spanned<Self>),

@@ -2,7 +2,7 @@
 use crate::parser::ast::{ident, Spanned, Stmt};
 use crate::parser::lib::*;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum Type {
     Void,
     I8,
@@ -43,7 +43,7 @@ pub(crate) fn typedef() -> impl Parser<Spanned<Stmt>> {
         .then_ignore(just('='))
         .then(typeref().padded())
         .then_ignore(just(';'))
-        .map_with_span(|(name, old), span| Spanned::new(Stmt::TypeDef { name, old }, span))
+        .map_with_span(|(name, ty), span| Spanned::new(Stmt::TypeDef { name, ty }, span))
         .boxed()
 }
 
@@ -76,28 +76,28 @@ mod tests {
             typedef().parse_test("type new = i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 name: Spanned::any("new".to_string()),
-                old: Spanned::any(Type::I8)
+                ty: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new=i8;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 name: Spanned::any("new".to_string()),
-                old: Spanned::any(Type::I8)
+                ty: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new=i8  ;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 name: Spanned::any("new".to_string()),
-                old: Spanned::any(Type::I8)
+                ty: Spanned::any(Type::I8)
             }))
         );
         assert_eq!(
             typedef().parse_test("type new = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 name: Spanned::any("new".to_string()),
-                old: Spanned::any(Type::User("old".to_string())),
+                ty: Spanned::any(Type::User("old".to_string())),
             }))
         );
         // TODO: For now, this is allowed (will be an error at semantic analysis),
@@ -106,7 +106,7 @@ mod tests {
             typedef().parse_test("type i8 = old;"),
             Ok(Spanned::any(Stmt::TypeDef {
                 name: Spanned::any("i8".to_string()),
-                old: Spanned::any(Type::User("old".to_string())),
+                ty: Spanned::any(Type::User("old".to_string())),
             }))
         );
         assert!(typedef().parse_test("type foo = bar").is_err());

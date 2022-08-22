@@ -2,6 +2,7 @@ use chumsky::Span as _;
 use internment::Intern;
 use std::cmp::{max, min};
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut, Range};
 use std::path::Path;
 
@@ -41,7 +42,7 @@ impl fmt::Display for SrcId {
 }
 
 /// Range does not implements `Copy` (#27186), so here we use (usize, usize) instead
-#[derive(Clone, PartialEq, Copy)]
+#[derive(Clone, PartialEq, Copy, Hash, Eq)]
 pub(crate) struct Span {
     src: SrcId,
     range: (usize, usize),
@@ -170,6 +171,15 @@ impl<T: PartialEq> PartialEq for Spanned<T> {
     fn eq(&self, other: &Self) -> bool {
         // Ignore checking Span; nothing makes sense, particularly on tests.
         self.value == other.value
+    }
+}
+
+impl<T: Eq> Eq for Spanned<T> {}
+
+impl<T: Hash> Hash for Spanned<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Ignore Span.
+        self.value.hash(state);
     }
 }
 
