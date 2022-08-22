@@ -6,7 +6,7 @@ use chumsky::error::Simple;
 pub(crate) type ParserError = Simple<char, Span>;
 
 impl Emit for ParserError {
-    fn emit(self, code: &str) {
+    fn emit(&self, code: &str) {
         let report = Report::build(ReportKind::Error, self.span().src(), self.span().start());
 
         let report = match self.reason() {
@@ -80,7 +80,7 @@ impl Emit for ParserError {
 }
 
 impl Emit for Vec<ParserError> {
-    fn emit(self, code: &str) {
+    fn emit(&self, code: &str) {
         for err in self {
             err.emit(code);
         }

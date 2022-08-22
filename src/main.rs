@@ -65,7 +65,7 @@ fn main() {
                 return;
             }
 
-            if let Err(errors) = sema::analyze(&ast) {
+            if let Err(errors) = sema::analyze(&ast, &code) {
                 errors.emit(&code);
                 return;
             }

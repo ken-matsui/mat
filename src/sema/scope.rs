@@ -1,6 +1,6 @@
 use crate::parser::ast::Span;
 use crate::sema::entity::Entity;
-use crate::sema::error::SemanticError;
+use crate::sema::error::{SemanticDiag, SemanticError, SemanticWarning};
 use linked_hash_map::LinkedHashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -67,18 +67,17 @@ impl Scope {
         }
     }
 
-    pub(crate) fn check_references(&self, errors: &mut Vec<SemanticError>) {
+    pub(crate) fn check_references(&self, diag: &mut SemanticDiag) {
         for ent in self.entities.values() {
             if !ent.is_referred() {
-                // TODO: Use warns vec
-                println!("WARNING: `{:?}` is unused.", ent.name);
+                diag.push_warn(SemanticWarning::UnusedEntity(ent.name.span));
             }
         }
 
         // do not check parameters
         for func_scope in &self.children {
             for scope in &func_scope.borrow().children {
-                scope.borrow().check_references(errors);
+                scope.borrow().check_references(diag);
             }
         }
     }
