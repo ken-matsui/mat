@@ -4,10 +4,12 @@ mod local_resolver;
 mod resolver;
 pub(crate) mod scope;
 mod type_resolver;
+mod type_table;
 mod visitor;
 
-use crate::hir::lib::Hir;
+use crate::hir::Hir;
 use crate::parser::ast::Ast;
+use crate::sema::type_table::TypeTable;
 use crate::Emit;
 use error::SemanticError;
 use local_resolver::LocalResolver;
@@ -23,7 +25,14 @@ pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Vec<SemanticError>> {
         return Err(diag.errors);
     }
 
-    let diag = TypeResolver::new().resolve(&mut hir);
+    let mut type_table = TypeTable::new();
+    let diag = TypeResolver::new(&mut type_table).resolve(&mut hir);
+    diag.warnings.emit(code);
+    if diag.has_err() {
+        return Err(diag.errors);
+    }
+
+    let diag = type_table.semantic_check();
     diag.warnings.emit(code);
     if diag.has_err() {
         return Err(diag.errors);

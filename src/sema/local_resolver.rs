@@ -1,4 +1,4 @@
-use crate::hir::lib::Hir;
+use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt};
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticDiag;

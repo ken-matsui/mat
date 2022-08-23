@@ -41,6 +41,8 @@ pub(crate) enum SemanticError {
     // TypeResolver
     DuplicatedType(Span, Span),
     UnresolvedType(Span),
+    // type_table.semantic_check
+    RecursiveTypeDef(Span, Span),
 }
 
 impl Emit for SemanticError {
@@ -97,6 +99,23 @@ impl Emit for SemanticError {
                     .with_label(
                         Label::new(span)
                             .with_message("undefined ident".fg(Color::Red))
+                            .with_color(Color::Red),
+                    )
+                    .finish()
+                    .print((span.src(), Source::from(code)))
+            }
+            SemanticError::RecursiveTypeDef(pre_span, span) => {
+                // TODO: too similar to DuplicatedDef
+                Report::build(ReportKind::Error, span.src(), span.start())
+                    .with_message("Recursive type definition")
+                    .with_label(
+                        Label::new(pre_span)
+                            .with_message("previous definition".fg(Color::Blue))
+                            .with_color(Color::Blue),
+                    )
+                    .with_label(
+                        Label::new(span)
+                            .with_message("redefined here".fg(Color::Red))
                             .with_color(Color::Red),
                     )
                     .finish()

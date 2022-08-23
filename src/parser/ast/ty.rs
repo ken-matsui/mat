@@ -2,7 +2,7 @@
 use crate::parser::ast::{ident, Spanned, Stmt};
 use crate::parser::lib::*;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub(crate) enum Type {
     Void,
     I8,

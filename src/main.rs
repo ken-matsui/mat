@@ -57,7 +57,7 @@ fn main() {
     match parser::parse(args.source, &code) {
         Err(errors) => errors.emit(&code),
         Ok(ast) => {
-            dbg!("Parsing has completed successfully.");
+            dbg!("Parsing has been completed successfully.");
             if args.dump_ast {
                 println!("{:#?}", ast);
                 return;
@@ -66,7 +66,7 @@ fn main() {
             match sema::analyze(ast, &code) {
                 Err(errors) => errors.emit(&code),
                 Ok(hir) => {
-                    dbg!("Semantic analysis has completed successfully.");
+                    dbg!("Semantic analysis has been completed successfully.");
                     if args.dump_hir {
                         println!("{:#?}", hir);
                         return;

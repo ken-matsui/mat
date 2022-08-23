@@ -1,4 +1,4 @@
-use crate::hir::lib::Hir;
+use crate::hir::Hir;
 use crate::sema::error::SemanticDiag;
 
 pub(crate) trait Resolver {

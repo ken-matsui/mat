@@ -1,25 +1,25 @@
-use crate::hir::lib::Hir;
+use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt, Type};
 use crate::sema::error::{SemanticDiag, SemanticError};
 use crate::sema::resolver::Resolver;
-use std::collections::HashMap;
+use crate::sema::type_table::TypeTable;
 use std::ops::Deref;
 
-pub(crate) struct TypeResolver {
-    type_table: HashMap<Spanned<String>, Spanned<Type>>,
+pub(crate) struct TypeResolver<'a> {
+    type_table: &'a mut TypeTable,
     diag: SemanticDiag,
 }
 
-impl TypeResolver {
-    pub(crate) fn new() -> Self {
+impl<'a> TypeResolver<'a> {
+    pub(crate) fn new(type_table: &'a mut TypeTable) -> Self {
         Self {
-            type_table: HashMap::new(),
+            type_table,
             diag: SemanticDiag::new(),
         }
     }
 }
 
-impl Resolver for TypeResolver {
+impl<'a> Resolver for TypeResolver<'a> {
     fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
         self.define_types(hir);
         self.resolve_types(hir);
@@ -29,16 +29,16 @@ impl Resolver for TypeResolver {
     }
 }
 
-impl TypeResolver {
+impl<'a> TypeResolver<'a> {
     fn define_types(&mut self, hir: &Hir) {
         for stmt in &hir.defs {
             match stmt.deref() {
                 Stmt::TypeDef { name, ty } => {
-                    if let Some((predef, _)) = self.type_table.get_key_value(name) {
+                    if let Some((predef, _)) = self.type_table.value.get_key_value(name) {
                         self.diag
                             .push_err(SemanticError::DuplicatedType(predef.span, name.span));
                     }
-                    self.type_table.insert(name.clone(), ty.clone());
+                    self.type_table.value.insert(name.clone(), ty.clone());
                 }
                 // TODO: Stmt::DefStruct
                 _ => {}
@@ -56,6 +56,7 @@ impl TypeResolver {
         if let Type::User(name) = ty.deref() {
             if !self
                 .type_table
+                .value
                 .contains_key(&Spanned::new(name.clone(), ty.span))
             {
                 self.diag.push_err(SemanticError::UnresolvedType(ty.span));
