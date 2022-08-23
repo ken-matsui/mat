@@ -1,4 +1,5 @@
 mod error;
+mod hir;
 mod parser;
 mod sema;
 
@@ -32,13 +33,9 @@ struct Args {
     #[clap(long)]
     dump_ast: bool,
 
-    /// Dump AST with resolved references
+    /// Dump HIR
     #[clap(long)]
-    dump_ref: bool,
-
-    /// Dump semantic analyzed AST
-    #[clap(long)]
-    dump_sema: bool,
+    dump_hir: bool,
 
     /// Dump MIR
     #[clap(long)]
@@ -60,16 +57,22 @@ fn main() {
     match parser::parse(args.source, &code) {
         Err(errors) => errors.emit(&code),
         Ok(ast) => {
+            dbg!("Parsing has completed successfully.");
             if args.dump_ast {
                 println!("{:#?}", ast);
                 return;
             }
 
-            if let Err(errors) = sema::analyze(&ast, &code) {
-                errors.emit(&code);
-                return;
+            match sema::analyze(ast, &code) {
+                Err(errors) => errors.emit(&code),
+                Ok(hir) => {
+                    dbg!("Semantic analysis has completed successfully.");
+                    if args.dump_hir {
+                        println!("{:#?}", hir);
+                        return;
+                    }
+                }
             }
-            println!("Semantic analysis has completed successfully.");
         }
     }
 }

@@ -1,0 +1,6 @@
+let hoge: fuga;
+type bar = i8;
+
+fn main(foo: bar, boo: qoo) -> baz {
+    1 as qux;
+}

@@ -40,6 +40,7 @@ pub(crate) enum SemanticError {
     UnresolvedRef(Span),
     // TypeResolver
     DuplicatedType(Span, Span),
+    UnresolvedType(Span),
 }
 
 impl Emit for SemanticError {
@@ -89,6 +90,18 @@ impl Emit for SemanticError {
                     .finish()
                     .print((span.src(), Source::from(code)))
             }
+            SemanticError::UnresolvedType(span) => {
+                // TODO: too similar to UnresolvedRef
+                Report::build(ReportKind::Error, span.src(), span.start())
+                    .with_message("Unresolved type")
+                    .with_label(
+                        Label::new(span)
+                            .with_message("undefined ident".fg(Color::Red))
+                            .with_color(Color::Red),
+                    )
+                    .finish()
+                    .print((span.src(), Source::from(code)))
+            }
         }
         .unwrap();
     }
@@ -129,7 +142,7 @@ impl<W: Emit, E: Emit> Diagnostics<W, E> {
         }
     }
 
-    pub(crate) fn is_err(&self) -> bool {
+    pub(crate) fn has_err(&self) -> bool {
         !self.errors.is_empty()
     }
 

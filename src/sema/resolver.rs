@@ -1,6 +1,6 @@
-use crate::parser::ast::Ast;
+use crate::hir::lib::Hir;
 use crate::sema::error::SemanticDiag;
 
 pub(crate) trait Resolver {
-    fn resolve(&mut self, ast: &Ast) -> SemanticDiag;
+    fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag;
 }
