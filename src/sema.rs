@@ -1,4 +1,4 @@
-mod entity;
+pub(crate) mod entity;
 mod error;
 mod local_resolver;
 mod resolver;
