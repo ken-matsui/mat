@@ -42,12 +42,9 @@ impl Resolver for LocalResolver {
 
 impl LocalResolver {
     fn define_entities(&mut self, hir: &Hir, toplevel: Rc<RefCell<Scope>>) {
-        for stmt in &hir.defs {
-            // Convert DefVar & DefFn into Entities and define the entity.
-            if let Ok(entity) = Entity::try_from(*stmt.value.clone()) {
-                if let Err(err) = toplevel.borrow_mut().define_entity(entity) {
-                    self.diag.push_err(err);
-                }
+        for entity in hir.definitions() {
+            if let Err(err) = toplevel.borrow_mut().define_entity(entity) {
+                self.diag.push_err(err);
             }
         }
     }
