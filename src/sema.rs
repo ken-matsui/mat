@@ -7,7 +7,7 @@ mod type_resolver;
 mod type_table;
 mod visitor;
 
-use crate::diagnostics::Emit;
+use crate::diag::Emit;
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
 use crate::sema::error::SemanticDiag;

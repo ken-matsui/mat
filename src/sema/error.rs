@@ -1,4 +1,4 @@
-use crate::diagnostics::{emit, Diagnostics, Emit};
+use crate::diag::{emit, Diagnostics, Emit};
 use crate::parser::ast::Span;
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
 use std::fmt::Debug;
