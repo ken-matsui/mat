@@ -1,13 +1,13 @@
 use crate::hir::{DefinedVariable, Hir};
 use crate::parser::ast::{Expr, Spanned, Stmt};
-use crate::sema::diag::{SemanticDiag, SemanticError};
+use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
 use std::ops::Deref;
 
 pub(crate) struct DereferenceChecker<'a> {
     type_table: &'a TypeTable,
     hir: &'a Hir,
-    diag: SemanticDiag,
+    diag: Diagnostics,
 }
 
 impl<'a> DereferenceChecker<'a> {
@@ -15,11 +15,11 @@ impl<'a> DereferenceChecker<'a> {
         Self {
             type_table,
             hir,
-            diag: SemanticDiag::new(),
+            diag: Diagnostics::new(),
         }
     }
 
-    pub(crate) fn check(&mut self) -> SemanticDiag {
+    pub(crate) fn check(&mut self) -> Diagnostics {
         for var in self.hir.defined_variables() {
             self.check_toplevel_variable(var);
         }
@@ -37,7 +37,7 @@ impl<'a> DereferenceChecker<'a> {
     fn check_toplevel_variable(&mut self, var: DefinedVariable) {
         self.check_variable(&var);
         if let Err(span) = var.is_constant() {
-            self.diag.push_err(SemanticError::NotConstant(span));
+            self.diag.push_err(Error::NotConstant(span));
         }
     }
 
@@ -49,7 +49,7 @@ impl<'a> DereferenceChecker<'a> {
         }
     }
 
-    fn visit_stmt(&mut self, stmt: &Spanned<Stmt>) -> Result<(), SemanticError> {
+    fn visit_stmt(&mut self, stmt: &Spanned<Stmt>) -> Result<(), Error> {
         match stmt.deref() {
             Stmt::DefVar {
                 is_mut, name, expr, ..
@@ -75,14 +75,14 @@ impl<'a> DereferenceChecker<'a> {
     }
 
     // TODO: test(not_callable.mat)
-    fn visit_expr(&self, expr: &Spanned<Expr>) -> Result<(), SemanticError> {
+    fn visit_expr(&self, expr: &Spanned<Expr>) -> Result<(), Error> {
         match expr.deref() {
             Expr::FnCall { name, args } => {
                 for arg in args {
                     self.visit_expr(arg)?;
                 }
                 if !self.is_callable(name) {
-                    return Err(SemanticError::NotCallable(name.span));
+                    return Err(Error::NotCallable(name.span));
                 }
             }
             Expr::Or(lhs, rhs)

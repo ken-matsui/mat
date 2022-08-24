@@ -1,23 +1,23 @@
 use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt, Type};
-use crate::sema::diag::{SemanticDiag, SemanticError};
+use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
 use std::ops::Deref;
 
 pub(crate) struct TypeResolver<'a> {
     type_table: &'a mut TypeTable,
-    diag: SemanticDiag,
+    diag: Diagnostics,
 }
 
 impl<'a> TypeResolver<'a> {
     pub(crate) fn new(type_table: &'a mut TypeTable) -> Self {
         Self {
             type_table,
-            diag: SemanticDiag::new(),
+            diag: Diagnostics::new(),
         }
     }
 
-    pub(crate) fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
+    pub(crate) fn resolve(&mut self, hir: &mut Hir) -> Diagnostics {
         self.define_types(hir);
         self.resolve_types(hir);
         // TODO: Check references; to warn unused types
@@ -29,7 +29,7 @@ impl<'a> TypeResolver<'a> {
         for ty in hir.types() {
             if let Some((predef, _)) = self.type_table.value.get_key_value(ty.name) {
                 self.diag
-                    .push_err(SemanticError::DuplicatedType(predef.span, ty.name.span));
+                    .push_err(Error::DuplicatedType(predef.span, ty.name.span));
             }
             self.type_table.value.insert(ty.name.clone(), ty.ty.clone());
         }
@@ -48,7 +48,7 @@ impl<'a> TypeResolver<'a> {
                 .value
                 .contains_key(&Spanned::new(name.clone(), ty.span))
             {
-                self.diag.push_err(SemanticError::UnresolvedType(ty.span));
+                self.diag.push_err(Error::UnresolvedType(ty.span));
             }
         }
     }

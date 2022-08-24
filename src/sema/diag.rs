@@ -1,19 +1,19 @@
-use crate::diag::{emit, Diagnostics, Emit};
+use crate::diag::{emit, Diagnostics as Diag, Emit};
 use crate::parser::ast::Span;
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
 use std::fmt::Debug;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum SemanticWarning {
+pub(crate) enum Warning {
     // LocalResolver
     UnusedEntity(Span),
     // TypeResolver
 }
 
-impl Emit for SemanticWarning {
+impl Emit for Warning {
     fn emit(&self, code: &str) {
         match *self {
-            SemanticWarning::UnusedEntity(span) => {
+            Warning::UnusedEntity(span) => {
                 Report::build(ReportKind::Warning, span.src(), span.start())
                     .with_message("Unused entity")
                     .with_label(Label::new(span).with_color(Color::Yellow))
@@ -26,7 +26,7 @@ impl Emit for SemanticWarning {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum SemanticError {
+pub(crate) enum Error {
     // LocalResolver
     DuplicatedDef(Span, Span),
     UnresolvedRef(Span),
@@ -40,10 +40,10 @@ pub(crate) enum SemanticError {
     NotCallable(Span),
 }
 
-impl Emit for SemanticError {
+impl Emit for Error {
     fn emit(&self, code: &str) {
         let (span, message, labels, notes) = match *self {
-            SemanticError::DuplicatedDef(pre_span, span) => (
+            Error::DuplicatedDef(pre_span, span) => (
                 span,
                 "Duplicated definition",
                 vec![
@@ -56,7 +56,7 @@ impl Emit for SemanticError {
                 ],
                 vec![],
             ),
-            SemanticError::UnresolvedRef(span) => (
+            Error::UnresolvedRef(span) => (
                 span,
                 "Unresolved reference",
                 vec![Label::new(span)
@@ -64,7 +64,7 @@ impl Emit for SemanticError {
                     .with_color(Color::Red)],
                 vec![],
             ),
-            SemanticError::DuplicatedType(pre_span, span) => (
+            Error::DuplicatedType(pre_span, span) => (
                 span,
                 "Duplicated type",
                 vec![
@@ -77,7 +77,7 @@ impl Emit for SemanticError {
                 ],
                 vec![],
             ),
-            SemanticError::UnresolvedType(span) => (
+            Error::UnresolvedType(span) => (
                 span,
                 "Unresolved type",
                 vec![Label::new(span)
@@ -85,7 +85,7 @@ impl Emit for SemanticError {
                     .with_color(Color::Red)],
                 vec![],
             ),
-            SemanticError::RecursiveTypeDef(pre_span, span) => (
+            Error::RecursiveTypeDef(pre_span, span) => (
                 span,
                 "Recursive type definition",
                 vec![
@@ -98,7 +98,7 @@ impl Emit for SemanticError {
                 ],
                 vec![],
             ),
-            SemanticError::NotConstant(span) => (
+            Error::NotConstant(span) => (
                 span,
                 "Not a constant",
                 vec![Label::new(span)
@@ -106,7 +106,7 @@ impl Emit for SemanticError {
                     .with_color(Color::Red)],
                 vec!["toplevel definitions should be constants".fg(Color::Blue)],
             ),
-            SemanticError::NotCallable(span) => (
+            Error::NotCallable(span) => (
                 span,
                 "Not callable",
                 vec![Label::new(span)
@@ -119,4 +119,4 @@ impl Emit for SemanticError {
     }
 }
 
-pub(crate) type SemanticDiag = Diagnostics<SemanticWarning, SemanticError>;
+pub(crate) type Diagnostics = Diag<Warning, Error>;

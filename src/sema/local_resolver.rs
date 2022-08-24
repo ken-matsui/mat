@@ -1,6 +1,6 @@
 use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt};
-use crate::sema::diag::SemanticDiag;
+use crate::sema::diag::Diagnostics;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;
@@ -10,18 +10,18 @@ use std::rc::Rc;
 
 pub(crate) struct LocalResolver {
     scope_stack: LinkedList<Rc<RefCell<Scope>>>,
-    diag: SemanticDiag,
+    diag: Diagnostics,
 }
 
 impl LocalResolver {
     pub(crate) fn new() -> Self {
         Self {
             scope_stack: LinkedList::new(),
-            diag: SemanticDiag::new(),
+            diag: Diagnostics::new(),
         }
     }
 
-    pub(crate) fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
+    pub(crate) fn resolve(&mut self, hir: &mut Hir) -> Diagnostics {
         let toplevel = Scope::new(None);
         self.scope_stack.push_back(toplevel.clone());
         self.define_entities(hir, toplevel.clone());
@@ -191,7 +191,7 @@ impl LocalResolver {
 mod tests {
     use super::*;
     use crate::parser::ast::{Span, Type};
-    use crate::sema::diag::{SemanticError, SemanticWarning};
+    use crate::sema::diag::{Error, Warning};
 
     fn let_imut_i8(name: &str, expr: Option<Spanned<Expr>>) -> Spanned<Stmt> {
         Spanned::any(Stmt::DefVar {
@@ -206,12 +206,12 @@ mod tests {
     fn test_define_entities() {
         assert_eq!(
             LocalResolver::new().resolve(&mut Hir::from_defs(vec![])),
-            SemanticDiag::new(),
+            Diagnostics::new(),
         );
         assert_eq!(
             LocalResolver::new().resolve(&mut Hir::from_defs(vec![let_imut_i8("foo", None)])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
                 errors: vec![],
             },
         );
@@ -220,9 +220,9 @@ mod tests {
                 let_imut_i8("foo", None),
                 let_imut_i8("foo", None)
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
-                errors: vec![SemanticError::DuplicatedDef(Span::any(), Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
+                errors: vec![Error::DuplicatedDef(Span::any(), Span::any())],
             },
         );
     }
@@ -233,9 +233,9 @@ mod tests {
             LocalResolver::new().resolve(&mut Hir::from_defs(vec![
                 let_imut_i8("foo", Some(Spanned::any(Expr::Variable("bar".to_string())))), // Undefined variable
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
-                errors: vec![SemanticError::UnresolvedRef(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
+                errors: vec![Error::UnresolvedRef(Span::any())],
             },
         );
         assert_eq!(
@@ -243,8 +243,8 @@ mod tests {
                 let_imut_i8("bar", None),
                 let_imut_i8("foo", Some(Spanned::any(Expr::Variable("bar".to_string())))),
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
                 errors: vec![],
             },
         );
@@ -274,12 +274,12 @@ mod tests {
 
         assert_eq!(
             LocalResolver::new().resolve(&mut Hir::from_defs(vec![let_complex.clone()])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
                 errors: vec![
-                    SemanticError::UnresolvedRef(Span::any()),
-                    SemanticError::UnresolvedRef(Span::any()),
-                    SemanticError::UnresolvedRef(Span::any())
+                    Error::UnresolvedRef(Span::any()),
+                    Error::UnresolvedRef(Span::any()),
+                    Error::UnresolvedRef(Span::any())
                 ],
             },
         );
@@ -288,11 +288,11 @@ mod tests {
                 let_imut_i8("bar", None),
                 let_complex.clone()
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
                 errors: vec![
-                    SemanticError::UnresolvedRef(Span::any()),
-                    SemanticError::UnresolvedRef(Span::any()),
+                    Error::UnresolvedRef(Span::any()),
+                    Error::UnresolvedRef(Span::any()),
                 ],
             },
         );
@@ -302,9 +302,9 @@ mod tests {
                 let_imut_i8("buz", None),
                 let_complex.clone(),
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
-                errors: vec![SemanticError::UnresolvedRef(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
+                errors: vec![Error::UnresolvedRef(Span::any())],
             },
         );
         assert_eq!(
@@ -314,8 +314,8 @@ mod tests {
                 let_imut_i8("qux", None),
                 let_complex,
             ])),
-            SemanticDiag {
-                warnings: vec![SemanticWarning::UnusedEntity(Span::any())],
+            Diagnostics {
+                warnings: vec![Warning::UnusedEntity(Span::any())],
                 errors: vec![],
             },
         );

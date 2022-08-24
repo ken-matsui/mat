@@ -10,7 +10,7 @@ mod visitor;
 use crate::diag::Emit;
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
-use crate::sema::diag::SemanticDiag;
+use crate::sema::diag::Diagnostics;
 use dereference_checker::DereferenceChecker;
 use local_resolver::LocalResolver;
 use type_resolver::TypeResolver;
@@ -18,7 +18,7 @@ use type_table::TypeTable;
 
 pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Box<dyn Emit>> {
     let mut hir = Hir::from(ast);
-    let handle_diag = |diag: SemanticDiag| -> Result<(), Box<dyn Emit>> {
+    let handle_diag = |diag: Diagnostics| -> Result<(), Box<dyn Emit>> {
         diag.warnings.emit(code);
         if diag.has_err() {
             Err(Box::new(diag.errors))

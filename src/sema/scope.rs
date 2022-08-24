@@ -1,5 +1,5 @@
 use crate::parser::ast::Span;
-use crate::sema::diag::{SemanticDiag, SemanticError, SemanticWarning};
+use crate::sema::diag::{Diagnostics, Error, Warning};
 use crate::sema::entity::Entity;
 use linked_hash_map::LinkedHashMap;
 use std::cell::RefCell;
@@ -41,36 +41,33 @@ impl Scope {
         self.children.push(s);
     }
 
-    pub(crate) fn refer(&mut self, name: &str, span: Span) -> Result<(), SemanticError> {
+    pub(crate) fn refer(&mut self, name: &str, span: Span) -> Result<(), Error> {
         if let Some(var) = self.entities.get_mut(name) {
             var.referred();
             Ok(())
         } else {
             // Find the variable on the upper scope until toplevel
             self.parent()
-                .ok_or(SemanticError::UnresolvedRef(span))
+                .ok_or(Error::UnresolvedRef(span))
                 .and_then(|parent| parent.borrow_mut().refer(name, span))
         }
     }
 
-    pub(crate) fn define_entity(&mut self, entity: Entity) -> Result<(), SemanticError> {
+    pub(crate) fn define_entity(&mut self, entity: Entity) -> Result<(), Error> {
         if let Some(dup) = self
             .entities
             .insert(*entity.clone().name.value, entity.clone())
         {
-            Err(SemanticError::DuplicatedDef(
-                dup.name.span,
-                entity.name.span,
-            ))
+            Err(Error::DuplicatedDef(dup.name.span, entity.name.span))
         } else {
             Ok(())
         }
     }
 
-    pub(crate) fn check_references(&self, diag: &mut SemanticDiag) {
+    pub(crate) fn check_references(&self, diag: &mut Diagnostics) {
         for ent in self.entities.values() {
             if !ent.is_referred() {
-                diag.push_warn(SemanticWarning::UnusedEntity(ent.name.span));
+                diag.push_warn(Warning::UnusedEntity(ent.name.span));
             }
         }
 

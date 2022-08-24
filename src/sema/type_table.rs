@@ -1,5 +1,5 @@
 use crate::parser::ast::{Spanned, Type};
-use crate::sema::diag::{SemanticDiag, SemanticError};
+use crate::sema::diag::{Diagnostics, Error};
 use std::collections::HashMap;
 use std::ops::Deref;
 
@@ -18,8 +18,8 @@ impl TypeTable {
         }
     }
 
-    pub(crate) fn semantic_check(&self) -> SemanticDiag {
-        let mut diag = SemanticDiag::new();
+    pub(crate) fn semantic_check(&self) -> Diagnostics {
+        let mut diag = Diagnostics::new();
 
         for ty in self.value.values() {
             // TODO:
@@ -35,7 +35,7 @@ impl TypeTable {
         diag
     }
 
-    fn check_recursive_definition(&self, ty: &Spanned<Type>, diag: &mut SemanticDiag) {
+    fn check_recursive_definition(&self, ty: &Spanned<Type>, diag: &mut Diagnostics) {
         self.check_recursive_definition_(ty, &mut HashMap::new(), diag);
     }
 
@@ -43,11 +43,11 @@ impl TypeTable {
         &self,
         ty: &Spanned<Type>,
         marks: &mut HashMap<Spanned<Type>, Mark>,
-        diag: &mut SemanticDiag,
+        diag: &mut Diagnostics,
     ) {
         if let Some((pre_def, false /* CHECKING */)) = marks.get_key_value(ty) {
             // TODO: pre_def.span & ty.span points the same Span
-            diag.push_err(SemanticError::RecursiveTypeDef(pre_def.span, ty.span));
+            diag.push_err(Error::RecursiveTypeDef(pre_def.span, ty.span));
         } else {
             marks.insert(ty.clone(), CHECKING);
             // TODO:
@@ -94,12 +94,12 @@ mod tests {
 
         assert_eq!(
             type_table.semantic_check(),
-            SemanticDiag {
+            Diagnostics {
                 warnings: vec![],
                 errors: vec![
-                    SemanticError::RecursiveTypeDef(Span::any(), Span::any()),
-                    SemanticError::RecursiveTypeDef(Span::any(), Span::any()),
-                    SemanticError::RecursiveTypeDef(Span::any(), Span::any()),
+                    Error::RecursiveTypeDef(Span::any(), Span::any()),
+                    Error::RecursiveTypeDef(Span::any(), Span::any()),
+                    Error::RecursiveTypeDef(Span::any(), Span::any()),
                 ]
             }
         );
@@ -124,6 +124,6 @@ mod tests {
             Spanned::any(Type::User("baz".to_string())),
         );
 
-        assert_eq!(type_table.semantic_check(), SemanticDiag::new()); // no err
+        assert_eq!(type_table.semantic_check(), Diagnostics::new()); // no err
     }
 }
