@@ -2,7 +2,6 @@ use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt};
 use crate::sema::entity::Entity;
 use crate::sema::error::SemanticDiag;
-use crate::sema::resolver::Resolver;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;
 use std::collections::LinkedList;
@@ -21,10 +20,8 @@ impl LocalResolver {
             diag: SemanticDiag::new(),
         }
     }
-}
 
-impl Resolver for LocalResolver {
-    fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
+    pub(crate) fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
         let toplevel = Scope::new(None);
         self.scope_stack.push_back(toplevel.clone());
         self.define_entities(hir, toplevel.clone());
@@ -38,9 +35,7 @@ impl Resolver for LocalResolver {
 
         self.diag.clone()
     }
-}
 
-impl LocalResolver {
     fn define_entities(&mut self, hir: &Hir, toplevel: Rc<RefCell<Scope>>) {
         for entity in hir.definitions() {
             if let Err(err) = toplevel.borrow_mut().define_entity(entity) {

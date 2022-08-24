@@ -1,9 +1,7 @@
-mod checker;
 mod dereference_checker;
 pub(crate) mod entity;
 mod error;
 mod local_resolver;
-mod resolver;
 pub(crate) mod scope;
 mod type_resolver;
 mod type_table;
@@ -11,14 +9,12 @@ mod visitor;
 
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
-use crate::sema::checker::Checker;
-use crate::sema::dereference_checker::DereferenceChecker;
-use crate::sema::type_table::TypeTable;
 use crate::Emit;
+use dereference_checker::DereferenceChecker;
 use error::SemanticError;
 use local_resolver::LocalResolver;
-use resolver::Resolver;
 use type_resolver::TypeResolver;
+use type_table::TypeTable;
 
 pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Vec<SemanticError>> {
     let mut hir = Hir::from(ast);

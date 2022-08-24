@@ -1,6 +1,5 @@
 use crate::hir::{DefinedVariable, Hir};
 use crate::parser::ast::{Expr, Spanned, Stmt};
-use crate::sema::checker::Checker;
 use crate::sema::error::{SemanticDiag, SemanticError};
 use crate::sema::type_table::TypeTable;
 use std::ops::Deref;
@@ -19,10 +18,8 @@ impl<'a> DereferenceChecker<'a> {
             diag: SemanticDiag::new(),
         }
     }
-}
 
-impl Checker for DereferenceChecker<'_> {
-    fn check(&mut self) -> SemanticDiag {
+    pub(crate) fn check(&mut self) -> SemanticDiag {
         for var in self.hir.defined_variables() {
             self.check_toplevel_variable(var);
         }
@@ -34,9 +31,7 @@ impl Checker for DereferenceChecker<'_> {
 
         self.diag.clone()
     }
-}
 
-impl DereferenceChecker<'_> {
     // Toplevel variables should be constants
     // TODO: test(not_constant.mat)
     fn check_toplevel_variable(&mut self, var: DefinedVariable) {
