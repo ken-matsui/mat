@@ -2,6 +2,8 @@ pub(crate) mod ast;
 mod diag;
 mod lib;
 
+pub(crate) use diag::Error;
+
 use crate::diag::Emit;
 use ast::{compilation_unit, Ast, SrcId};
 use chumsky::{Parser, Span, Stream};

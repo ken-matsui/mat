@@ -1,17 +1,14 @@
 use crate::parser::lib::*;
 
 fn single_line_comment() -> impl Parser<()> {
-    just::<_, _, ParserError>("//")
+    just("//")
         .then_ignore(take_until(text::newline().or(end())))
         .ignored()
         .boxed()
 }
 
 fn multi_line_comment() -> impl Parser<()> {
-    just::<_, _, ParserError>("/*")
-        .then(take_until(just("*/")))
-        .ignored()
-        .boxed()
+    just("/*").then(take_until(just("*/"))).ignored().boxed()
 }
 
 pub(crate) fn comment() -> impl Parser<()> {

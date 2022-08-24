@@ -3,9 +3,9 @@ use crate::parser::ast::Span;
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
 use chumsky::error::Simple;
 
-pub(crate) type ParserError = Simple<char, Span>;
+pub(crate) type Error = Simple<char, Span>;
 
-impl Emit for ParserError {
+impl Emit for Error {
     fn emit(&self, code: &str) {
         let report = Report::build(ReportKind::Error, self.span().src(), self.span().start());
 

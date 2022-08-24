@@ -1,8 +1,9 @@
 use crate::parser::ast::{Expr, Spanned};
 use crate::parser::lib::*;
+use crate::parser::Error;
 
 pub(crate) fn integer() -> impl Parser<Spanned<Expr>> {
-    text::int::<_, ParserError>(10)
+    text::int::<_, Error>(10)
         .then(
             choice((
                 just("i8"),
