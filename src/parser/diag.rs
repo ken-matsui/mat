@@ -1,17 +1,16 @@
-use crate::diag::Emit;
+use crate::diag::{emit, Emit};
 use crate::parser::ast::Span;
-use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
+use ariadne::{Color, Fmt, Label};
 use chumsky::error::Simple;
 
 pub(crate) type Error = Simple<char, Span>;
 
 impl Emit for Error {
     fn emit(&self, code: &str) {
-        let report = Report::build(ReportKind::Error, self.span().src(), self.span().start());
-
-        let report = match self.reason() {
-            chumsky::error::SimpleReason::Unexpected => report
-                .with_message(format!(
+        let span = self.span();
+        let (message, labels) = match self.reason() {
+            chumsky::error::SimpleReason::Unexpected => (
+                format!(
                     "{}{}, expected {}",
                     if self.found().is_some() {
                         "unexpected token"
@@ -34,27 +33,23 @@ impl Emit for Error {
                             .collect::<Vec<_>>()
                             .join(", ")
                     }
-                ))
-                .with_label(Label::new(self.span()).with_message(format!(
+                ),
+                vec![Label::new(self.span()).with_message(format!(
                     "Unexpected {}",
                     self.found()
                         .map(|c| format!("token {}", c.fg(Color::Red)))
                         .unwrap_or_else(|| "end of input".to_string())
-                ))),
-            chumsky::error::SimpleReason::Unclosed { span, delimiter } => report
-                .with_message(format!(
-                    "Unclosed delimiter {}",
-                    delimiter.fg(Color::Yellow)
-                ))
-                .with_label(
+                ))],
+            ),
+            chumsky::error::SimpleReason::Unclosed { span, delimiter } => (
+                format!("Unclosed delimiter {}", delimiter.fg(Color::Yellow)),
+                vec![
                     Label::new(*span)
                         .with_message(format!(
                             "Unclosed delimiter {}",
                             delimiter.fg(Color::Yellow)
                         ))
                         .with_color(Color::Yellow),
-                )
-                .with_label(
                     Label::new(self.span())
                         .with_message(format!(
                             "Must be closed before this {}",
@@ -64,21 +59,15 @@ impl Emit for Error {
                                 .fg(Color::Red)
                         ))
                         .with_color(Color::Red),
-                ),
-            chumsky::error::SimpleReason::Custom(msg) => report.with_message(msg).with_label(
-                Label::new(self.span())
+                ],
+            ),
+            chumsky::error::SimpleReason::Custom(msg) => (
+                msg.clone(),
+                vec![Label::new(self.span())
                     .with_message(format!("{}", msg.fg(Color::Red)))
-                    .with_color(Color::Red),
+                    .with_color(Color::Red)],
             ),
         };
-
-        report
-            .finish()
-            .print((self.span().src(), Source::from(code)))
-            .unwrap();
-    }
-
-    fn count(&self) -> usize {
-        1
+        emit(code, span, message, labels, vec![]);
     }
 }

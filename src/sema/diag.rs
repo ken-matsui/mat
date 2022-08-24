@@ -115,7 +115,13 @@ impl Emit for Error {
                 vec![],
             ),
         };
-        emit(code, span, message, labels, notes);
+        emit(
+            code,
+            span,
+            message.to_string(),
+            labels,
+            notes.iter().map(ToString::to_string).collect(),
+        );
     }
 }
 

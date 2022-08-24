@@ -20,12 +20,12 @@ impl<T: Emit> Emit for Vec<T> {
     }
 }
 
-pub(crate) fn emit<N: ToString>(
+pub(crate) fn emit(
     code: &str,
     span: Span,
-    message: &str,
+    message: String,
     labels: Vec<Label<Span>>,
-    notes: Vec<N>,
+    notes: Vec<String>,
 ) {
     let mut report =
         Report::build(ReportKind::Error, span.src(), span.start()).with_message(message);
