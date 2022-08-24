@@ -16,8 +16,8 @@ pub(crate) use string::*;
 pub(crate) use ty::*;
 pub(crate) use variable::*;
 
-use crate::ast::Stmt;
 use crate::parser::lib::*;
+use matc_ast::Stmt;
 use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -39,7 +39,7 @@ pub(crate) fn compilation_unit() -> impl Parser<Ast> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{Expr, Param, Type};
+    use matc_ast::{Expr, Param, Type};
 
     #[test]
     fn test_compilation_unit() {

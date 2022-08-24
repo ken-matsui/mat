@@ -1,6 +1,6 @@
-use crate::ast::Expr;
 use crate::parser::ast::{character, integer, string, typeref, variable};
 use crate::parser::lib::*;
+use matc_ast::Expr;
 use matc_span::Spanned;
 
 pub(crate) fn args(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Vec<Spanned<Expr>>> + '_ {
@@ -188,7 +188,7 @@ fn primary() -> impl Parser<Spanned<Expr>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::Type;
+    use matc_ast::Type;
 
     #[test]
     fn test_args() {

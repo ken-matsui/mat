@@ -261,6 +261,14 @@ dependencies = [
  "clap",
  "debug_print",
  "linked-hash-map",
+ "matc_ast",
+ "matc_span",
+]
+
+[[package]]
+name = "matc_ast"
+version = "0.1.0"
+dependencies = [
  "matc_span",
 ]
 

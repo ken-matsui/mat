@@ -1,7 +1,7 @@
-use crate::ast::{Expr, Stmt, Type};
 use crate::parser::ast::Ast;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
+use matc_ast::{Expr, Stmt, Type};
 use matc_span::{Span, Spanned};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -129,21 +129,4 @@ impl<'a> DefinedVariable<'a> {
 #[derive(Debug, Clone)]
 pub(crate) struct DefinedFunction<'a> {
     pub(crate) body: &'a Spanned<Stmt>,
-}
-
-impl Expr {
-    pub(crate) fn is_constant(&self) -> bool {
-        matches!(
-            self,
-            Expr::I8(_)
-                | Expr::I16(_)
-                | Expr::I32(_)
-                | Expr::I64(_)
-                | Expr::U8(_)
-                | Expr::U16(_)
-                | Expr::U32(_)
-                | Expr::U64(_)
-                | Expr::String(_)
-        )
-    }
 }

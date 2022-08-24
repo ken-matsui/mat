@@ -1,8 +1,8 @@
-use crate::ast::Type;
+use crate::Type;
 use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(crate) enum Expr {
+pub enum Expr {
     /// ||
     Or(Spanned<Self>, Spanned<Self>),
 
@@ -67,4 +67,21 @@ pub(crate) enum Expr {
     U64(u64),
     String(String),
     Variable(String),
+}
+
+impl Expr {
+    pub fn is_constant(&self) -> bool {
+        matches!(
+            self,
+            Expr::I8(_)
+                | Expr::I16(_)
+                | Expr::I32(_)
+                | Expr::I64(_)
+                | Expr::U8(_)
+                | Expr::U16(_)
+                | Expr::U32(_)
+                | Expr::U64(_)
+                | Expr::String(_)
+        )
+    }
 }

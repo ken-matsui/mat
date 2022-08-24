@@ -1,7 +1,7 @@
-use crate::ast::Expr;
 use crate::parser::ast::Spanned;
 use crate::parser::lib::*;
 use crate::parser::Error;
+use matc_ast::Expr;
 
 pub(crate) fn integer() -> impl Parser<Spanned<Expr>> {
     text::int::<_, Error>(10)

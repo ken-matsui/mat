@@ -1,7 +1,7 @@
-/// String Literal Node
-use crate::ast::Expr;
 use crate::parser::ast::Spanned;
 use crate::parser::lib::*;
+/// String Literal Node
+use matc_ast::Expr;
 
 // pointer for i8
 pub(crate) fn string() -> impl Parser<Spanned<Expr>> {

@@ -1,8 +1,8 @@
-use crate::ast::{Expr, Param, Type};
+use crate::{Expr, Param, Type};
 use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(crate) enum Stmt {
+pub enum Stmt {
     Empty,
 
     Import(String),

@@ -1,7 +1,7 @@
-/// Type Node
-use crate::ast::{Stmt, Type};
 use crate::parser::ast::{ident, Spanned};
 use crate::parser::lib::*;
+/// Type Node
+use matc_ast::{Stmt, Type};
 
 pub(crate) fn typeref() -> impl Parser<Spanned<Type>> {
     choice((

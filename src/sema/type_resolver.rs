@@ -1,7 +1,7 @@
-use crate::ast::{Expr, Stmt, Type};
 use crate::hir::Hir;
 use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
+use matc_ast::{Expr, Stmt, Type};
 use matc_span::Spanned;
 use std::ops::Deref;
 

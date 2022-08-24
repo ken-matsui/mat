@@ -12,3 +12,4 @@ anyhow = "1.0.62" # main
 debug_print = "1.0.0" # main
 Inflector = "0.11.4" # main
 matc_span = { path = "./matc_span" }
+matc_ast = { path = "./matc_ast" }

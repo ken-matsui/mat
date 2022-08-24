@@ -1,5 +1,5 @@
-use crate::ast::Type;
 use crate::sema::diag::{Diagnostics, Error};
+use matc_ast::Type;
 use matc_span::Spanned;
 use std::collections::HashMap;
 use std::ops::Deref;

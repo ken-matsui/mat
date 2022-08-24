@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
-pub(crate) enum Type {
+pub enum Type {
     Void,
     I8,
     I16,
