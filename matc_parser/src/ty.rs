@@ -1,6 +1,6 @@
 /// Type Node
-use crate::parser::ident;
-use crate::parser::lib::*;
+use crate::ident::ident;
+use crate::*;
 use matc_ast::{Stmt, Type};
 use matc_span::Spanned;
 

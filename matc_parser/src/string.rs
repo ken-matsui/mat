@@ -1,5 +1,5 @@
 /// String Literal Node
-use crate::parser::lib::*;
+use crate::*;
 use matc_ast::Expr;
 use matc_span::Spanned;
 

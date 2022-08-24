@@ -1,5 +1,5 @@
-use crate::parser::ident;
-use crate::parser::lib::*;
+use crate::ident::ident;
+use crate::*;
 use matc_ast::Expr;
 use matc_span::Spanned;
 

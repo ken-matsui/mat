@@ -1,5 +1,8 @@
-use crate::parser::lib::*;
-use crate::parser::{cast, comment, expr, ident, typedef, typeref};
+use crate::comment::comment;
+use crate::expr::{cast, expr};
+use crate::ident::ident;
+use crate::ty::{typedef, typeref};
+use crate::*;
 use matc_ast::{Param, Stmt};
 use matc_span::Spanned;
 

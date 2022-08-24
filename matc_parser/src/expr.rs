@@ -1,5 +1,8 @@
-use crate::parser::lib::*;
-use crate::parser::{character, integer, string, typeref, variable};
+use crate::integer::{character, integer};
+use crate::string::string;
+use crate::ty::typeref;
+use crate::variable::variable;
+use crate::*;
 use matc_ast::Expr;
 use matc_span::Spanned;
 

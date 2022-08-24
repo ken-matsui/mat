@@ -1,5 +1,5 @@
-use crate::parser::lib::*;
-use crate::parser::Error;
+use crate::error::Error;
+use crate::*;
 use matc_ast::Expr;
 use matc_span::Spanned;
 

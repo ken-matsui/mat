@@ -1,6 +1,5 @@
 mod diag;
 mod hir;
-mod parser;
 mod sema;
 mod util;
 
@@ -55,7 +54,10 @@ struct Args {
 }
 
 fn parse<P: AsRef<Path>>(args: &Args, source: P, code: &str) -> Result<(), Box<dyn Emit>> {
-    let ast = parser::parse(source, code)?;
+    let ast = match matc_parser::parse(source, code) {
+        Ok(ast) => ast,
+        Err(errors) => return Err(Box::new(errors)),
+    };
     debug_println!("Info: Parse has been completed successfully.");
     if args.dump_ast {
         println!("{:#?}", ast);

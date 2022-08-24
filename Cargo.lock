@@ -257,11 +257,11 @@ dependencies = [
  "Inflector",
  "anyhow",
  "ariadne",
- "chumsky",
  "clap",
  "debug_print",
  "linked-hash-map",
  "matc_ast",
+ "matc_parser",
  "matc_span",
 ]
 
@@ -269,6 +269,16 @@ dependencies = [
 name = "matc_ast"
 version = "0.1.0"
 dependencies = [
+ "matc_span",
+]
+
+[[package]]
+name = "matc_parser"
+version = "0.1.0"
+dependencies = [
+ "ariadne",
+ "chumsky",
+ "matc_ast",
  "matc_span",
 ]
 

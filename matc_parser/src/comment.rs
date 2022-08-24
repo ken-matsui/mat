@@ -1,4 +1,4 @@
-use crate::parser::lib::*;
+use crate::*;
 
 fn single_line_comment() -> impl Parser<()> {
     just("//")

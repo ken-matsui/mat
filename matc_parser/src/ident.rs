@@ -1,5 +1,5 @@
-use crate::parser::comment;
-use crate::parser::lib::*;
+use crate::comment::comment;
+use crate::*;
 
 pub(crate) fn ident() -> impl Parser<String> {
     text::ident()

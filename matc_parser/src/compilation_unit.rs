@@ -1,5 +1,5 @@
-use crate::parser::lib::*;
-use crate::parser::{import_stmt, top_defs};
+use crate::stmt::{import_stmt, top_defs};
+use crate::*;
 use matc_ast::Ast;
 
 pub(crate) fn compilation_unit() -> impl Parser<Ast> {

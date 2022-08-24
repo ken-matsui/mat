@@ -1,4 +1,5 @@
 mod emit;
+mod parser;
 
 pub(crate) use emit::{emit, Emit};
 

@@ -1,15 +1,12 @@
 use crate::diag::{emit, Emit};
 use ariadne::{Color, Fmt, Label};
-use chumsky::error::Simple;
-use matc_span::Span;
-
-pub(crate) type Error = Simple<char, Span>;
+use matc_parser::error::{Error, SimpleReason};
 
 impl Emit for Error {
     fn emit(&self, code: &str) {
         let span = self.span();
         let (message, labels) = match self.reason() {
-            chumsky::error::SimpleReason::Unexpected => (
+            SimpleReason::Unexpected => (
                 format!(
                     "{}{}, expected {}",
                     if self.found().is_some() {
@@ -41,7 +38,7 @@ impl Emit for Error {
                         .unwrap_or_else(|| "end of input".to_string())
                 ))],
             ),
-            chumsky::error::SimpleReason::Unclosed { span, delimiter } => (
+            SimpleReason::Unclosed { span, delimiter } => (
                 format!("Unclosed delimiter {}", delimiter.fg(Color::Yellow)),
                 vec![
                     Label::new(*span)
@@ -61,7 +58,7 @@ impl Emit for Error {
                         .with_color(Color::Red),
                 ],
             ),
-            chumsky::error::SimpleReason::Custom(msg) => (
+            SimpleReason::Custom(msg) => (
                 msg.clone(),
                 vec![Label::new(self.span())
                     .with_message(format!("{}", msg.fg(Color::Red)))
