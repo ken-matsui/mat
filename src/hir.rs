@@ -1,7 +1,8 @@
-use crate::parser::ast::{Ast, Spanned, Stmt};
+use crate::parser::ast::{Ast, Spanned, Stmt, Type};
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
@@ -39,6 +40,22 @@ impl Hir {
         entities
     }
 
+    pub(crate) fn types(&self) -> Vec<TypeDef> {
+        let mut types = Vec::<TypeDef>::new();
+
+        for stmt in &self.defs {
+            match stmt.deref() {
+                Stmt::TypeDef { name, ty } => {
+                    types.push(TypeDef { name, ty });
+                }
+                // TODO: Stmt::DefStruct
+                _ => {}
+            }
+        }
+
+        types
+    }
+
     #[cfg(test)]
     pub(crate) fn from_defs(defs: Vec<Spanned<Stmt>>) -> Self {
         Self {
@@ -47,4 +64,10 @@ impl Hir {
             scope: None,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct TypeDef<'a> {
+    pub(crate) name: &'a Spanned<String>,
+    pub(crate) ty: &'a Spanned<Type>,
 }

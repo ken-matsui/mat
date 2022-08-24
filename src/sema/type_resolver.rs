@@ -31,18 +31,12 @@ impl<'a> Resolver for TypeResolver<'a> {
 
 impl<'a> TypeResolver<'a> {
     fn define_types(&mut self, hir: &Hir) {
-        for stmt in &hir.defs {
-            match stmt.deref() {
-                Stmt::TypeDef { name, ty } => {
-                    if let Some((predef, _)) = self.type_table.value.get_key_value(name) {
-                        self.diag
-                            .push_err(SemanticError::DuplicatedType(predef.span, name.span));
-                    }
-                    self.type_table.value.insert(name.clone(), ty.clone());
-                }
-                // TODO: Stmt::DefStruct
-                _ => {}
+        for ty in hir.types() {
+            if let Some((predef, _)) = self.type_table.value.get_key_value(ty.name) {
+                self.diag
+                    .push_err(SemanticError::DuplicatedType(predef.span, ty.name.span));
             }
+            self.type_table.value.insert(ty.name.clone(), ty.ty.clone());
         }
     }
 
