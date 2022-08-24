@@ -2,6 +2,7 @@ mod error;
 mod hir;
 mod parser;
 mod sema;
+mod util;
 
 use anyhow::bail;
 use clap::{ArgGroup, Parser};
@@ -9,6 +10,7 @@ use debug_print::debug_println;
 use error::Emit;
 use std::fs::read_to_string;
 use std::path::Path;
+use util::pluralize;
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
@@ -80,9 +82,10 @@ fn main() -> anyhow::Result<()> {
     if let Err(errors) = parse(&args, source, &code) {
         errors.emit(&code);
         bail!(
-            "Could not compile `{:?}` due to {} previous error(s)",
+            "Could not compile `{:?}` due to {} previous {}",
             source,
-            errors.count()
+            errors.count(),
+            pluralize("error", errors.count()),
         );
     }
     Ok(())

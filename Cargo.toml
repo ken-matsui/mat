@@ -11,3 +11,4 @@ linked-hash-map = "0.5.6" # sema
 internment = "0.7.0" # parser
 anyhow = "1.0.62" # main
 debug_print = "1.0.0" # main
+Inflector = "0.11.4" # main
