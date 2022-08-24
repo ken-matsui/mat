@@ -2,7 +2,7 @@ pub(crate) mod ast;
 mod error;
 mod lib;
 
-use crate::Emit;
+use crate::diagnostics::Emit;
 use ast::{compilation_unit, Ast, SrcId};
 use chumsky::{Parser, Span, Stream};
 use std::path::Path;

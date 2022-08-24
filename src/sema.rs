@@ -7,10 +7,10 @@ mod type_resolver;
 mod type_table;
 mod visitor;
 
+use crate::diagnostics::Emit;
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
 use crate::sema::error::SemanticDiag;
-use crate::Emit;
 use dereference_checker::DereferenceChecker;
 use local_resolver::LocalResolver;
 use type_resolver::TypeResolver;

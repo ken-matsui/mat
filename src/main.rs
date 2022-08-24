@@ -1,4 +1,4 @@
-mod error;
+mod diagnostics;
 mod hir;
 mod parser;
 mod sema;
@@ -7,7 +7,7 @@ mod util;
 use anyhow::bail;
 use clap::{ArgGroup, Parser};
 use debug_print::debug_println;
-use error::Emit;
+use diagnostics::Emit;
 use std::fs::read_to_string;
 use std::path::Path;
 use util::pluralize;

@@ -1,5 +1,5 @@
+use crate::diagnostics::Emit;
 use crate::parser::ast::Span;
-use crate::Emit;
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
 use chumsky::error::Simple;
 
