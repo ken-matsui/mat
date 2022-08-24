@@ -97,8 +97,8 @@ impl<'a> TypeResolver<'a> {
             | Stmt::BitXorAssign(lhs, rhs)
             | Stmt::ShlAssign(lhs, rhs)
             | Stmt::ShrAssign(lhs, rhs) => {
-                self.visit_expr(lhs);
                 self.visit_expr(rhs);
+                self.visit_expr(lhs);
             }
             Stmt::Expr(expr) => self.visit_expr(expr),
             _ => (),
@@ -129,8 +129,8 @@ impl<'a> TypeResolver<'a> {
             | Expr::Mul(lhs, rhs)
             | Expr::Div(lhs, rhs)
             | Expr::Rem(lhs, rhs) => {
-                self.visit_expr(lhs);
                 self.visit_expr(rhs);
+                self.visit_expr(lhs);
             }
             Expr::FnCall { name, args } => {
                 self.visit_expr(name);
