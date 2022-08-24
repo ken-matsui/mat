@@ -50,11 +50,9 @@ impl LocalResolver {
     }
 
     fn resolve_gvar_initializers(&mut self, hir: &Hir) {
-        for stmt in &hir.defs {
-            if let Stmt::DefVar { expr, .. } = stmt.deref() {
-                if let Some(expr) = expr.deref() {
-                    self.visit_expr(expr);
-                }
+        for var in hir.defined_variables() {
+            if let Some(expr) = var.initializer() {
+                self.visit_expr(expr);
             }
         }
     }

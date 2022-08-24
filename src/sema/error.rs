@@ -43,6 +43,8 @@ pub(crate) enum SemanticError {
     UnresolvedType(Span),
     // type_table.semantic_check
     RecursiveTypeDef(Span, Span),
+    // DereferenceChecker
+    NotConstant(Span),
 }
 
 impl Emit for SemanticError {
@@ -118,6 +120,18 @@ impl Emit for SemanticError {
                             .with_message("redefined here".fg(Color::Red))
                             .with_color(Color::Red),
                     )
+                    .finish()
+                    .print((span.src(), Source::from(code)))
+            }
+            SemanticError::NotConstant(span) => {
+                Report::build(ReportKind::Error, span.src(), span.start())
+                    .with_message("Not a constant")
+                    .with_label(
+                        Label::new(span)
+                            .with_message("this is not a constant".fg(Color::Red))
+                            .with_color(Color::Red),
+                    )
+                    .with_note("toplevel definitions should be constants".fg(Color::Red))
                     .finish()
                     .print((span.src(), Source::from(code)))
             }

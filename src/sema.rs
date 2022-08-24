@@ -1,3 +1,5 @@
+mod checker;
+mod dereference_checker;
 pub(crate) mod entity;
 mod error;
 mod local_resolver;
@@ -9,6 +11,8 @@ mod visitor;
 
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
+use crate::sema::checker::Checker;
+use crate::sema::dereference_checker::DereferenceChecker;
 use crate::sema::type_table::TypeTable;
 use crate::Emit;
 use error::SemanticError;
@@ -33,6 +37,12 @@ pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Vec<SemanticError>> {
     }
 
     let diag = type_table.semantic_check();
+    diag.warnings.emit(code);
+    if diag.has_err() {
+        return Err(diag.errors);
+    }
+
+    let diag = DereferenceChecker::new(&type_table).check(&mut hir);
     diag.warnings.emit(code);
     if diag.has_err() {
         return Err(diag.errors);

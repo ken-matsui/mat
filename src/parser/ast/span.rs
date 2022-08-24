@@ -79,6 +79,12 @@ impl Span {
     }
 }
 
+impl fmt::Debug for Span {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}:{:?}", self.src, self.range())
+    }
+}
+
 impl chumsky::Span for Span {
     type Context = SrcId;
     type Offset = usize;
@@ -115,12 +121,6 @@ impl ariadne::Span for Span {
     }
     fn end(&self) -> usize {
         self.range.1
-    }
-}
-
-impl fmt::Debug for Span {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}:{:?}", self.src, self.range())
     }
 }
 

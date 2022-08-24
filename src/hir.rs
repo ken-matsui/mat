@@ -1,4 +1,4 @@
-use crate::parser::ast::{Ast, Spanned, Stmt, Type};
+use crate::parser::ast::{Ast, Expr, Span, Spanned, Stmt, Type};
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;
@@ -56,6 +56,25 @@ impl Hir {
         types
     }
 
+    pub(crate) fn defined_variables(&self) -> Vec<DefinedVariable> {
+        let mut defvars = Vec::<DefinedVariable>::new();
+
+        for stmt in &self.defs {
+            if let Stmt::DefVar {
+                is_mut, name, expr, ..
+            } = stmt.deref()
+            {
+                defvars.push(DefinedVariable {
+                    is_mut: *is_mut,
+                    name,
+                    expr,
+                });
+            }
+        }
+
+        defvars
+    }
+
     #[cfg(test)]
     pub(crate) fn from_defs(defs: Vec<Spanned<Stmt>>) -> Self {
         Self {
@@ -70,4 +89,45 @@ impl Hir {
 pub(crate) struct TypeDef<'a> {
     pub(crate) name: &'a Spanned<String>,
     pub(crate) ty: &'a Spanned<Type>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct DefinedVariable<'a> {
+    pub(crate) is_mut: bool,
+    pub(crate) name: &'a Spanned<String>,
+    pub(crate) expr: &'a Option<Spanned<Expr>>,
+}
+
+impl<'a> DefinedVariable<'a> {
+    pub(crate) fn is_constant(&self) -> Result<(), Span> {
+        if self.is_mut {
+            return Err(self.name.span);
+        } else if let Some(expr) = self.initializer() {
+            if !expr.value.is_constant() {
+                return Err(expr.span);
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) fn initializer(&self) -> &'a Option<Spanned<Expr>> {
+        self.expr
+    }
+}
+
+impl Expr {
+    pub(crate) fn is_constant(&self) -> bool {
+        match self {
+            Expr::I8(_)
+            | Expr::I16(_)
+            | Expr::I32(_)
+            | Expr::I64(_)
+            | Expr::U8(_)
+            | Expr::U16(_)
+            | Expr::U32(_)
+            | Expr::U64(_)
+            | Expr::String(_) => true,
+            _ => false,
+        }
+    }
 }
