@@ -9,10 +9,10 @@ mod visitor;
 
 use crate::diag::Emit;
 use crate::hir::Hir;
-use crate::parser::ast::Ast;
 use crate::sema::diag::Diagnostics;
 use dereference_checker::DereferenceChecker;
 use local_resolver::LocalResolver;
+use matc_ast::Ast;
 use type_resolver::TypeResolver;
 use type_table::TypeTable;
 

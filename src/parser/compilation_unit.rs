@@ -1,30 +1,6 @@
-mod comment;
-mod expr;
-mod ident;
-mod integer;
-mod stmt;
-mod string;
-mod ty;
-mod variable;
-
-pub(crate) use comment::*;
-pub(crate) use expr::*;
-pub(crate) use ident::*;
-pub(crate) use integer::*;
-pub(crate) use stmt::*;
-pub(crate) use string::*;
-pub(crate) use ty::*;
-pub(crate) use variable::*;
-
 use crate::parser::lib::*;
-use matc_ast::Stmt;
-use matc_span::Spanned;
-
-#[derive(Debug, PartialEq, Clone)]
-pub(crate) struct Ast {
-    pub(crate) imports: Vec<Spanned<Stmt>>,
-    pub(crate) defs: Vec<Spanned<Stmt>>,
-}
+use crate::parser::{import_stmt, top_defs};
+use matc_ast::Ast;
 
 pub(crate) fn compilation_unit() -> impl Parser<Ast> {
     import_stmt()
@@ -39,7 +15,8 @@ pub(crate) fn compilation_unit() -> impl Parser<Ast> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use matc_ast::{Expr, Param, Type};
+    use matc_ast::{Expr, Param, Stmt, Type};
+    use matc_span::Spanned;
 
     #[test]
     fn test_compilation_unit() {

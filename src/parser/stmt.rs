@@ -1,6 +1,7 @@
-use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Spanned};
 use crate::parser::lib::*;
+use crate::parser::{cast, comment, expr, ident, typedef, typeref};
 use matc_ast::{Param, Stmt};
+use matc_span::Spanned;
 
 // import std.io;
 pub(crate) fn import_stmt() -> impl Parser<Spanned<Stmt>> {

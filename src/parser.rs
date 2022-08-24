@@ -1,12 +1,30 @@
-pub(crate) mod ast;
+mod comment;
+pub(crate) mod compilation_unit;
 mod diag;
+mod expr;
+mod ident;
+mod integer;
 mod lib;
+mod stmt;
+mod string;
+mod ty;
+mod variable;
+
+pub(crate) use crate::parser::comment::*;
+pub(crate) use crate::parser::expr::*;
+pub(crate) use crate::parser::ident::*;
+pub(crate) use crate::parser::integer::*;
+pub(crate) use crate::parser::stmt::*;
+pub(crate) use crate::parser::string::*;
+pub(crate) use crate::parser::ty::*;
+pub(crate) use crate::parser::variable::*;
 
 pub(crate) use diag::Error;
 
 use crate::diag::Emit;
-use ast::{compilation_unit, Ast};
 use chumsky::{Parser, Span, Stream};
+use compilation_unit::compilation_unit;
+use matc_ast::Ast;
 use matc_span::SrcId;
 use std::path::Path;
 

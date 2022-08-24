@@ -1,4 +1,4 @@
-use crate::parser::ast::comment;
+use crate::parser::comment;
 use crate::parser::lib::*;
 
 pub(crate) fn ident() -> impl Parser<String> {

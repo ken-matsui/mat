@@ -1,7 +1,8 @@
-use crate::parser::ast::{ident, Spanned};
-use crate::parser::lib::*;
 /// Type Node
+use crate::parser::ident;
+use crate::parser::lib::*;
 use matc_ast::{Stmt, Type};
+use matc_span::Spanned;
 
 pub(crate) fn typeref() -> impl Parser<Spanned<Type>> {
     choice((

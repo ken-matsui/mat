@@ -1,5 +1,5 @@
-use crate::parser::ast::{character, integer, string, typeref, variable};
 use crate::parser::lib::*;
+use crate::parser::{character, integer, string, typeref, variable};
 use matc_ast::Expr;
 use matc_span::Spanned;
 

@@ -7,3 +7,11 @@ pub use expr::Expr;
 pub use param::Param;
 pub use stmt::Stmt;
 pub use ty::Type;
+
+use matc_span::Spanned;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Ast {
+    pub imports: Vec<Spanned<Stmt>>,
+    pub defs: Vec<Spanned<Stmt>>,
+}
