@@ -1,6 +1,6 @@
 use crate::hir::{DefinedVariable, Hir};
 use crate::parser::ast::{Expr, Spanned, Stmt};
-use crate::sema::error::{SemanticDiag, SemanticError};
+use crate::sema::diag::{SemanticDiag, SemanticError};
 use crate::sema::type_table::TypeTable;
 use std::ops::Deref;
 

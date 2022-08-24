@@ -1,5 +1,5 @@
 use crate::parser::ast::{Spanned, Type};
-use crate::sema::error::{SemanticDiag, SemanticError};
+use crate::sema::diag::{SemanticDiag, SemanticError};
 use std::collections::HashMap;
 use std::ops::Deref;
 

@@ -1,7 +1,7 @@
 use crate::hir::Hir;
 use crate::parser::ast::{Expr, Spanned, Stmt};
+use crate::sema::diag::SemanticDiag;
 use crate::sema::entity::Entity;
-use crate::sema::error::SemanticDiag;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;
 use std::collections::LinkedList;
@@ -191,7 +191,7 @@ impl LocalResolver {
 mod tests {
     use super::*;
     use crate::parser::ast::{Span, Type};
-    use crate::sema::error::{SemanticError, SemanticWarning};
+    use crate::sema::diag::{SemanticError, SemanticWarning};
 
     fn let_imut_i8(name: &str, expr: Option<Spanned<Expr>>) -> Spanned<Stmt> {
         Spanned::any(Stmt::DefVar {

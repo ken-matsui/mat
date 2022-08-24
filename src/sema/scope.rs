@@ -1,6 +1,6 @@
 use crate::parser::ast::Span;
+use crate::sema::diag::{SemanticDiag, SemanticError, SemanticWarning};
 use crate::sema::entity::Entity;
-use crate::sema::error::{SemanticDiag, SemanticError, SemanticWarning};
 use linked_hash_map::LinkedHashMap;
 use std::cell::RefCell;
 use std::rc::Rc;

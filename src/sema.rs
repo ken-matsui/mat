@@ -1,6 +1,6 @@
 mod dereference_checker;
+mod diag;
 pub(crate) mod entity;
-mod error;
 mod local_resolver;
 pub(crate) mod scope;
 mod type_resolver;
@@ -10,7 +10,7 @@ mod visitor;
 use crate::diag::Emit;
 use crate::hir::Hir;
 use crate::parser::ast::Ast;
-use crate::sema::error::SemanticDiag;
+use crate::sema::diag::SemanticDiag;
 use dereference_checker::DereferenceChecker;
 use local_resolver::LocalResolver;
 use type_resolver::TypeResolver;
