@@ -1,5 +1,5 @@
-use crate::parser::ast::Span;
 use ariadne::{Label, Report, ReportKind, Source, Span as _};
+use matc_span::Span;
 
 pub(crate) trait Emit {
     fn emit(&self, code: &str);

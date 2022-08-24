@@ -1,7 +1,7 @@
-use crate::parser::ast::Span;
 use crate::sema::diag::{Diagnostics, Error, Warning};
 use crate::sema::entity::Entity;
 use linked_hash_map::LinkedHashMap;
+use matc_span::Span;
 use std::cell::RefCell;
 use std::rc::Rc;
 

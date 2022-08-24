@@ -6,7 +6,7 @@ pub(crate) use chumsky::Parser as _;
 pub(crate) trait Parser<T>: chumsky::Parser<char, T, Error = Error> + Clone {
     #[cfg(test)]
     fn parse_test(&self, stream: &str) -> Result<T, Vec<Self::Error>> {
-        use crate::parser::ast::{Span, SrcId};
+        use matc_span::{Span, SrcId};
 
         let len = stream.chars().count();
         let span = |i| Span::new(SrcId::any(), i..i + 1);

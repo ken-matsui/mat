@@ -5,8 +5,9 @@ mod lib;
 pub(crate) use diag::Error;
 
 use crate::diag::Emit;
-use ast::{compilation_unit, Ast, SrcId};
+use ast::{compilation_unit, Ast};
 use chumsky::{Parser, Span, Stream};
+use matc_span::SrcId;
 use std::path::Path;
 
 pub(crate) fn parse<P: AsRef<Path>>(src: P, code: &str) -> Result<Ast, Box<dyn Emit>> {

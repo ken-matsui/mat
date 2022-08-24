@@ -1,4 +1,5 @@
-use crate::parser::ast::{Param, Spanned, Stmt, Type};
+use crate::parser::ast::{Param, Stmt, Type};
+use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Entity {

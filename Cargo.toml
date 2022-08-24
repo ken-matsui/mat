@@ -8,7 +8,7 @@ ariadne = "0.1.5" # parser & sema
 chumsky = "0.8.0" # parser
 clap = { version = "3.2.17", features = ["derive"] } # main
 linked-hash-map = "0.5.6" # sema
-internment = "0.7.0" # parser
 anyhow = "1.0.62" # main
 debug_print = "1.0.0" # main
 Inflector = "0.11.4" # main
+matc_span = { path = "./matc_span" }

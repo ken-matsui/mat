@@ -1,4 +1,5 @@
-use crate::parser::ast::{Spanned, Type};
+use crate::parser::ast::Type;
+use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum Expr {

@@ -1,8 +1,9 @@
 use crate::ast::expr::Expr;
 use crate::hir::Hir;
-use crate::parser::ast::{Spanned, Stmt, Type};
+use crate::parser::ast::{Stmt, Type};
 use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
+use matc_span::Spanned;
 use std::ops::Deref;
 
 pub(crate) struct TypeResolver<'a> {

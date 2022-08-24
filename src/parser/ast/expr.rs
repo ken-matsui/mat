@@ -1,6 +1,7 @@
 use crate::ast::expr::Expr;
-use crate::parser::ast::{character, integer, string, typeref, variable, Spanned};
+use crate::parser::ast::{character, integer, string, typeref, variable};
 use crate::parser::lib::*;
+use matc_span::Spanned;
 
 pub(crate) fn args(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Vec<Spanned<Expr>>> + '_ {
     expr(fn_call).separated_by(just(',')).boxed()

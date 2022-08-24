@@ -1,9 +1,10 @@
 use crate::ast::expr::Expr;
 use crate::hir::Hir;
-use crate::parser::ast::{Spanned, Stmt};
+use crate::parser::ast::Stmt;
 use crate::sema::diag::Diagnostics;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
+use matc_span::Spanned;
 use std::cell::RefCell;
 use std::collections::LinkedList;
 use std::ops::Deref;
@@ -193,8 +194,9 @@ impl LocalResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::{Span, Type};
+    use crate::parser::ast::Type;
     use crate::sema::diag::{Error, Warning};
+    use matc_span::Span;
 
     fn let_imut_i8(name: &str, expr: Option<Spanned<Expr>>) -> Spanned<Stmt> {
         Spanned::any(Stmt::DefVar {

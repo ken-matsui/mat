@@ -1,5 +1,6 @@
-use crate::parser::ast::{Spanned, Type};
+use crate::parser::ast::Type;
 use crate::sema::diag::{Diagnostics, Error};
+use matc_span::Spanned;
 use std::collections::HashMap;
 use std::ops::Deref;
 
@@ -73,7 +74,7 @@ impl TypeTable {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Span;
+    use matc_span::Span;
 
     #[test]
     fn test_check_recursive_definition_err() {

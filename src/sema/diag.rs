@@ -1,6 +1,6 @@
 use crate::diag::{emit, Diagnostics as Diag, Emit};
-use crate::parser::ast::Span;
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
+use matc_span::Span;
 use std::fmt::Debug;
 
 #[derive(Debug, PartialEq, Clone)]

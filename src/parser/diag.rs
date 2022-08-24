@@ -1,7 +1,7 @@
 use crate::diag::{emit, Emit};
-use crate::parser::ast::Span;
 use ariadne::{Color, Fmt, Label};
 use chumsky::error::Simple;
+use matc_span::Span;
 
 pub(crate) type Error = Simple<char, Span>;
 

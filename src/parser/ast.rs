@@ -2,7 +2,6 @@ mod comment;
 mod expr;
 mod ident;
 mod integer;
-mod span;
 mod stmt;
 mod string;
 mod ty;
@@ -12,13 +11,13 @@ pub(crate) use comment::*;
 pub(crate) use expr::*;
 pub(crate) use ident::*;
 pub(crate) use integer::*;
-pub(crate) use span::*;
 pub(crate) use stmt::*;
 pub(crate) use string::*;
 pub(crate) use ty::*;
 pub(crate) use variable::*;
 
 use crate::parser::lib::*;
+use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Ast {

@@ -1,7 +1,8 @@
 use crate::ast::expr::Expr;
-use crate::parser::ast::{Ast, Span, Spanned, Stmt, Type};
+use crate::parser::ast::{Ast, Stmt, Type};
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
+use matc_span::{Span, Spanned};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
