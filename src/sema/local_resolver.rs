@@ -1,5 +1,4 @@
-use crate::ast::stmt::Stmt;
-use crate::ast::Expr;
+use crate::ast::{Expr, Stmt};
 use crate::hir::Hir;
 use crate::sema::diag::Diagnostics;
 use crate::sema::entity::Entity;

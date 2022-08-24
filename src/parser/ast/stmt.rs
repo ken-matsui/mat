@@ -1,5 +1,4 @@
-use crate::ast::stmt::Stmt;
-use crate::ast::Param;
+use crate::ast::{Param, Stmt};
 use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Spanned};
 use crate::parser::lib::*;
 
@@ -207,8 +206,7 @@ fn assign_stmt() -> impl Parser<Spanned<Stmt>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::Expr;
-    use crate::ast::Type;
+    use crate::ast::{Expr, Type};
 
     #[test]
     fn test_import_stmt() {
