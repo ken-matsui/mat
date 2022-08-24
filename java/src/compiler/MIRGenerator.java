@@ -56,11 +56,11 @@ class MIRGenerator implements ASTVisitor<Void, Expr> {
     Map<String, JumpEntry> jumpMap;
 
     public List<Stmt> compileFunctionBody(DefinedFunction f) {
-        stmts = new ArrayList<Stmt>();
-        scopeStack = new LinkedList<LocalScope>();
-        breakStack = new LinkedList<Label>();
-        continueStack = new LinkedList<Label>();
-        jumpMap = new HashMap<String, JumpEntry>();
+        stmts = new ArrayList<>();
+        scopeStack = new LinkedList<>();
+        breakStack = new LinkedList<>();
+        continueStack = new LinkedList<>();
+        jumpMap = new HashMap<>();
         transformStmt(f.body());
         checkJumpLinks(jumpMap);
         return stmts;

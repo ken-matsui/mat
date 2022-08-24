@@ -5,7 +5,9 @@ mod sema;
 
 use crate::error::Emit;
 use clap::{ArgGroup, Parser};
+use std::ffi::OsStr;
 use std::fs::read_to_string;
+use std::path::Path;
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
@@ -52,6 +54,11 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+    Path::new(&args.source)
+        .extension()
+        .and_then(OsStr::to_str)
+        .filter(|&ext| ext == "mat")
+        .expect("Source file extension should be `.mat`");
     let code = read_to_string(args.source.clone()).expect("Failed to read file");
 
     match parser::parse(args.source, &code) {
