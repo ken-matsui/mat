@@ -1,5 +1,5 @@
 pub(crate) mod ast;
-mod error;
+mod diag;
 mod lib;
 
 use crate::diag::Emit;

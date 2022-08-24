@@ -1,4 +1,4 @@
-pub(crate) use crate::parser::error::ParserError;
+pub(crate) use crate::parser::diag::ParserError;
 pub(crate) use chumsky::prelude::*;
 pub(crate) use chumsky::Parser as _;
 
