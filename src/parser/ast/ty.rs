@@ -1,6 +1,6 @@
 /// Type Node
 use crate::ast::stmt::Stmt;
-use crate::ast::ty::Type;
+use crate::ast::Type;
 use crate::parser::ast::{ident, Spanned};
 use crate::parser::lib::*;
 

@@ -1,6 +1,6 @@
-use crate::ast::expr::Expr;
 use crate::ast::stmt::Stmt;
-use crate::ast::ty::Type;
+use crate::ast::Expr;
+use crate::ast::Type;
 use crate::hir::Hir;
 use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;

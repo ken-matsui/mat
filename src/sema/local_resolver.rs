@@ -1,5 +1,5 @@
-use crate::ast::expr::Expr;
 use crate::ast::stmt::Stmt;
+use crate::ast::Expr;
 use crate::hir::Hir;
 use crate::sema::diag::Diagnostics;
 use crate::sema::entity::Entity;
@@ -194,7 +194,7 @@ impl LocalResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::ty::Type;
+    use crate::ast::Type;
     use crate::sema::diag::{Error, Warning};
     use matc_span::Span;
 

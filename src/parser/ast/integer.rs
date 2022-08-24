@@ -1,4 +1,4 @@
-use crate::ast::expr::Expr;
+use crate::ast::Expr;
 use crate::parser::ast::Spanned;
 use crate::parser::lib::*;
 use crate::parser::Error;

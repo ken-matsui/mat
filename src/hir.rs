@@ -1,6 +1,6 @@
-use crate::ast::expr::Expr;
 use crate::ast::stmt::Stmt;
-use crate::ast::ty::Type;
+use crate::ast::Expr;
+use crate::ast::Type;
 use crate::parser::ast::Ast;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;

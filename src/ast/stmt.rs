@@ -1,6 +1,6 @@
-use crate::ast::expr::Expr;
-use crate::ast::param::Param;
-use crate::ast::ty::Type;
+use crate::ast::Expr;
+use crate::ast::Param;
+use crate::ast::Type;
 use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

@@ -1,4 +1,4 @@
-use crate::ast::expr::Expr;
+use crate::ast::Expr;
 use crate::parser::ast::{character, integer, string, typeref, variable};
 use crate::parser::lib::*;
 use matc_span::Spanned;
@@ -188,7 +188,7 @@ fn primary() -> impl Parser<Spanned<Expr>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::ty::Type;
+    use crate::ast::Type;
 
     #[test]
     fn test_args() {
