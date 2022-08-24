@@ -82,15 +82,3 @@ impl Emit for ParserError {
         1
     }
 }
-
-impl Emit for Vec<ParserError> {
-    fn emit(&self, code: &str) {
-        for err in self {
-            err.emit(code);
-        }
-    }
-
-    fn count(&self) -> usize {
-        self.len()
-    }
-}

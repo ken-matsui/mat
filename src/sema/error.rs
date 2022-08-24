@@ -29,18 +29,6 @@ impl Emit for SemanticWarning {
     }
 }
 
-impl Emit for Vec<SemanticWarning> {
-    fn emit(&self, code: &str) {
-        for warn in self {
-            warn.emit(code);
-        }
-    }
-
-    fn count(&self) -> usize {
-        self.len()
-    }
-}
-
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum SemanticError {
     // LocalResolver
@@ -163,18 +151,6 @@ impl Emit for SemanticError {
 
     fn count(&self) -> usize {
         1
-    }
-}
-
-impl Emit for Vec<SemanticError> {
-    fn emit(&self, code: &str) {
-        for err in self {
-            err.emit(code);
-        }
-    }
-
-    fn count(&self) -> usize {
-        self.len()
     }
 }
 
