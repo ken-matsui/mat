@@ -1,4 +1,5 @@
-use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Expr, Spanned, Type};
+use crate::ast::expr::Expr;
+use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Spanned, Type};
 use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

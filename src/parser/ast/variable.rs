@@ -1,4 +1,5 @@
-use crate::parser::ast::{ident, Expr, Spanned};
+use crate::ast::expr::Expr;
+use crate::parser::ast::{ident, Spanned};
 use crate::parser::lib::*;
 
 pub(crate) fn variable() -> impl Parser<Spanned<Expr>> {

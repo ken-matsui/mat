@@ -1,73 +1,6 @@
-use crate::parser::ast::{character, integer, string, typeref, variable, Spanned, Type};
+use crate::ast::expr::Expr;
+use crate::parser::ast::{character, integer, string, typeref, variable, Spanned};
 use crate::parser::lib::*;
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub(crate) enum Expr {
-    /// ||
-    Or(Spanned<Self>, Spanned<Self>),
-
-    /// &&
-    And(Spanned<Self>, Spanned<Self>),
-
-    /// <
-    Lt(Spanned<Self>, Spanned<Self>),
-    /// >
-    Gt(Spanned<Self>, Spanned<Self>),
-    /// <=
-    Lte(Spanned<Self>, Spanned<Self>),
-    /// >=
-    Gte(Spanned<Self>, Spanned<Self>),
-    /// ==
-    Eq(Spanned<Self>, Spanned<Self>),
-    /// !=
-    Neq(Spanned<Self>, Spanned<Self>),
-
-    /// |
-    BitOr(Spanned<Self>, Spanned<Self>),
-
-    /// ^
-    BitXor(Spanned<Self>, Spanned<Self>),
-
-    /// &
-    BitAnd(Spanned<Self>, Spanned<Self>),
-
-    /// <<
-    Shl(Spanned<Self>, Spanned<Self>),
-    /// >>
-    Shr(Spanned<Self>, Spanned<Self>),
-
-    /// +
-    Add(Spanned<Self>, Spanned<Self>),
-    /// -
-    Sub(Spanned<Self>, Spanned<Self>),
-
-    /// *
-    Mul(Spanned<Self>, Spanned<Self>),
-    /// /
-    Div(Spanned<Self>, Spanned<Self>),
-    /// %
-    Rem(Spanned<Self>, Spanned<Self>),
-
-    /// as
-    As(Spanned<Self>, Spanned<Type>),
-
-    FnCall {
-        name: Spanned<Self>,
-        args: Vec<Spanned<Self>>,
-    },
-
-    /// Atom
-    I8(i8),
-    I16(i16),
-    I32(i32),
-    I64(i64),
-    U8(u8),
-    U16(u16),
-    U32(u32),
-    U64(u64),
-    String(String),
-    Variable(String),
-}
 
 pub(crate) fn args(fn_call: Option<Rec<Spanned<Expr>>>) -> impl Parser<Vec<Spanned<Expr>>> + '_ {
     expr(fn_call).separated_by(just(',')).boxed()
@@ -254,6 +187,7 @@ fn primary() -> impl Parser<Spanned<Expr>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::ast::Type;
 
     #[test]
     fn test_args() {

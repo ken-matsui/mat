@@ -1,3 +1,4 @@
+mod ast;
 mod diag;
 mod hir;
 mod parser;

@@ -1,5 +1,6 @@
+use crate::ast::expr::Expr;
 use crate::hir::Hir;
-use crate::parser::ast::{Expr, Spanned, Stmt};
+use crate::parser::ast::{Spanned, Stmt};
 use crate::sema::diag::Diagnostics;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;

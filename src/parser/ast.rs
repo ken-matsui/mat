@@ -39,6 +39,7 @@ pub(crate) fn compilation_unit() -> impl Parser<Ast> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::expr::Expr;
 
     #[test]
     fn test_compilation_unit() {

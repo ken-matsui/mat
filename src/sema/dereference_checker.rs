@@ -1,5 +1,6 @@
+use crate::ast::expr::Expr;
 use crate::hir::{DefinedVariable, Hir};
-use crate::parser::ast::{Expr, Spanned, Stmt};
+use crate::parser::ast::{Spanned, Stmt};
 use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
 use std::ops::Deref;

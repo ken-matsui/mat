@@ -1,4 +1,5 @@
-use crate::parser::ast::{Ast, Expr, Span, Spanned, Stmt, Type};
+use crate::ast::expr::Expr;
+use crate::parser::ast::{Ast, Span, Spanned, Stmt, Type};
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
 use std::cell::RefCell;

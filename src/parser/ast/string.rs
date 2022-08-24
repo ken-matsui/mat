@@ -1,5 +1,6 @@
 /// String Literal Node
-use crate::parser::ast::{Expr, Spanned};
+use crate::ast::expr::Expr;
+use crate::parser::ast::Spanned;
 use crate::parser::lib::*;
 
 // pointer for i8
