@@ -102,16 +102,12 @@ impl<'a> DefinedVariable<'a> {
     pub(crate) fn is_constant(&self) -> Result<(), Span> {
         if self.is_mut {
             return Err(self.name.span);
-        } else if let Some(expr) = self.initializer() {
+        } else if let Some(expr) = self.expr {
             if !expr.value.is_constant() {
                 return Err(expr.span);
             }
         }
         Ok(())
-    }
-
-    pub(crate) fn initializer(&self) -> &'a Option<Spanned<Expr>> {
-        self.expr
     }
 }
 

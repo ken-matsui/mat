@@ -39,7 +39,7 @@ impl DereferenceChecker<'_> {
     }
 
     fn check_variable(&mut self, var: &DefinedVariable) {
-        if let Some(expr) = var.initializer() {
+        if let Some(expr) = var.expr {
             if let Err(err) = self.visit_expr(expr) {
                 self.diag.push_err(err);
             }

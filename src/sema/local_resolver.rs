@@ -51,7 +51,7 @@ impl LocalResolver {
 
     fn resolve_gvar_initializers(&mut self, hir: &Hir) {
         for var in hir.defined_variables() {
-            if let Some(expr) = var.initializer() {
+            if let Some(expr) = var.expr {
                 self.visit_expr(expr);
             }
         }
