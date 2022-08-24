@@ -1,6 +1,7 @@
 use crate::ast::expr::Expr;
 use crate::ast::stmt::Stmt;
-use crate::parser::ast::{Ast, Type};
+use crate::ast::ty::Type;
+use crate::parser::ast::Ast;
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
 use matc_span::{Span, Spanned};

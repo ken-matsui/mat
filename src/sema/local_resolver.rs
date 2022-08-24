@@ -194,7 +194,7 @@ impl LocalResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Type;
+    use crate::ast::ty::Type;
     use crate::sema::diag::{Error, Warning};
     use matc_span::Span;
 

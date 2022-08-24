@@ -41,6 +41,7 @@ mod tests {
     use super::*;
     use crate::ast::expr::Expr;
     use crate::ast::param::Param;
+    use crate::ast::ty::Type;
 
     #[test]
     fn test_compilation_unit() {

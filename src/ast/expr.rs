@@ -1,4 +1,4 @@
-use crate::parser::ast::Type;
+use crate::ast::ty::Type;
 use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

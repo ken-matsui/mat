@@ -188,7 +188,7 @@ fn primary() -> impl Parser<Spanned<Expr>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::ast::Type;
+    use crate::ast::ty::Type;
 
     #[test]
     fn test_args() {

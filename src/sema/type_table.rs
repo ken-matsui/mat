@@ -1,4 +1,4 @@
-use crate::parser::ast::Type;
+use crate::ast::ty::Type;
 use crate::sema::diag::{Diagnostics, Error};
 use matc_span::Spanned;
 use std::collections::HashMap;

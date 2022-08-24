@@ -208,7 +208,7 @@ fn assign_stmt() -> impl Parser<Spanned<Stmt>> {
 mod tests {
     use super::*;
     use crate::ast::expr::Expr;
-    use crate::parser::ast::Type;
+    use crate::ast::ty::Type;
 
     #[test]
     fn test_import_stmt() {

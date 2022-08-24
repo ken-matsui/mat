@@ -1,22 +1,8 @@
-use crate::ast::stmt::Stmt;
 /// Type Node
+use crate::ast::stmt::Stmt;
+use crate::ast::ty::Type;
 use crate::parser::ast::{ident, Spanned};
 use crate::parser::lib::*;
-
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
-pub(crate) enum Type {
-    Void,
-    I8,
-    I16,
-    I32,
-    I64,
-    U8,
-    U16,
-    U32,
-    U64,
-    /// User defined type
-    User(String),
-}
 
 pub(crate) fn typeref() -> impl Parser<Spanned<Type>> {
     choice((
