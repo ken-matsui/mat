@@ -470,7 +470,7 @@ class TypeChecker extends Visitor {
             return null;
         }
         Iterator<ExprNode> args = node.args().iterator();
-        List<ExprNode> newArgs = new ArrayList<ExprNode>();
+        List<ExprNode> newArgs = new ArrayList<>();
         // mandatory args
         for (Type param : type.paramTypes()) {
             ExprNode arg = args.next();
@@ -565,8 +565,8 @@ class TypeChecker extends Visitor {
         Type u_int = typeTable.u32();
         Type s_long = typeTable.i64();
         Type u_long = typeTable.u64();
-        if (    (l.isSameType(u_int) && r.isSameType(s_long))
-                || (r.isSameType(u_int) && l.isSameType(s_long))) {
+        if ((l.isSameType(u_int) && r.isSameType(s_long))
+            || (r.isSameType(u_int) && l.isSameType(s_long))) {
             return u_long;
         }
         else if (l.isSameType(u_long) || r.isSameType(u_long)) {

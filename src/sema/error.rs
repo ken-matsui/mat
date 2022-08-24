@@ -45,6 +45,7 @@ pub(crate) enum SemanticError {
     RecursiveTypeDef(Span, Span),
     // DereferenceChecker
     NotConstant(Span),
+    NotCallable(Span),
 }
 
 impl Emit for SemanticError {
@@ -132,7 +133,19 @@ impl Emit for SemanticError {
                             .with_message("this is not a constant".fg(Color::Red))
                             .with_color(Color::Red),
                     )
-                    .with_note("toplevel definitions should be constants".fg(Color::Red))
+                    .with_note("toplevel definitions should be constants".fg(Color::Blue))
+                    .finish()
+                    .print((span.src(), Source::from(code)))
+            }
+            SemanticError::NotCallable(span) => {
+                // TODO: too similar to UnresolvedRef
+                Report::build(ReportKind::Error, span.src(), span.start())
+                    .with_message("Not callable")
+                    .with_label(
+                        Label::new(span)
+                            .with_message("this is not a function".fg(Color::Red))
+                            .with_color(Color::Red),
+                    )
                     .finish()
                     .print((span.src(), Source::from(code)))
             }

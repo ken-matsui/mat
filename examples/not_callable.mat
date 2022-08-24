@@ -1,0 +1,2 @@
+let fun: i8;
+let boo: i8 = fun(1);

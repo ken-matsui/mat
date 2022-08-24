@@ -42,7 +42,7 @@ pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Vec<SemanticError>> {
         return Err(diag.errors);
     }
 
-    let diag = DereferenceChecker::new(&type_table).check(&mut hir);
+    let diag = DereferenceChecker::new(&type_table, &hir).check();
     diag.warnings.emit(code);
     if diag.has_err() {
         return Err(diag.errors);
