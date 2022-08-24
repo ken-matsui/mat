@@ -75,6 +75,18 @@ impl Hir {
         defvars
     }
 
+    pub(crate) fn defined_functions(&self) -> Vec<DefinedFunction> {
+        let mut functions = Vec::<DefinedFunction>::new();
+
+        for stmt in &self.defs {
+            if let Stmt::DefFn { body, .. } = stmt.deref() {
+                functions.push(DefinedFunction { body })
+            }
+        }
+
+        functions
+    }
+
     #[cfg(test)]
     pub(crate) fn from_defs(defs: Vec<Spanned<Stmt>>) -> Self {
         Self {
@@ -109,6 +121,11 @@ impl<'a> DefinedVariable<'a> {
         }
         Ok(())
     }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct DefinedFunction<'a> {
+    pub(crate) body: &'a Spanned<Stmt>,
 }
 
 impl Expr {
