@@ -21,7 +21,7 @@ pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Box<dyn Emit>> {
     let handle_diag = |diag: SemanticDiag| -> Result<(), Box<dyn Emit>> {
         diag.warnings.emit(code);
         if diag.has_err() {
-            return Err(Box::new(diag.errors));
+            Err(Box::new(diag.errors))
         } else {
             Ok(())
         }

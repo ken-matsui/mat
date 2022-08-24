@@ -55,14 +55,14 @@ struct Args {
 }
 
 fn parse<P: AsRef<Path>>(args: &Args, source: P, code: &str) -> Result<(), Box<dyn Emit>> {
-    let ast = parser::parse(source, &code)?;
+    let ast = parser::parse(source, code)?;
     debug_println!("Info: Parse has been completed successfully.");
     if args.dump_ast {
         println!("{:#?}", ast);
         return Ok(());
     }
 
-    let hir = sema::analyze(ast, &code)?;
+    let hir = sema::analyze(ast, code)?;
     debug_println!("Info: Semantic analysis has been completed successfully.");
     if args.dump_hir {
         println!("{:#?}", hir);
