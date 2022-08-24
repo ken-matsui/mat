@@ -1,5 +1,6 @@
+use crate::ast::stmt::Stmt;
 /// Type Node
-use crate::parser::ast::{ident, Spanned, Stmt};
+use crate::parser::ast::{ident, Spanned};
 use crate::parser::lib::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]

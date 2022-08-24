@@ -1,6 +1,7 @@
 use crate::ast::expr::Expr;
+use crate::ast::stmt::Stmt;
 use crate::hir::Hir;
-use crate::parser::ast::{Stmt, Type};
+use crate::parser::ast::Type;
 use crate::sema::diag::{Diagnostics, Error};
 use crate::sema::type_table::TypeTable;
 use matc_span::Spanned;

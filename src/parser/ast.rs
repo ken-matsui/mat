@@ -16,6 +16,7 @@ pub(crate) use string::*;
 pub(crate) use ty::*;
 pub(crate) use variable::*;
 
+use crate::ast::stmt::Stmt;
 use crate::parser::lib::*;
 use matc_span::Spanned;
 
@@ -39,6 +40,7 @@ pub(crate) fn compilation_unit() -> impl Parser<Ast> {
 mod tests {
     use super::*;
     use crate::ast::expr::Expr;
+    use crate::ast::param::Param;
 
     #[test]
     fn test_compilation_unit() {
