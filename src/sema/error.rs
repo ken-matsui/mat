@@ -124,6 +124,7 @@ impl Emit for SemanticError {
                     .print((span.src(), Source::from(code)))
             }
             SemanticError::NotConstant(span) => {
+                // TODO: too similar to UnresolvedRef
                 Report::build(ReportKind::Error, span.src(), span.start())
                     .with_message("Not a constant")
                     .with_label(
@@ -149,16 +150,14 @@ impl Emit for Vec<SemanticError> {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) struct Diagnostics<W: Emit, E: Emit> {
+pub(crate) struct Diagnostics<W, E> {
     pub(crate) warnings: Vec<W>,
     pub(crate) errors: Vec<E>,
 }
 
 impl<W, E> Emit for Diagnostics<W, E>
 where
-    W: Emit,
     Vec<W>: Emit,
-    E: Emit,
     Vec<E>: Emit,
 {
     fn emit(&self, code: &str) {
@@ -167,7 +166,7 @@ where
     }
 }
 
-impl<W: Emit, E: Emit> Diagnostics<W, E> {
+impl<W, E> Diagnostics<W, E> {
     pub(crate) fn new() -> Self {
         Self {
             warnings: Vec::new(),
