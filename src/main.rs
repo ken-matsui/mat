@@ -3,9 +3,10 @@ mod hir;
 mod parser;
 mod sema;
 
-use crate::error::Emit;
+use anyhow::bail;
 use clap::{ArgGroup, Parser};
-use std::ffi::OsStr;
+use debug_print::debug_println;
+use error::Emit;
 use std::fs::read_to_string;
 use std::path::Path;
 
@@ -16,8 +17,7 @@ use std::path::Path;
         .args(&[
             "dump-tokens",
             "dump-ast",
-            "dump-ref",
-            "dump-sema",
+            "dump-hir",
             "dump-mir",
             "dump-asm",
             "print-asm"
@@ -52,34 +52,34 @@ struct Args {
     print_asm: bool,
 }
 
-fn main() {
-    let args = Args::parse();
-    Path::new(&args.source)
-        .extension()
-        .and_then(OsStr::to_str)
-        .filter(|&ext| ext == "mat")
-        .expect("Source file extension should be `.mat`");
-    let code = read_to_string(args.source.clone()).expect("Failed to read file");
-
-    match parser::parse(args.source, &code) {
-        Err(errors) => errors.emit(&code),
-        Ok(ast) => {
-            dbg!("Parsing has been completed successfully.");
-            if args.dump_ast {
-                println!("{:#?}", ast);
-                return;
-            }
-
-            match sema::analyze(ast, &code) {
-                Err(errors) => errors.emit(&code),
-                Ok(hir) => {
-                    dbg!("Semantic analysis has been completed successfully.");
-                    if args.dump_hir {
-                        println!("{:#?}", hir);
-                        return;
-                    }
-                }
-            }
-        }
+fn parse<P: AsRef<Path>>(args: &Args, source: P, code: &str) -> Result<(), Box<dyn Emit>> {
+    let ast = parser::parse(source, &code)?;
+    debug_println!("Info: Parse has been completed successfully.");
+    if args.dump_ast {
+        println!("{:#?}", ast);
+        return Ok(());
     }
+
+    let hir = sema::analyze(ast, &code)?;
+    debug_println!("Info: Semantic analysis has been completed successfully.");
+    if args.dump_hir {
+        println!("{:#?}", hir);
+        return Ok(());
+    }
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+    let source = Path::new(&args.source);
+    if source.extension().filter(|&ext| ext == "mat") == None {
+        bail!("Source file extension should be `.mat`");
+    }
+    let code = read_to_string(source)?;
+
+    if let Err(errors) = parse(&args, source, &code) {
+        errors.emit(&code);
+        bail!("Could not compile `{:?}`", source);
+    }
+    Ok(())
 }

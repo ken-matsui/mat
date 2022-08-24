@@ -130,17 +130,17 @@ pub(crate) struct DefinedFunction<'a> {
 
 impl Expr {
     pub(crate) fn is_constant(&self) -> bool {
-        match self {
+        matches!(
+            self,
             Expr::I8(_)
-            | Expr::I16(_)
-            | Expr::I32(_)
-            | Expr::I64(_)
-            | Expr::U8(_)
-            | Expr::U16(_)
-            | Expr::U32(_)
-            | Expr::U64(_)
-            | Expr::String(_) => true,
-            _ => false,
-        }
+                | Expr::I16(_)
+                | Expr::I32(_)
+                | Expr::I64(_)
+                | Expr::U8(_)
+                | Expr::U16(_)
+                | Expr::U32(_)
+                | Expr::U64(_)
+                | Expr::String(_)
+        )
     }
 }

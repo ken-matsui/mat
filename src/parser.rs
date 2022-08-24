@@ -2,12 +2,12 @@ pub(crate) mod ast;
 mod error;
 mod lib;
 
+use crate::Emit;
 use ast::{compilation_unit, Ast, SrcId};
 use chumsky::{Parser, Span, Stream};
-use lib::ParserError;
 use std::path::Path;
 
-pub(crate) fn parse<P: AsRef<Path>>(src: P, code: &str) -> Result<Ast, Vec<ParserError>> {
+pub(crate) fn parse<P: AsRef<Path>>(src: P, code: &str) -> Result<Ast, Box<dyn Emit>> {
     let src = SrcId::from_path(src);
     let len = code.chars().count();
     let span = |i| Span::new(src, i..i + 1);
@@ -21,6 +21,6 @@ pub(crate) fn parse<P: AsRef<Path>>(src: P, code: &str) -> Result<Ast, Vec<Parse
     if let Some(ast) = ast {
         Ok(ast)
     } else {
-        Err(errors)
+        Err(Box::new(errors))
     }
 }
