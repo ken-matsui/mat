@@ -23,6 +23,10 @@ impl Emit for SemanticWarning {
         }
         .unwrap();
     }
+
+    fn count(&self) -> usize {
+        1
+    }
 }
 
 impl Emit for Vec<SemanticWarning> {
@@ -30,6 +34,10 @@ impl Emit for Vec<SemanticWarning> {
         for warn in self {
             warn.emit(code);
         }
+    }
+
+    fn count(&self) -> usize {
+        self.len()
     }
 }
 
@@ -152,6 +160,10 @@ impl Emit for SemanticError {
         }
         .unwrap();
     }
+
+    fn count(&self) -> usize {
+        1
+    }
 }
 
 impl Emit for Vec<SemanticError> {
@@ -159,6 +171,10 @@ impl Emit for Vec<SemanticError> {
         for err in self {
             err.emit(code);
         }
+    }
+
+    fn count(&self) -> usize {
+        self.len()
     }
 }
 
@@ -176,6 +192,11 @@ where
     fn emit(&self, code: &str) {
         self.warnings.emit(code);
         self.errors.emit(code);
+    }
+
+    fn count(&self) -> usize {
+        // Ignore warnings
+        self.errors.count()
     }
 }
 

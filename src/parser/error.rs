@@ -77,6 +77,10 @@ impl Emit for ParserError {
             .print((self.span().src(), Source::from(code)))
             .unwrap();
     }
+
+    fn count(&self) -> usize {
+        1
+    }
 }
 
 impl Emit for Vec<ParserError> {
@@ -84,5 +88,9 @@ impl Emit for Vec<ParserError> {
         for err in self {
             err.emit(code);
         }
+    }
+
+    fn count(&self) -> usize {
+        self.len()
     }
 }

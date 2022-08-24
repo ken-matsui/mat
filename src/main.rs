@@ -79,7 +79,11 @@ fn main() -> anyhow::Result<()> {
 
     if let Err(errors) = parse(&args, source, &code) {
         errors.emit(&code);
-        bail!("Could not compile `{:?}`", source);
+        bail!(
+            "Could not compile `{:?}` due to {} previous error(s)",
+            source,
+            errors.count()
+        );
     }
     Ok(())
 }
