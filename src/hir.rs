@@ -24,6 +24,7 @@ impl From<Ast> for Hir {
 
 impl Hir {
     pub(crate) fn set_scope(&mut self, scope: Rc<RefCell<Scope>>) {
+        assert_eq!(self.scope, None, "must not happen: Scope is set twice");
         self.scope = Some(scope);
     }
 

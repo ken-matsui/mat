@@ -19,7 +19,8 @@ impl<'a> TypeResolver<'a> {
 
     pub(crate) fn resolve(&mut self, hir: &mut Hir) -> Diagnostics {
         self.define_types(hir);
-        self.resolve_types(hir);
+        self.resolve_types(hir); // TODO: bind_type
+
         // TODO: Check references; to warn unused types
 
         self.diag.clone()
@@ -134,7 +135,9 @@ impl<'a> TypeResolver<'a> {
             }
             Expr::FnCall { name, args } => {
                 self.visit_expr(name);
-                let _ = args.iter().map(|arg| self.visit_expr(arg));
+                for arg in args {
+                    self.visit_expr(arg);
+                }
             }
             _ => (),
         }

@@ -118,7 +118,9 @@ impl LocalResolver {
             }
             Expr::FnCall { name, args } => {
                 self.visit_expr(name);
-                let _ = args.iter().map(|arg| self.visit_expr(arg));
+                for arg in args {
+                    self.visit_expr(arg);
+                }
             }
             _ => (),
         }

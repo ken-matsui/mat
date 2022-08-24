@@ -5,7 +5,7 @@ use linked_hash_map::LinkedHashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Scope {
     parent: Option<Rc<RefCell<Self>>>,
     // Toplevel has DefVars & DefFns, otherwise, only DefVars will be held.
