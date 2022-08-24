@@ -19,7 +19,7 @@ impl<'a> TypeResolver<'a> {
     }
 }
 
-impl<'a> Resolver for TypeResolver<'a> {
+impl Resolver for TypeResolver<'_> {
     fn resolve(&mut self, hir: &mut Hir) -> SemanticDiag {
         self.define_types(hir);
         self.resolve_types(hir);
@@ -29,7 +29,7 @@ impl<'a> Resolver for TypeResolver<'a> {
     }
 }
 
-impl<'a> TypeResolver<'a> {
+impl TypeResolver<'_> {
     fn define_types(&mut self, hir: &Hir) {
         for ty in hir.types() {
             if let Some((predef, _)) = self.type_table.value.get_key_value(ty.name) {
