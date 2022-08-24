@@ -1,13 +1,7 @@
 use crate::ast::expr::Expr;
+use crate::ast::param::Param;
 use crate::parser::ast::{cast, comment, expr, ident, typedef, typeref, Spanned, Type};
 use crate::parser::lib::*;
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub(crate) struct Param {
-    pub(crate) is_mut: bool,
-    pub(crate) name: Spanned<String>,
-    pub(crate) ty: Spanned<Type>,
-}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum Stmt {
