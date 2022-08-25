@@ -1,5 +1,5 @@
 use crate::ident::ident;
-use crate::*;
+use crate::prelude::*;
 use matc_ast::Expr;
 use matc_span::Spanned;
 

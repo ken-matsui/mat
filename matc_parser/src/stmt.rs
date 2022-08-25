@@ -1,8 +1,8 @@
 use crate::comment::comment;
 use crate::expr::{cast, expr};
 use crate::ident::ident;
+use crate::prelude::*;
 use crate::ty::{typedef, typeref};
-use crate::*;
 use matc_ast::{Param, Stmt};
 use matc_span::Spanned;
 
