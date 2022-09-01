@@ -13,3 +13,15 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+  - package-ecosystem: "cargo"
+    directory: "/matc_ast/"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "cargo"
+    directory: "/matc_parser/"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "cargo"
+    directory: "/matc_span/"
+    schedule:
+      interval: "monthly"
