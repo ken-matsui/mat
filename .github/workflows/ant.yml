@@ -22,9 +22,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Install JavaCC and Ant
-      run: |
-        brew update
-        brew install javacc ant
+      run: brew install javacc ant
 
     - name: Replace the JavaCC path
       run: sed -i '.bak' 's,/opt/homebrew,/usr/local,' build.xml
