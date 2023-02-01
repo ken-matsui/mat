@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 ariadne = "0.1.5" # sema
-clap = { version = "4.0.32", features = ["derive"] } # main
+clap = { version = "4.1.4", features = ["derive"] } # main
 linked-hash-map = "0.5.6" # sema
 anyhow = "1.0.68" # main
 debug_print = "1.0.0" # main
