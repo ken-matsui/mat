@@ -6,22 +6,6 @@ use crate::ty::typeref;
 use matc_ast::{Param, Stmt};
 use matc_span::Spanned;
 
-// import std.io;
-pub(crate) fn import_stmt() -> impl Parser<Spanned<Stmt>> {
-    text::keyword("import")
-        .ignore_then(
-            ident()
-                .repeated()
-                .separated_by(just('.'))
-                .map(|i| i.into_iter().flatten().collect::<Vec<String>>().join(".")),
-        )
-        .then_ignore(just(';'))
-        .map_with_span(|import, span| Spanned::new(Stmt::Import(import), span))
-        .labelled("import")
-        .padded()
-        .boxed()
-}
-
 pub(crate) fn top_defs() -> impl Parser<Vec<Spanned<Stmt>>> {
     choice((defvar(), defn())).repeated().boxed()
 }
@@ -211,26 +195,6 @@ fn assign_stmt() -> impl Parser<Spanned<Stmt>> {
 mod tests {
     use super::*;
     use matc_ast::{Expr, Type};
-
-    #[test]
-    fn test_import_stmt() {
-        assert_eq!(
-            import_stmt().parse_test("import std.io;"),
-            Ok(Spanned::any(Stmt::Import("std.io".to_string())))
-        );
-        assert_eq!(
-            import_stmt().parse_test("import     std  .   io   ;"),
-            Ok(Spanned::any(Stmt::Import("std.io".to_string())))
-        );
-        assert_eq!(
-            import_stmt().parse_test("import stdio;"),
-            Ok(Spanned::any(Stmt::Import("stdio".to_string())))
-        );
-        assert!(import_stmt().parse_test("import 1std.io;").is_err());
-        assert!(import_stmt().parse_test("import std.1io;").is_err());
-        assert!(import_stmt().parse_test("import std.io").is_err());
-        assert!(import_stmt().parse_test("use std.io;").is_err());
-    }
 
     #[test]
     fn test_top_defs() {

@@ -1,14 +1,12 @@
 use crate::prelude::*;
-use crate::stmt::{import_stmt, top_defs};
+use crate::stmt::top_defs;
 use matc_ast::Ast;
 
 pub(crate) fn compilation_unit() -> impl Parser<Ast> {
-    import_stmt()
-        .repeated()
-        .then(top_defs())
+    top_defs()
         .padded()
         .then_ignore(end())
-        .map(|(imports, defs)| Ast { imports, defs })
+        .map(|defs| Ast { defs })
         .boxed()
 }
 
@@ -23,9 +21,6 @@ mod tests {
         assert_eq!(
             compilation_unit().parse_test(
                 r#"
-import std.io;
-import stdio;
-
 let fuga: i32 = 1;
 
 fn f1(arg: char, mut arg2: i32) -> i32 {
@@ -48,10 +43,6 @@ fn main() -> i32 {
         "#
             ),
             Ok(Ast {
-                imports: vec![
-                    Spanned::any(Stmt::Import("std.io".to_string())),
-                    Spanned::any(Stmt::Import("stdio".to_string())),
-                ],
                 defs: vec![
                     Spanned::any(Stmt::DefVar {
                         is_mut: false,

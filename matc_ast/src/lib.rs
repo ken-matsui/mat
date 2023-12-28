@@ -12,6 +12,5 @@ use matc_span::Spanned;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Ast {
-    pub imports: Vec<Spanned<Stmt>>,
     pub defs: Vec<Spanned<Stmt>>,
 }
