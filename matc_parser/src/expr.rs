@@ -541,17 +541,10 @@ mod tests {
     #[test]
     fn test_cast() {
         assert_eq!(
-            cast(None).parse_test("var as cast"),
+            cast(None).parse_test("var as i32"),
             Ok(Spanned::any(Expr::As(
                 Spanned::any(Expr::Variable("var".to_string())),
-                Spanned::any(Type::User("cast".to_string()))
-            )))
-        );
-        assert_eq!(
-            cast(None).parse_test("127 as u8"),
-            Ok(Spanned::any(Expr::As(
-                Spanned::any(Expr::I32(127)),
-                Spanned::any(Type::U8)
+                Spanned::any(Type::I32)
             )))
         );
         // TODO: This should also work
@@ -587,7 +580,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            fn_call().parse_test("fun(a1 as char, a2 as u64)"),
+            fn_call().parse_test("fun(a1 as char, a2 as i32)"),
             Ok(Spanned::any(Expr::FnCall {
                 name: Spanned::any(Expr::Variable("fun".to_string())),
                 args: vec![
@@ -597,7 +590,7 @@ mod tests {
                     )),
                     Spanned::any(Expr::As(
                         Spanned::any(Expr::Variable("a2".to_string())),
-                        Spanned::any(Type::U64)
+                        Spanned::any(Type::I32)
                     )),
                 ]
             }))

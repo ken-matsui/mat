@@ -73,11 +73,7 @@ impl Hir {
 
     #[cfg(test)]
     pub(crate) fn from_defs(defs: Vec<Spanned<Stmt>>) -> Self {
-        Self {
-            imports: Vec::new(),
-            defs,
-            scope: None,
-        }
+        Self { defs, scope: None }
     }
 }
 

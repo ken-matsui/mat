@@ -21,11 +21,6 @@ pub enum Stmt {
         expr: Option<Spanned<Expr>>,
     },
 
-    TypeDef {
-        name: Spanned<String>,
-        ty: Spanned<Type>,
-    },
-
     Block(Vec<Spanned<Self>>),
 
     If {

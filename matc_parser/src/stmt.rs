@@ -238,9 +238,9 @@ mod tests {
         assert_eq!(
             top_defs().parse_test(
                 r#"
-                let foo: i8 = 1; type newint = i32;
+                let foo: char = 1;
 
-                fn f1() -> u32 {}
+                fn f1() -> i32 {}
         "#
             ),
             Ok(vec![
@@ -250,14 +250,10 @@ mod tests {
                     ty: Spanned::any(Type::I8),
                     expr: Some(Spanned::any(Expr::I32(1))),
                 }),
-                Spanned::any(Stmt::TypeDef {
-                    name: Spanned::any("newint".to_string()),
-                    ty: Spanned::any(Type::I32),
-                }),
                 Spanned::any(Stmt::DefFn {
                     name: Spanned::any("f1".to_string()),
                     args: vec![],
-                    ret_ty: Spanned::any(Type::U32),
+                    ret_ty: Spanned::any(Type::I32),
                     body: Spanned::any(Stmt::Block(vec![])),
                 }),
             ])
@@ -267,7 +263,7 @@ mod tests {
     #[test]
     fn test_param() {
         assert_eq!(
-            param().parse_test("name: i8"),
+            param().parse_test("name: char"),
             Ok(Param {
                 is_mut: false,
                 name: Spanned::any("name".to_string()),
@@ -275,7 +271,7 @@ mod tests {
             })
         );
         assert_eq!(
-            param().parse_test("mut name: i8"),
+            param().parse_test("mut name: char"),
             Ok(Param {
                 is_mut: true,
                 name: Spanned::any("name".to_string()),
@@ -287,16 +283,16 @@ mod tests {
     #[test]
     fn test_defn() {
         assert_eq!(
-            defn().parse_test("fn name() -> i16 {}"),
+            defn().parse_test("fn name() -> i32 {}"),
             Ok(Spanned::any(Stmt::DefFn {
                 name: Spanned::any("name".to_string()),
                 args: vec![],
-                ret_ty: Spanned::any(Type::I16),
+                ret_ty: Spanned::any(Type::I32),
                 body: Spanned::any(Stmt::Block(vec![])),
             }))
         );
         assert_eq!(
-            defn().parse_test("fn name(a1: i8) -> i16 {}"),
+            defn().parse_test("fn name(a1: char) -> i32 {}"),
             Ok(Spanned::any(Stmt::DefFn {
                 name: Spanned::any("name".to_string()),
                 args: vec![Param {
@@ -304,7 +300,7 @@ mod tests {
                     name: Spanned::any("a1".to_string()),
                     ty: Spanned::any(Type::I8)
                 }],
-                ret_ty: Spanned::any(Type::I16),
+                ret_ty: Spanned::any(Type::I32),
                 body: Spanned::any(Stmt::Block(vec![])),
             }))
         );
@@ -315,38 +311,38 @@ mod tests {
     #[test]
     fn test_defvar() {
         assert_eq!(
-            defvar().parse_test("let var: type = 10;"),
+            defvar().parse_test("let var: i32 = 10;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: false,
                 name: Spanned::any("var".to_string()),
-                ty: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::I32),
                 expr: Some(Spanned::any(Expr::I32(10))),
             }))
         );
         assert_eq!(
-            defvar().parse_test("let mut var: type = 10;"),
+            defvar().parse_test("let mut var: i32 = 10;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: true,
                 name: Spanned::any("var".to_string()),
-                ty: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::I32),
                 expr: Some(Spanned::any(Expr::I32(10))),
             }))
         );
         assert_eq!(
-            defvar().parse_test("let mut var: type;"),
+            defvar().parse_test("let mut var: i32;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: true,
                 name: Spanned::any("var".to_string()),
-                ty: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::I32),
                 expr: None,
             }))
         );
         assert_eq!(
-            defvar().parse_test("let   mut   var    :   type     ;"),
+            defvar().parse_test("let   mut   var    :   i32     ;"),
             Ok(Spanned::any(Stmt::DefVar {
                 is_mut: true,
                 name: Spanned::any("var".to_string()),
-                ty: Spanned::any(Type::User("type".to_string())),
+                ty: Spanned::any(Type::I32),
                 expr: None,
             }))
         );
@@ -371,9 +367,9 @@ mod tests {
         assert_eq!(
             block(None).parse_test(
                 r#"{
-                let var1: type = 10;
+                let var1: i32 = 10;
     
-                let mut var2: type = 10;
+                let mut var2: i32 = 10;
                 // comment
                 if var1 {}
             }"#
@@ -382,13 +378,13 @@ mod tests {
                 Spanned::any(Stmt::DefVar {
                     is_mut: false,
                     name: Spanned::any("var1".to_string()),
-                    ty: Spanned::any(Type::User("type".to_string())),
+                    ty: Spanned::any(Type::I32),
                     expr: Some(Spanned::any(Expr::I32(10))),
                 }),
                 Spanned::any(Stmt::DefVar {
                     is_mut: true,
                     name: Spanned::any("var2".to_string()),
-                    ty: Spanned::any(Type::User("type".to_string())),
+                    ty: Spanned::any(Type::I32),
                     expr: Some(Spanned::any(Expr::I32(10))),
                 }),
                 Spanned::any(Stmt::If {

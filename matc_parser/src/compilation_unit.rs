@@ -28,12 +28,12 @@ import stdio;
 
 let fuga: i32 = 1;
 
-fn f1(arg: char, mut arg2: i32) -> u32 {
+fn f1(arg: char, mut arg2: i32) -> i32 {
     return arg as i32 + arg2;
 }
 
 fn main() -> i32 {
-    let mut hoge: User = 12;
+    let mut hoge: i32 = 12;
     //boo = 23; // unresolved reference: boo
     //hoge(1, 2, 3); // calling object is not a function
     // 1 = 2 + 4; // invalid lhs expression
@@ -70,15 +70,15 @@ fn main() -> i32 {
                             Param {
                                 is_mut: true,
                                 name: Spanned::any("arg2".to_string()),
-                                ty: Spanned::any(Type::U64)
+                                ty: Spanned::any(Type::I32)
                             }
                         ],
-                        ret_ty: Spanned::any(Type::U32),
+                        ret_ty: Spanned::any(Type::I32),
                         body: Spanned::any(Stmt::Block(vec![Spanned::any(Stmt::Return(Some(
                             Spanned::any(Expr::Add(
                                 Spanned::any(Expr::As(
                                     Spanned::any(Expr::Variable("arg".to_string())),
-                                    Spanned::any(Type::U64)
+                                    Spanned::any(Type::I32)
                                 )),
                                 Spanned::any(Expr::Variable("arg2".to_string()))
                             ))
@@ -92,7 +92,7 @@ fn main() -> i32 {
                             Spanned::any(Stmt::DefVar {
                                 is_mut: true,
                                 name: Spanned::any("hoge".to_string()),
-                                ty: Spanned::any(Type::User("User".to_string())),
+                                ty: Spanned::any(Type::I32),
                                 expr: Some(Spanned::any(Expr::I32(12))),
                             }),
                             Spanned::any(Stmt::If {
@@ -116,7 +116,7 @@ fn main() -> i32 {
                                                     Spanned::any(Expr::Variable(
                                                         "hoge".to_string()
                                                     )),
-                                                    Spanned::any(Type::U64)
+                                                    Spanned::any(Type::I32)
                                                 ))
                                             ]
                                         })))
@@ -131,7 +131,7 @@ fn main() -> i32 {
                                                 Spanned::any(Expr::I32(2)),
                                             )),
                                             Spanned::any(Expr::Mul(
-                                                Spanned::any(Expr::I64(1)),
+                                                Spanned::any(Expr::I32(1)),
                                                 Spanned::any(Expr::Variable("hoge".to_string())),
                                             )),
                                         )),))
