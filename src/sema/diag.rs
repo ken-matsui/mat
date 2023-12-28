@@ -30,11 +30,6 @@ pub(crate) enum Error {
     // LocalResolver
     DuplicatedDef(Span, Span),
     UnresolvedRef(Span),
-    // TypeResolver
-    DuplicatedType(Span, Span),
-    UnresolvedType(Span),
-    // type_table.semantic_check
-    RecursiveTypeDef(Span, Span),
     // DereferenceChecker
     NotConstant(Span),
     NotCallable(Span),
@@ -62,40 +57,6 @@ impl Emit for Error {
                 vec![Label::new(span)
                     .with_message("undefined ident".fg(Color::Red))
                     .with_color(Color::Red)],
-                vec![],
-            ),
-            Error::DuplicatedType(pre_span, span) => (
-                span,
-                "Duplicated type",
-                vec![
-                    Label::new(pre_span)
-                        .with_message("previous definition".fg(Color::Blue))
-                        .with_color(Color::Blue),
-                    Label::new(span)
-                        .with_message("redefined here".fg(Color::Red))
-                        .with_color(Color::Red),
-                ],
-                vec![],
-            ),
-            Error::UnresolvedType(span) => (
-                span,
-                "Unresolved type",
-                vec![Label::new(span)
-                    .with_message("undefined ident".fg(Color::Red))
-                    .with_color(Color::Red)],
-                vec![],
-            ),
-            Error::RecursiveTypeDef(pre_span, span) => (
-                span,
-                "Recursive type definition",
-                vec![
-                    Label::new(pre_span)
-                        .with_message("previous definition".fg(Color::Blue))
-                        .with_color(Color::Blue),
-                    Label::new(span)
-                        .with_message("redefined here".fg(Color::Red))
-                        .with_color(Color::Red),
-                ],
                 vec![],
             ),
             Error::NotConstant(span) => (

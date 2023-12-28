@@ -1,6 +1,6 @@
 use crate::sema::entity::Entity;
 use crate::sema::scope::Scope;
-use matc_ast::{Ast, Expr, Stmt, Type};
+use matc_ast::{Ast, Expr, Stmt};
 use matc_span::{Span, Spanned};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -8,7 +8,6 @@ use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Hir {
-    pub(crate) imports: Vec<Spanned<Stmt>>,
     pub(crate) defs: Vec<Spanned<Stmt>>,
     pub(crate) scope: Option<Rc<RefCell<Scope>>>,
 }
@@ -16,7 +15,6 @@ pub(crate) struct Hir {
 impl From<Ast> for Hir {
     fn from(ast: Ast) -> Self {
         Self {
-            imports: ast.imports,
             defs: ast.defs,
             scope: None,
         }
@@ -40,22 +38,6 @@ impl Hir {
         }
 
         entities
-    }
-
-    pub(crate) fn types(&self) -> Vec<TypeDef> {
-        let mut types = Vec::<TypeDef>::new();
-
-        for stmt in &self.defs {
-            match stmt.deref() {
-                Stmt::TypeDef { name, ty } => {
-                    types.push(TypeDef { name, ty });
-                }
-                // TODO: Stmt::DefStruct
-                _ => {}
-            }
-        }
-
-        types
     }
 
     pub(crate) fn defined_variables(&self) -> Vec<DefinedVariable> {
@@ -97,12 +79,6 @@ impl Hir {
             scope: None,
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct TypeDef<'a> {
-    pub(crate) name: &'a Spanned<String>,
-    pub(crate) ty: &'a Spanned<Type>,
 }
 
 #[derive(Debug, Clone)]

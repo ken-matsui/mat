@@ -3,8 +3,6 @@ mod diag;
 pub(crate) mod entity;
 mod local_resolver;
 pub(crate) mod scope;
-mod type_resolver;
-mod type_table;
 mod visitor;
 
 use crate::diag::Emit;
@@ -13,8 +11,6 @@ use crate::sema::diag::Diagnostics;
 use dereference_checker::DereferenceChecker;
 use local_resolver::LocalResolver;
 use matc_ast::Ast;
-use type_resolver::TypeResolver;
-use type_table::TypeTable;
 
 pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Box<dyn Emit>> {
     let mut hir = Hir::from(ast);
@@ -28,10 +24,7 @@ pub(crate) fn analyze(ast: Ast, code: &str) -> Result<Hir, Box<dyn Emit>> {
     };
 
     handle_diag(LocalResolver::new().resolve(&mut hir))?;
-    let mut type_table = TypeTable::new();
-    handle_diag(TypeResolver::new(&mut type_table).resolve(&mut hir))?;
-    handle_diag(type_table.semantic_check())?;
-    handle_diag(DereferenceChecker::new(&type_table, &hir).check())?;
+    handle_diag(DereferenceChecker::new(&hir).check())?;
 
     Ok(hir)
 }

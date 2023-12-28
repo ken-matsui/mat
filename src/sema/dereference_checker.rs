@@ -1,20 +1,17 @@
 use crate::hir::{DefinedVariable, Hir};
 use crate::sema::diag::{Diagnostics, Error};
-use crate::sema::type_table::TypeTable;
 use matc_ast::{Expr, Stmt};
 use matc_span::Spanned;
 use std::ops::Deref;
 
 pub(crate) struct DereferenceChecker<'a> {
-    type_table: &'a TypeTable,
     hir: &'a Hir,
     diag: Diagnostics,
 }
 
 impl<'a> DereferenceChecker<'a> {
-    pub(crate) fn new(type_table: &'a TypeTable, hir: &'a Hir) -> Self {
+    pub(crate) fn new(hir: &'a Hir) -> Self {
         Self {
-            type_table,
             hir,
             diag: Diagnostics::new(),
         }

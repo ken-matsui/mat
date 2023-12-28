@@ -28,10 +28,8 @@ import stdio;
 
 let fuga: i32 = 1;
 
-type newint = i32;
-
-fn f1(arg: char, mut arg2: u64) -> u32 {
-    return arg as u64 + arg2;
+fn f1(arg: char, mut arg2: i32) -> u32 {
+    return arg as i32 + arg2;
 }
 
 fn main() -> i32 {
@@ -42,9 +40,9 @@ fn main() -> i32 {
     if hoge {
         return 1;
     } else if fuga {
-        return f1(fuga as char, hoge as u64);
+        return f1(fuga as char, hoge as i32);
     } else {
-        return 1 + 2 + 2 - 1i64 * hoge;
+        return 1 + 2 + 2 - 1i32 * hoge;
     }
 }
         "#
@@ -60,10 +58,6 @@ fn main() -> i32 {
                         name: Spanned::any("fuga".to_string()),
                         ty: Spanned::any(Type::I32),
                         expr: Some(Spanned::any(Expr::I32(1))),
-                    }),
-                    Spanned::any(Stmt::TypeDef {
-                        name: Spanned::any("newint".to_string()),
-                        ty: Spanned::any(Type::I32),
                     }),
                     Spanned::any(Stmt::DefFn {
                         name: Spanned::any("f1".to_string()),

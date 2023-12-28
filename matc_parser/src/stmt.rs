@@ -2,7 +2,7 @@ use crate::comment::comment;
 use crate::expr::{cast, expr};
 use crate::ident::ident;
 use crate::prelude::*;
-use crate::ty::{typedef, typeref};
+use crate::ty::typeref;
 use matc_ast::{Param, Stmt};
 use matc_span::Spanned;
 
@@ -23,7 +23,7 @@ pub(crate) fn import_stmt() -> impl Parser<Spanned<Stmt>> {
 }
 
 pub(crate) fn top_defs() -> impl Parser<Vec<Spanned<Stmt>>> {
-    choice((defvar(), defn(), typedef())).repeated().boxed()
+    choice((defvar(), defn())).repeated().boxed()
 }
 
 // name1: type1

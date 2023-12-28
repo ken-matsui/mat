@@ -1,15 +1,15 @@
-let foo: i8;
+let foo: i32;
 
-fn main(bar: i8) -> void {
-    let baz: i8 = qux;
+fn main(bar: i32) -> void {
+    let baz: i32 = qux;
     foo = bar;
-    let qux: i8;
+    let qux: i32;
     if quux {
         bar = garply;
         baz = qux;
-        let garply: i8;
+        let garply: i32;
     }
-    let grault: i8;
-    let garply: i8;
-    let grault: i8;
+    let grault: i32;
+    let garply: i32;
+    let grault: i32;
 }
