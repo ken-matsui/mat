@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 ariadne = "0.2.0"
 chumsky = "0.9.3"
-internment = "0.7.0"
+internment = "0.7.4"
