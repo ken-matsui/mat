@@ -5,8 +5,6 @@ use matc_span::Spanned;
 pub enum Stmt {
     Empty,
 
-    Import(String),
-
     DefFn {
         name: Spanned<String>,
         args: Vec<Param>,

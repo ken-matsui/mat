@@ -58,30 +58,13 @@ pub enum Expr {
 
     /// Atom
     I8(i8),
-    I16(i16),
     I32(i32),
-    I64(i64),
-    U8(u8),
-    U16(u16),
-    U32(u32),
-    U64(u64),
     String(String),
     Variable(String),
 }
 
 impl Expr {
     pub fn is_constant(&self) -> bool {
-        matches!(
-            self,
-            Expr::I8(_)
-                | Expr::I16(_)
-                | Expr::I32(_)
-                | Expr::I64(_)
-                | Expr::U8(_)
-                | Expr::U16(_)
-                | Expr::U32(_)
-                | Expr::U64(_)
-                | Expr::String(_)
-        )
+        matches!(self, Expr::I8(_) | Expr::I32(_) | Expr::String(_))
     }
 }
