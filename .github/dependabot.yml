@@ -13,15 +13,35 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      cargo:
+        update-types:
+        - "minor"
+        - "patch"
   - package-ecosystem: "cargo"
     directory: "/matc_ast/"
     schedule:
       interval: "monthly"
+    groups:
+      cargo:
+        update-types:
+        - "minor"
+        - "patch"
   - package-ecosystem: "cargo"
     directory: "/matc_parser/"
     schedule:
       interval: "monthly"
+    groups:
+      cargo:
+        update-types:
+        - "minor"
+        - "patch"
   - package-ecosystem: "cargo"
     directory: "/matc_span/"
     schedule:
       interval: "monthly"
+    groups:
+      cargo:
+        update-types:
+        - "minor"
+        - "patch"
