@@ -1,4 +1,4 @@
-use ariadne::{Label, Report, ReportKind, Source, Span as _};
+use ariadne::{Label, Report, ReportKind, Source};
 use matc_span::Span;
 
 pub(crate) trait Emit {
@@ -28,7 +28,7 @@ pub(crate) fn emit(
     notes: Vec<String>,
 ) {
     let mut report =
-        Report::build(ReportKind::Error, span.src(), span.start()).with_message(message);
+        Report::build(ReportKind::Error, span).with_message(message);
     for label in labels {
         report = report.with_label(label);
     }
