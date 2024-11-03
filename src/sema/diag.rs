@@ -1,5 +1,5 @@
 use crate::diag::{emit, Diagnostics as Diag, Emit};
-use ariadne::{Color, Fmt, Label, Report, ReportKind, Source, Span as _};
+use ariadne::{Color, Fmt, Label, Report, ReportKind, Source};
 use matc_span::Span;
 use std::fmt::Debug;
 
@@ -14,7 +14,7 @@ impl Emit for Warning {
     fn emit(&self, code: &str) {
         match *self {
             Warning::UnusedEntity(span) => {
-                Report::build(ReportKind::Warning, span.src(), span.start())
+                Report::build(ReportKind::Warning, span)
                     .with_message("Unused entity")
                     .with_label(Label::new(span).with_color(Color::Yellow))
                     .finish()
